@@ -46,6 +46,7 @@ function event_turn_off()
 
     $(document).off('change', '#outlet_id');
     $(document).off('change', '#outlet_id_source');
+    $(document).off('change', '#outlet_id_destination');
 
     $(document).off("click", ".system_button_add_more");
     $(document).off('click','.system_button_add_delete');
