@@ -22,26 +22,12 @@ $config['system_status_rejected']='Rejected';
 
 $config['system_base_url_profile_picture']='http://50.116.76.180/login/';
 $config['system_base_url_picture_setup_print']='http://localhost/sms_2018_19/';
-$config['system_base_url_picture_transfer']='http://localhost/sms_2018_19/';
-
-//Stock
-$config['system_purpose_variety_stock_in']='Stock-In';
-$config['system_purpose_variety_excess']='Excess';
-$config['system_purpose_variety_rnd']='R&D Purpose';
-$config['system_purpose_variety_short_inventory']='Short Inventory';
-$config['system_purpose_variety_demonstration']='Demonstration';
-$config['system_purpose_variety_sample']='Sample Purpose';
-$config['system_purpose_variety_in_delivery_short']='Delivery Short';
-$config['system_purpose_variety_delivery_excess']='Deliver Excess';
 
 // customer type (Outlet)
 $config['system_customer_type_outlet_id']=1;
 $config['system_customer_type_customer_id']=2;
 
 //System Configuration
-$config['system_purpose_sms_date_expire']='sms_date_expire';
-$config['system_purpose_sms_quantity_order_max']='sms_quantity_order_max';
-$config['system_purpose_pos_barcode_expire_date']='pos_barcode_expire_date';
-$config['system_purpose_sms_menu_odd_color']='sms_menu_odd_color';
-$config['system_purpose_sms_menu_even_color']='sms_menu_even_color';
+$config['system_purpose_bms_menu_odd_color']='bms_menu_odd_color';
+$config['system_purpose_bms_menu_even_color']='bms_menu_even_color';
 
