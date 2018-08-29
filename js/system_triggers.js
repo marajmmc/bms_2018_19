@@ -7,7 +7,7 @@ function system_preset(params={})
     }
 }
 
-function event_turn_off()
+function system_off_events()
 {
     /*Common*/
     $(document).off('change','#warehouse_id');
