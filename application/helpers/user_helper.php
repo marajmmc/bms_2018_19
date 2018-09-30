@@ -256,4 +256,20 @@ class User_helper
         }
         return $assigned_area;
     }
+    public static function get_assigned_zones($division_id=0,$zone_id=0)
+    {
+        $CI = & get_instance();
+        $user=User_helper::get_user();
+        $CI->db->from($CI->config->item('table_login_setup_location_zones').' zone');
+        $CI->db->select('zone.id zone_id,zone.name zone_name');
+        if($division_id>0)
+        {
+            $CI->db->where('zone.division_id',$division_id);
+            if($zone_id>0)
+            {
+                $CI->db->where('zone.id',$zone_id);
+            }
+        }
+        return $CI->db->get()->result_array();
+    }
 }
