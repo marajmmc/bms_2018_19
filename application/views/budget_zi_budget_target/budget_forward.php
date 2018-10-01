@@ -28,48 +28,74 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
     </div>
     <div style="" class="row show-grid">
         <div class="col-xs-4">
-            <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_OUTLET');?></label>
+            <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_ZONE_NAME');?></label>
         </div>
         <div class="col-sm-4 col-xs-8">
-            <label class="control-label"><?php echo $outlet['name'];?></label>
+            <label class="control-label"><?php echo $zone['name'];?></label>
         </div>
     </div>
 
     <div class="panel panel-default">
         <div class="panel-heading">
             <h4 class="panel-title">
-                <label class=""><a class="external text-danger" data-toggle="collapse" data-target="#collapse3" href="#">+ Acres Information</a></label>
+                <label class=""><a class="external text-danger" data-toggle="collapse" data-target="#collapse3" href="#">+ Acres Information ( <?php echo sizeof($acres)?> number of record)</a></label>
             </h4>
         </div>
-        <div id="collapse3" class="panel-collapse collapse">
-            <table class="table table-bordered table-responsive system_table_details_view">
-                <thead>
-                <tr>
-                    <th><label class="control-label"><?php echo $CI->lang->line('LABEL_CROP_NAME');?></label></th>
-                    <th><label class="control-label"><?php echo $CI->lang->line('LABEL_CROP_TYPE_NAME');?></label></th>
-                    <th><label class="control-label">Acres</label></th>
-                    <th><label class="control-label">Seeds per Acre(kg)</label></th>
-                    <th><label class="control-label">Total Seeds(kg)</label></th>
-                </tr>
-                </thead>
-                <tbody>
-                <?php
-                foreach($acres as $result)
-                {
-                    ?>
-                    <tr>
-                        <td><?php echo $result['crop_name']; ?></td>
-                        <td><?php echo $result['crop_type_name']; ?></td>
-                        <td class="text-right"><?php echo number_format($result['quantity'],3,'.',''); ?></td>
-                        <td class="text-right"><?php echo number_format($result['quantity_kg_acre'],3,'.',''); ?></td>
-                        <td class="text-right"><?php echo number_format($result['quantity']*$result['quantity_kg_acre'],3,'.',''); ?></td>
-                    </tr>
-                <?php
-                }
+        <div id="collapse3" class="panel-collapse  <?php if($acres){ echo 'collapse';}?>">
+            <?php
+            if(!$acres)
+            {
                 ?>
-
-                </tbody>
-            </table>
+                <div class="alert alert-danger text-center"><strong>Acres not setup</strong></div>
+            <?php
+            }
+            else
+            {
+            ?>
+                <table class="table table-bordered table-responsive system_table_details_view">
+                    <thead>
+                    <tr>
+                        <th><label class="control-label"><?php echo $CI->lang->line('LABEL_CROP_NAME');?></label></th>
+                        <th><label class="control-label"><?php echo $CI->lang->line('LABEL_CROP_TYPE_NAME');?></label></th>
+                        <th class="text-right"><label class="control-label">Acres</label></th>
+                        <th class="text-right"><label class="control-label">Seeds per Acre(kg)</label></th>
+                        <th class="text-right"><label class="control-label">Total Seeds(kg)</label></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php
+                    $quantity_acres_total=0;
+                    $quantity_acres_kg_total=0;
+                    $quantity_acres_seed_total=0;
+                    foreach($acres as $result)
+                    {
+                        $quantity_acres_total+=$result['quantity'];
+                        $quantity_acres_kg_total+=$result['quantity_kg_acre'];
+                        $quantity_acres_seed_total+=($result['quantity']*$result['quantity_kg_acre']);
+                        ?>
+                        <tr>
+                            <td><?php echo $result['crop_name']; ?></td>
+                            <td><?php echo $result['crop_type_name']; ?></td>
+                            <td class="text-right"><?php echo number_format($result['quantity'],3,'.',''); ?></td>
+                            <td class="text-right"><?php echo number_format($result['quantity_kg_acre'],3,'.',''); ?></td>
+                            <td class="text-right"><?php echo number_format($result['quantity']*$result['quantity_kg_acre'],3,'.',''); ?></td>
+                        </tr>
+                    <?php
+                    }
+                    ?>
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <th colspan="2" class="text-right"><?php echo $CI->lang->line('LABEL_TOTAL');?></th>
+                        <th class="text-right"><?php echo System_helper::get_string_kg($quantity_acres_total);?></th>
+                        <th class="text-right"><?php echo System_helper::get_string_kg($quantity_acres_kg_total);?></th>
+                        <th class="text-right"><?php echo System_helper::get_string_kg($quantity_acres_seed_total);?></th>
+                    </tr>
+                    </tfoot>
+                </table>
+            <?php
+            }
+            ?>
         </div>
     </div>
     <div style="font-size: 12px;margin-top: -10px;font-style: italic; color: red;" class="row show-grid">
@@ -85,7 +111,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
 
 <form id="save_form" action="<?php echo site_url($CI->controller_url.'/index/save_forward_budget');?>" method="post">
     <input type="hidden" name="item[fiscal_year_id]" value="<?php echo $options['fiscal_year_id']; ?>" />
-    <input type="hidden" name="item[outlet_id]" value="<?php echo $options['outlet_id']; ?>" />
+    <input type="hidden" name="item[zone_id]" value="<?php echo $options['zone_id']; ?>" />
     <div class="row widget">
         <div class="widget-header">
             <div class="title">
@@ -141,10 +167,10 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 { name: '<?php echo $key ?>', type: 'string' },
                 <?php
             }
-            foreach($dealers as $dealer)
+            foreach($outlets as $outlet)
             {
                     ?>
-                { name: 'quantity_budget_dealer_<?php echo $dealer['farmer_id']?>', type: 'string' },
+                { name: 'quantity_budget_outlet_<?php echo $outlet['outlet_id']?>', type: 'string' },
                 <?php
             }
             foreach($fiscal_years_previous_sales as $fy)
@@ -282,15 +308,15 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                                 <?php
                             }
                         ?>
-                        { text: 'Total</br>Oultet Budget', dataField: 'quantity_budget_outlet',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
-                        { text: 'Total</br>Dealer Budget', dataField: 'quantity_budget_dealer_total',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
+                        { text: 'Total</br>Zone Budget', dataField: 'quantity_budget_zone',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
+                        { text: 'Total</br>Outlet Budget', dataField: 'quantity_budget_outlet_total',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
                         <?php
                     $serial=0;
-                    foreach($dealers as $dealer)
+                    foreach($outlets as $outlet)
                     {
                     ++$serial;
                     ?>
-                        { text: '<?php echo $serial.'. '.$dealer['farmer_name']?>',renderer: header_render, dataField: 'quantity_budget_dealer_<?php echo $dealer['farmer_id']?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
+                        { text: '<?php echo $serial.'. '.$outlet['outlet_name']?>',renderer: header_render, dataField: 'quantity_budget_outlet_<?php echo $outlet['outlet_id']?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
                         <?php
                         }
                         ?>
