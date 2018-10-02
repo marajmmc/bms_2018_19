@@ -25,7 +25,7 @@ $config['system_status_received']='Received';
 $config['system_status_rejected']='Rejected';
 
 $config['system_base_url_profile_picture']='http://180.234.223.205/login_2018_19/';
-$config['system_base_url_picture']='http://180.234.223.205/fms_2018_19/';
+$config['system_base_url_picture']='http://180.234.223.205/bms_2018_19/';
 
 // customer type (Outlet)
 $config['system_customer_type_outlet_id']=1;
