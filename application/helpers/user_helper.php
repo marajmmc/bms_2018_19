@@ -272,4 +272,16 @@ class User_helper
         }
         return $CI->db->get()->result_array();
     }
+    public static function get_assigned_divisions($division_id=0)
+    {
+        $CI = & get_instance();
+        $user=User_helper::get_user();
+        $CI->db->from($CI->config->item('table_login_setup_location_divisions').' division');
+        $CI->db->select('division.id division_id,division.name division_name');
+        if($division_id>0)
+        {
+            $CI->db->where('division.id',$division_id);
+        }
+        return $CI->db->get()->result_array();
+    }
 }
