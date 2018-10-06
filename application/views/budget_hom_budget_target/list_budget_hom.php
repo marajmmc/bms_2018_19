@@ -14,7 +14,7 @@ if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(is
         'type'=>'button',
         'label'=>$CI->lang->line('ACTION_EDIT'),
         'class'=>'button_jqx_action',
-        'data-action-link'=>site_url($CI->controller_url.'/index/edit_budget_division/'.$options['fiscal_year_id'].'/'.$options['division_id'])
+        'data-action-link'=>site_url($CI->controller_url.'/index/edit_budget_hom/'.$options['fiscal_year_id'])
 
     );
 }
@@ -22,7 +22,7 @@ if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(is
 $action_buttons[]=array
 (
     'label'=>$CI->lang->line("ACTION_REFRESH"),
-    'href'=>site_url($CI->controller_url.'/index/list_budget_division/'.$options['fiscal_year_id'].'/'.$options['division_id'])
+    'href'=>site_url($CI->controller_url.'/index/list_budget_hom/'.$options['fiscal_year_id'])
 );
 $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
 ?>
@@ -41,14 +41,6 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             <label class="control-label"><?php echo $fiscal_year['name'];?></label>
         </div>
     </div>
-    <div style="" class="row show-grid">
-        <div class="col-xs-4">
-            <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_DIVISION_NAME');?></label>
-        </div>
-        <div class="col-sm-4 col-xs-8">
-            <label class="control-label"><?php echo $division['name'];?></label>
-        </div>
-    </div>
     <div class="col-xs-12" id="system_jqx_container">
 
     </div>
@@ -59,7 +51,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
     {
         system_off_events();
         system_preset({controller:'<?php echo $CI->router->class; ?>'});
-        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_budget_division');?>";
+        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_budget_hom');?>";
 
         // prepare the data
         var source =
