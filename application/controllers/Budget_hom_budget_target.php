@@ -420,19 +420,25 @@ class Budget_hom_budget_target extends Root_Controller
                 if($items_old[$result['variety_id']]['quantity_budget']>0)
                 {
                     $item['quantity_budget']=$items_old[$result['variety_id']]['quantity_budget'];
+                    $item['quantity_budget_1']=$items_old[$result['variety_id']]['quantity_budget_1'];
+                    $item['quantity_budget_2']=$items_old[$result['variety_id']]['quantity_budget_2'];
+                    $item['quantity_budget_3']=$items_old[$result['variety_id']]['quantity_budget_3'];
                 }
                 else
                 {
                     $item['quantity_budget']='';
+                    $item['quantity_budget_1']='';
+                    $item['quantity_budget_2']='';
+                    $item['quantity_budget_3']='';
                 }
             }
             else
             {
                 $item['quantity_budget']='';
+                $item['quantity_budget_1']='';
+                $item['quantity_budget_2']='';
+                $item['quantity_budget_3']='';
             }
-            $item['quantity_budget_1']='';
-            $item['quantity_budget_2']='';
-            $item['quantity_budget_3']='';
             
             $items[]=$item;
         }
@@ -445,6 +451,7 @@ class Budget_hom_budget_target extends Root_Controller
         $time=time();
         $item_head=$this->input->post('item');
         $items=$this->input->post('items');
+        $items_quantity_budget=$this->input->post('items_quantity_budget');
         if(!((isset($this->permissions['action1']) && ($this->permissions['action1']==1))||(isset($this->permissions['action2']) && ($this->permissions['action2']==1))))
         {
             $ajax['status']=false;
@@ -481,22 +488,46 @@ class Budget_hom_budget_target extends Root_Controller
         $this->db->trans_start();  //DB Transaction Handle START
         foreach($items as $variety_id=>$quantity_budget)
         {
+            $quantity_budget_1=0;
+            $quantity_budget_2=0;
+            $quantity_budget_3=0;
+            if(isset($items_quantity_budget[1][$variety_id]))
+            {
+                $quantity_budget_1=$items_quantity_budget[1][$variety_id];
+            }
+            if(isset($items_quantity_budget[2][$variety_id]))
+            {
+                $quantity_budget_2=$items_quantity_budget[2][$variety_id];
+            }
+            if(isset($items_quantity_budget[3][$variety_id]))
+            {
+                $quantity_budget_3=$items_quantity_budget[3][$variety_id];
+            }
+            
             if(isset($items_old[$variety_id]))
             {
-                if($items_old[$variety_id]['quantity_budget']!=$quantity_budget)
+                /*if($items_old[$variety_id]['quantity_budget']!=$quantity_budget)
                 {
                     $data['quantity_budget']=$quantity_budget;
                     $data['date_updated_budget']=$time;
                     $data['user_updated_budget']=$user->user_id;
                     $this->db->set('revision_count_budget','revision_count_budget+1',false);
-                    Query_helper::update($this->config->item('table_bms_hom_budget_target_division'),$data,array('id='.$items_old[$variety_id]['id']));
-                }
+                    Query_helper::update($this->config->item('table_bms_hom_budget_target_hom'),$data,array('id='.$items_old[$variety_id]['id']));
+                }*/
+                /* need to descussion {revision count for all field like budget_1, 2,3} & checking input if or not*/
+                $data['quantity_budget_1']=$quantity_budget_1;
+                $data['quantity_budget_2']=$quantity_budget_2;
+                $data['quantity_budget_3']=$quantity_budget_3;
+                $data['quantity_budget']=$quantity_budget;
+                $data['date_updated_budget']=$time;
+                $data['user_updated_budget']=$user->user_id;
+                $this->db->set('revision_count_budget','revision_count_budget+1',false);
+                Query_helper::update($this->config->item('table_bms_hom_budget_target_hom'),$data,array('id='.$items_old[$variety_id]['id']));
             }
             else
             {
                 $data=array();
                 $data['fiscal_year_id']=$item_head['fiscal_year_id'];
-                $data['division_id']=$item_head['division_id'];
                 $data['variety_id']=$variety_id;
                 if($quantity_budget>0)
                 {
@@ -507,52 +538,19 @@ class Budget_hom_budget_target extends Root_Controller
                 {
                     $data['quantity_budget']=0;
                 }
+                $data['quantity_budget_1']=$quantity_budget_1;
+                $data['quantity_budget_2']=$quantity_budget_2;
+                $data['quantity_budget_3']=$quantity_budget_3;
                 $data['date_updated_budget'] = $time;
                 $data['user_updated_budget'] = $user->user_id;
-                Query_helper::add($this->config->item('table_bms_hom_budget_target_division'),$data,false);
-            }
-
-            $serial=0;
-            foreach ($fiscal_years_next_budgets as $budget) 
-            {
-                ++$serial;
-                if(isset($items_old[$variety_id]['quantity_budget_'.$serial]))
-                {
-                    if($items_old[$variety_id]['quantity_budget_'.$serial]!=$quantity_budget)
-                    {
-                        $data['quantity_budget']=$quantity_budget;
-                        $data['date_updated_budget']=$time;
-                        $data['user_updated_budget']=$user->user_id;
-                        $this->db->set('revision_count_budget','revision_count_budget+1',false);
-                        Query_helper::update($this->config->item('table_bms_hom_budget_target_division'),$data,array('id='.$items_old[$variety_id]['id']));
-                    }
-                }
-                else
-                {
-                    $data=array();
-                    $data['fiscal_year_id']=$item_head['fiscal_year_id'];
-                    $data['division_id']=$item_head['division_id'];
-                    $data['variety_id']=$variety_id;
-                    if($quantity_budget>0)
-                    {
-                        $data['quantity_budget']=$quantity_budget;
-                        $data['revision_count_budget']=1;
-                    }
-                    else
-                    {
-                        $data['quantity_budget']=0;
-                    }
-                    $data['date_updated_budget'] = $time;
-                    $data['user_updated_budget'] = $user->user_id;
-                    Query_helper::add($this->config->item('table_bms_hom_budget_target_division'),$data,false);
-                }
+                Query_helper::add($this->config->item('table_bms_hom_budget_target_hom'),$data,false);
             }
         }
         $this->db->trans_complete();   //DB Transaction Handle END
         if ($this->db->trans_status() === TRUE)
         {
             $this->message=$this->lang->line("MSG_SAVED_SUCCESS");
-            $this->system_list_budget_division($item_head['fiscal_year_id'],$item_head['division_id']);
+            $this->system_list_budget_hom($item_head['fiscal_year_id']);
 
         }
         else

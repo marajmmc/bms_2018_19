@@ -136,7 +136,7 @@ echo '</pre>';*/
                 {
                     ++$serial;
                         ?>
-                    $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="quantity_budget_<?php echo $serial;?>['+data[i]['variety_id']+']" value="'+data[i]['quantity_budget_<?php echo $serial; ?>']+'">');
+                    $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items_quantity_budget[<?php echo $serial;?>]['+data[i]['variety_id']+']" value="'+data[i]['quantity_budget_<?php echo $serial; ?>']+'">');
                     <?php
                 }
                 ?>
