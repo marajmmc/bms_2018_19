@@ -107,7 +107,7 @@ class Budget_zi_budget_target extends Root_Controller
             $data['variety_name']= 1;
             $data['variety_id']= 1;
             //more data
-            $data['quantity_budget_zone_total']= 1;
+            $data['quantity_budget_outlet_total']= 1;
             $data['quantity_budget']= 1;
         }
         else if($method=='budget_forward')
@@ -118,7 +118,7 @@ class Budget_zi_budget_target extends Root_Controller
             $data['variety_id']= 1;
             //more datas
             $data['quantity_budget_zone']= 1;
-            $data['quantity_budget_zone_total']= 1;
+            $data['quantity_budget_outlet_total']= 1;
         }
         return $data;
     }
@@ -633,9 +633,7 @@ class Budget_zi_budget_target extends Root_Controller
             $this->db->group_by('budget_target_outlet.outlet_id');
             $this->db->order_by('cus_info.ordering, cus_info.id');
             $data['outlets']=$this->db->get()->result_array();
-
             $data['acres']=$this->get_acres($zone_id);
-
             $data['fiscal_year_budget_target']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id ='.$fiscal_year_id),1);
             $data['zone']=Query_helper::get_info($this->config->item('table_login_setup_location_zones'),'*',array('id ='.$zone_id,'status ="'.$this->config->item('system_status_active').'"'),1);
             $data['title']="Forward/Complete budget";
@@ -814,6 +812,7 @@ class Budget_zi_budget_target extends Root_Controller
         $items[]=$type_total;
         $items[]=$crop_total;
         $items[]=$grand_total;
+        
         $this->json_return($items);
 
     }

@@ -5,39 +5,13 @@ class Budget_hom_budget_target extends Root_Controller
     public $message;
     public $permissions;
     public $controller_url;
-    public $locations;
-    public $user_divisions;
-    public $user_division_ids;
-
+    
     public function __construct()
     {
         parent::__construct();
         $this->message="";
         $this->permissions=User_helper::get_permission(get_class());
         $this->controller_url=strtolower(get_class());
-        $this->locations=User_helper::get_locations();
-        if(!($this->locations))
-        {
-            $ajax['status']=false;
-            $ajax['system_message']=$this->lang->line('MSG_LOCATION_NOT_ASSIGNED_OR_INVALID');
-            $this->json_return($ajax);
-        }
-        $this->user_division_ids=array();
-        $this->user_divisions=User_helper::get_assigned_divisions($this->locations['division_id']);
-        
-        if(sizeof($this->user_divisions)>0)
-        {
-            foreach($this->user_divisions as $row)
-            {
-                $this->user_division_ids[]=$row['division_id'];
-            }
-        }
-        else
-        {
-            $ajax['status']=false;
-            $ajax['system_message']=$this->lang->line('MSG_DIVISION_NOT_ASSIGNED');
-            $this->json_return($ajax);
-        }
         $this->load->helper('budget');
         $this->lang->load('budget');
 
@@ -116,8 +90,8 @@ class Budget_hom_budget_target extends Root_Controller
             $data['variety_name']= 1;
             $data['variety_id']= 1;
             //more datas
-            $data['quantity_budget_division']= 1;
-            $data['quantity_budget_zone_total']= 1;
+            $data['quantity_budget_division_total']= 1;
+            $data['quantity_budget']= 1;
         }
         return $data;
     }
@@ -560,7 +534,7 @@ class Budget_hom_budget_target extends Root_Controller
             $this->json_return($ajax);
         }
     }
-    private function system_budget_forward($fiscal_year_id=0,$division_id=0)
+    private function system_budget_forward($fiscal_year_id=0)
     {
         //$user = User_helper::get_user();
         $method='budget_forward';
@@ -570,10 +544,6 @@ class Budget_hom_budget_target extends Root_Controller
             {
                 $fiscal_year_id=$this->input->post('fiscal_year_id');
             }
-            if(!($division_id>0))
-            {
-                $division_id=$this->input->post('division_id');
-            }
             //validation fiscal year
             if(!Budget_helper::check_validation_fiscal_year($fiscal_year_id))
             {
@@ -582,16 +552,8 @@ class Budget_hom_budget_target extends Root_Controller
                 $ajax['system_message']='Invalid Fiscal Year';
                 $this->json_return($ajax);
             }
-            //validation assigned division
-            if(!in_array($division_id, $this->user_division_ids))
-            {
-                System_helper::invalid_try(__FUNCTION__,$division_id,'Division Not Assigned');
-                $ajax['status']=false;
-                $ajax['system_message']='Invalid Division.';
-                $this->json_return($ajax);
-            }
             //validation forward
-            $info_budget_target=$this->get_info_budget_target($fiscal_year_id,$division_id);
+            $info_budget_target=$this->get_info_budget_target($fiscal_year_id);
             if(($info_budget_target['status_budget_forward']==$this->config->item('system_status_forwarded')))
             {
                 $ajax['status']=false;
@@ -599,34 +561,25 @@ class Budget_hom_budget_target extends Root_Controller
                 $this->json_return($ajax);
             }
 
-            /*$results=Query_helper::get_info($this->config->item('table_bms_hom_budget_target_division'),'*',array('fiscal_year_id ='.$fiscal_year_id,'division_id ='.$division_id));
-            $budgeted_divisions[0]=0;
-            foreach($results as $result)
-            {
-                $budgeted_divisions[$result['division_id']]=$result['division_id'];
-            }*/
-
             $data['system_preference_items']= $this->get_preference_headers($method);
             $data['fiscal_years_previous_sales']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id <'.$fiscal_year_id),Budget_helper::$NUM_FISCAL_YEAR_PREVIOUS_SALE,0,array('id DESC'));
-
+            $data['fiscal_years_next_budgets']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id >'.$fiscal_year_id),Budget_helper::$NUM_FISCAL_YEAR_NEXT_BUDGET_TARGET,0);
             // get zone list
-            $this->db->from($this->config->item('table_bms_zi_budget_target_zone').' budget_target_zone');
-            $this->db->join($this->config->item('table_bms_zi_budget_target').' budget_target','budget_target.fiscal_year_id=budget_target_zone.fiscal_year_id AND budget_target.zone_id=budget_target_zone.zone_id','INNER');
-            $this->db->join($this->config->item('table_login_setup_location_zones').' zones','zones.id = budget_target_zone.zone_id','INNER');
-            $this->db->select('zones.id zone_id, zones.name zone_name');
+            $this->db->from($this->config->item('table_bms_di_budget_target_division').' budget_target_division');
+            $this->db->join($this->config->item('table_bms_di_budget_target').' budget_target','budget_target.fiscal_year_id=budget_target_division.fiscal_year_id AND budget_target.division_id=budget_target_division.division_id','INNER');
+            $this->db->join($this->config->item('table_login_setup_location_divisions').' divisions','divisions.id = budget_target_division.division_id','INNER');
+            $this->db->select('divisions.id division_id, divisions.name division_name');
             $this->db->where('budget_target.status_budget_forward',$this->config->item('system_status_forwarded'));
-            $this->db->where('budget_target_zone.fiscal_year_id',$fiscal_year_id);
-            $this->db->group_by('budget_target_zone.zone_id');
-            $this->db->order_by('zones.ordering, zones.id');
-            $data['zones']=$this->db->get()->result_array();
+            $this->db->where('budget_target_division.fiscal_year_id',$fiscal_year_id);
+            $this->db->group_by('budget_target_division.division_id');
+            $this->db->order_by('divisions.ordering, divisions.id');
+            $data['divisions']=$this->db->get()->result_array();
 
-            $data['acres']=$this->get_acres($division_id);
+            $data['acres']=$this->get_acres();
 
             $data['fiscal_year_budget_target']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id ='.$fiscal_year_id),1);
-            $data['division']=Query_helper::get_info($this->config->item('table_login_setup_location_divisions'),'*',array('id ='.$division_id,'status ="'.$this->config->item('system_status_active').'"'),1);
             $data['title']="Forward/Complete budget";
             $data['options']['fiscal_year_id']=$fiscal_year_id;
-            $data['options']['division_id']=$division_id;
 
             $ajax['status']=true;
             $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/budget_forward",$data,true));
@@ -634,7 +587,7 @@ class Budget_hom_budget_target extends Root_Controller
             {
                 $ajax['system_message']=$this->message;
             }
-            $ajax['system_page_url']=site_url($this->controller_url.'/index/budget_forward/'.$fiscal_year_id.'/'.$division_id);
+            $ajax['system_page_url']=site_url($this->controller_url.'/index/budget_forward/'.$fiscal_year_id);
             $this->json_return($ajax);
         }
         else
@@ -647,38 +600,28 @@ class Budget_hom_budget_target extends Root_Controller
     public function budget_forward_items()
     {
         $items=array();
-
         $fiscal_year_id=$this->input->post('fiscal_year_id');
-        $division_id=$this->input->post('division_id');
         $fiscal_years_previous_sales=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id <'.$fiscal_year_id),Budget_helper::$NUM_FISCAL_YEAR_PREVIOUS_SALE,0,array('id DESC'));
-        $sales_previous=$this->get_sales_previous_years_division($fiscal_years_previous_sales,$division_id);
+        $sales_previous=$this->get_sales_previous_years_division($fiscal_years_previous_sales);
 
-
-        //get zone budgeted quantity & zone ids
-        $this->db->from($this->config->item('table_bms_zi_budget_target_zone').' budget_target_zone');
-        $this->db->join($this->config->item('table_bms_zi_budget_target').' budget_target','budget_target.fiscal_year_id=budget_target_zone.fiscal_year_id AND budget_target.zone_id=budget_target_zone.zone_id','INNER');
-        $this->db->join($this->config->item('table_login_setup_location_zones').' zones','zones.id = budget_target_zone.zone_id','INNER');
-
-        $this->db->where('budget_target.status_budget_forward',$this->config->item('system_status_forwarded'));
-        $this->db->where('budget_target_zone.fiscal_year_id',$fiscal_year_id);
-        $this->db->group_by('budget_target_zone.zone_id');
-        $this->db->order_by('zones.ordering, zones.id');
-        //$data['zones']=$this->db->get()->result_array();
-        $results=$this->db->get()->result_array();
-        $budget_zones=array();
-        $zone_ids[0]=0;
-        foreach($results as $result)
-        {
-            $zone_ids[$result['zone_id']]=$result['zone_id'];
-            $budget_zones[$result['zone_id']][$result['variety_id']]=$result;
-        }
-
-        //old items
-        $results=Query_helper::get_info($this->config->item('table_bms_hom_budget_target_division'),'*',array('fiscal_year_id ='.$fiscal_year_id,'division_id ='.$division_id));
+        // get division budgeted quantity & division ids
+        $results=Query_helper::get_info($this->config->item('table_bms_di_budget_target_division'),'*',array('fiscal_year_id ='.$fiscal_year_id));
+        
+        $division_ids[0]=0;
         $budget_divisions=array();
         foreach($results as $result)
         {
-            $budget_divisions[$result['variety_id']]=$result;
+            $division_ids[$result['division_id']]=$result['division_id'];
+            //$budget_divisions[$result['variety_id']]=$result;
+            $budget_divisions[$result['division_id']][$result['variety_id']]=$result;
+        }
+
+        //old items
+        $results=Query_helper::get_info($this->config->item('table_bms_hom_budget_target_hom'),'*',array('fiscal_year_id ='.$fiscal_year_id));
+        $old_items=array();
+        foreach($results as $result)
+        {
+            $old_items[$result['variety_id']]=$result;
         }
 
         //variety lists
@@ -702,14 +645,14 @@ class Budget_hom_budget_target extends Root_Controller
         $prev_type_name='';
         $first_row=true;
 
-        $type_total=$this->initialize_row($fiscal_years_previous_sales,$zone_ids,'','','Total Type','');
-        $crop_total=$this->initialize_row($fiscal_years_previous_sales,$zone_ids,'','Total Crop','','');
-        $grand_total=$this->initialize_row($fiscal_years_previous_sales,$zone_ids,'Grand Total','','','');
+        $type_total=$this->initialize_row($fiscal_years_previous_sales,$division_ids,'','','Total Type','');
+        $crop_total=$this->initialize_row($fiscal_years_previous_sales,$division_ids,'','Total Crop','','');
+        $grand_total=$this->initialize_row($fiscal_years_previous_sales,$division_ids,'Grand Total','','','');
 
 
         foreach($results as $result)
         {
-            $info=$this->initialize_row($fiscal_years_previous_sales,$zone_ids,$result['crop_name'],$result['crop_type_name'],$result['variety_name']);
+            $info=$this->initialize_row($fiscal_years_previous_sales,$division_ids,$result['crop_name'],$result['crop_type_name'],$result['variety_name']);
 
 
             if(!$first_row)
@@ -760,30 +703,45 @@ class Budget_hom_budget_target extends Root_Controller
                     $grand_total['quantity_sale_'.$fy['id']]+=$info['quantity_sale_'.$fy['id']];
                 }
             }
-            if(isset($budget_divisions[$result['variety_id']]))
+            if(isset($old_items[$result['variety_id']]))
             {
-                $info['quantity_budget_division']=$budget_divisions[$result['variety_id']]['quantity_budget'];
-                $type_total['quantity_budget_division']+=$info['quantity_budget_division'];
-                $crop_total['quantity_budget_division']+=$info['quantity_budget_division'];
-                $grand_total['quantity_budget_division']+=$info['quantity_budget_division'];
+                $info['quantity_budget']=$old_items[$result['variety_id']]['quantity_budget'];
+                $info['quantity_budget_1']=$old_items[$result['variety_id']]['quantity_budget_1'];
+                $info['quantity_budget_2']=$old_items[$result['variety_id']]['quantity_budget_2'];
+                $info['quantity_budget_3']=$old_items[$result['variety_id']]['quantity_budget_3'];
+
+                $type_total['quantity_budget']+=$info['quantity_budget'];
+                $type_total['quantity_budget_1']+=$info['quantity_budget_1'];
+                $type_total['quantity_budget_2']+=$info['quantity_budget_2'];
+                $type_total['quantity_budget_3']+=$info['quantity_budget_3'];
+
+                $crop_total['quantity_budget']+=$info['quantity_budget'];
+                $crop_total['quantity_budget_1']+=$info['quantity_budget_1'];
+                $crop_total['quantity_budget_2']+=$info['quantity_budget_2'];
+                $crop_total['quantity_budget_3']+=$info['quantity_budget_3'];
+
+                $grand_total['quantity_budget']+=$info['quantity_budget'];
+                $grand_total['quantity_budget_1']+=$info['quantity_budget_1'];
+                $grand_total['quantity_budget_2']+=$info['quantity_budget_2'];
+                $grand_total['quantity_budget_3']+=$info['quantity_budget_3'];
             }
-            $quantity_budget_zone_total=0;
-            foreach($zone_ids as $zone_id)
+            $quantity_budget_division_total=0;
+            foreach($division_ids as $division_id)
             {
-                if(isset($budget_zones[$zone_id][$result['variety_id']]))
+                if(isset($budget_divisions[$division_id][$result['variety_id']]))
                 {
-                    $info['quantity_budget_zone_'.$zone_id]=$budget_zones[$zone_id][$result['variety_id']]['quantity_budget'];
-                    $quantity_budget_zone_total+=$info['quantity_budget_zone_'.$zone_id];
-                    $type_total['quantity_budget_zone_'.$zone_id]+=$info['quantity_budget_zone_'.$zone_id];
-                    $crop_total['quantity_budget_zone_'.$zone_id]+=$info['quantity_budget_zone_'.$zone_id];
-                    $grand_total['quantity_budget_zone_'.$zone_id]+=$info['quantity_budget_zone_'.$zone_id];
+                    $info['quantity_budget_division_'.$division_id]=$budget_divisions[$division_id][$result['variety_id']]['quantity_budget'];
+                    $quantity_budget_division_total+=$info['quantity_budget_division_'.$division_id];
+                    $type_total['quantity_budget_division_'.$division_id]+=$info['quantity_budget_division_'.$division_id];
+                    $crop_total['quantity_budget_division_'.$division_id]+=$info['quantity_budget_division_'.$division_id];
+                    $grand_total['quantity_budget_division_'.$division_id]+=$info['quantity_budget_division_'.$division_id];
 
                 }
             }
-            $info['quantity_budget_zone_total']=$quantity_budget_zone_total;
-            $type_total['quantity_budget_zone_total']+=$quantity_budget_zone_total;
-            $crop_total['quantity_budget_zone_total']+=$quantity_budget_zone_total;
-            $grand_total['quantity_budget_zone_total']+=$quantity_budget_zone_total;
+            $info['quantity_budget_division_total']=$quantity_budget_division_total;
+            $type_total['quantity_budget_division_total']+=$quantity_budget_division_total;
+            $crop_total['quantity_budget_division_total']+=$quantity_budget_division_total;
+            $grand_total['quantity_budget_division_total']+=$quantity_budget_division_total;
             $items[]=$info;
         }
 
@@ -800,8 +758,11 @@ class Budget_hom_budget_target extends Root_Controller
         $row['crop_type_name']=$crop_type_name;
         $row['variety_name']=$variety_name;
 
-        $row['quantity_budget_division']=0;
-        $row['quantity_budget_zone_total']=0;
+        $row['quantity_budget']=0;
+        $row['quantity_budget_1']=0;
+        $row['quantity_budget_2']=0;
+        $row['quantity_budget_3']=0;
+        $row['quantity_budget_division_total']=0;
 
         foreach($fiscal_years as $fy)
         {
@@ -809,7 +770,7 @@ class Budget_hom_budget_target extends Root_Controller
         }
         foreach($zone_ids as $zone_id)
         {
-            $row['quantity_budget_zone_'.$zone_id]= 0;
+            $row['quantity_budget_division_'.$zone_id]= 0;
         }
 
         return $row;
@@ -850,16 +811,8 @@ class Budget_hom_budget_target extends Root_Controller
             $ajax['system_message']='Invalid Fiscal Year';
             $this->json_return($ajax);
         }
-        //validation assigned division
-        if(!in_array($item_head['division_id'], $this->user_division_ids))
-        {
-            System_helper::invalid_try(__FUNCTION__,$item_head['division_id'],'division Not Assigned');
-            $ajax['status']=false;
-            $ajax['system_message']='Invalid division.';
-            $this->json_return($ajax);
-        }
         //validation forward
-        $info_budget_target=$this->get_info_budget_target($item_head['fiscal_year_id'],$item_head['division_id']);
+        $info_budget_target=$this->get_info_budget_target($item_head['fiscal_year_id']);
         if(($info_budget_target['status_budget_forward']==$this->config->item('system_status_forwarded')))
         {
             $ajax['status']=false;
@@ -915,18 +868,6 @@ class Budget_hom_budget_target extends Root_Controller
             
             $this->db->join($this->config->item('table_pos_sale').' sale','sale.id = details.sale_id','INNER');
 
-            /*$this->db->join($this->config->item('table_login_csetup_cus_info').' cus_info','cus_info.customer_id = sale.outlet_id','INNER');
-            $this->db->select('cus_info.customer_id outlet_id, cus_info.name outlet_name');
-            
-            $this->db->join($this->config->item('table_login_setup_location_districts').' districts','districts.id = cus_info.district_id','INNER');
-            $this->db->join($this->config->item('table_login_setup_location_territories').' territories','territories.id = districts.territory_id','INNER');
-
-            $this->db->join($this->config->item('table_login_setup_location_zones').' zones','zones.id = territories.zone_id','INNER');
-            $this->db->join($this->config->item('table_login_setup_location_divisions').' divisions','divisions.id = zones.division_id','INNER');*/
-
-            /*$this->db->where('cus_info.type',$this->config->item('system_customer_type_outlet_id'));
-            $this->db->where('cus_info.revision',1);
-            $this->db->where('zones.division_id',$division_id);*/
             $this->db->where('sale.date_sale >=',$fy['date_start']);
             $this->db->where('sale.date_sale <=',$fy['date_end']);
             $this->db->where('sale.status',$this->config->item('system_status_active'));
@@ -941,19 +882,7 @@ class Budget_hom_budget_target extends Root_Controller
     }
     private function get_acres($crop_id=0)
     {
-        /*$this->db->from($this->config->item('table_login_setup_location_upazillas').' upazillas');
-        $this->db->select('upazillas.id upazilla_id');
-        $this->db->join($this->config->item('table_login_setup_location_districts').' districts','districts.id = upazillas.district_id','INNER');
-        $this->db->join($this->config->item('table_login_setup_location_territories').' territories','territories.id = districts.territory_id','INNER');
-        $this->db->join($this->config->item('table_login_setup_location_zones').' zones','zones.id = territories.zone_id','INNER');
-        $this->db->join($this->config->item('table_login_setup_location_divisions').' divisions','divisions.id = zones.division_id','INNER');
-        $this->db->where('zones.division_id',$division_id);
-        $results=$this->db->get()->result_array();
-        foreach($results as $result)
-        {
-            $upazilla_ids[$result['upazilla_id']]=$result['upazilla_id'];
-        }*/
-
+        
         $this->db->from($this->config->item('table_login_setup_classification_type_acres').' acres');
         $this->db->select('SUM(acres.quantity_acres) quantity',false);
         $this->db->join($this->config->item('table_login_setup_classification_crop_types').' crop_type','crop_type.id=acres.type_id','INNER');
