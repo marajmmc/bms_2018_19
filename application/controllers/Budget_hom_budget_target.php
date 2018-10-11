@@ -182,7 +182,7 @@ class Budget_hom_budget_target extends Root_Controller
             $data['system_preference_items']= $this->get_preference_headers($method);
             $data['fiscal_year']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id ='.$fiscal_year_id),1);
             /*$data['division']=Query_helper::get_info($this->config->item('table_login_setup_location_divisions'),'*',array('id ='.$division_id,'status ="'.$this->config->item('system_status_active').'"'),1);*/
-            $data['title']="Yearly Budget Crop list";
+            $data['title']="HOM Yearly Budget Crop list";
             $data['options']['fiscal_year_id']=$fiscal_year_id;
             /*$data['options']['division_id']=$division_id;*/
             $ajax['status']=true;
@@ -280,7 +280,7 @@ class Budget_hom_budget_target extends Root_Controller
             $data['acres']=$this->get_acres($crop_id);
 
             $data['system_preference_items']= $this->get_preference_headers($method);
-            $data['title']="Yearly Budget for (".$data['crop']['name'].')';
+            $data['title']="HOM Yearly Budget for (".$data['crop']['name'].')';
             $data['options']['fiscal_year_id']=$fiscal_year_id;
             $data['options']['crop_id']=$crop_id;
             $ajax['status']=true;
@@ -394,24 +394,24 @@ class Budget_hom_budget_target extends Root_Controller
                 if($items_old[$result['variety_id']]['quantity_budget']>0)
                 {
                     $item['quantity_budget']=$items_old[$result['variety_id']]['quantity_budget'];
-                    $item['quantity_budget_1']=$items_old[$result['variety_id']]['quantity_budget_1'];
-                    $item['quantity_budget_2']=$items_old[$result['variety_id']]['quantity_budget_2'];
-                    $item['quantity_budget_3']=$items_old[$result['variety_id']]['quantity_budget_3'];
+                    $item['quantity_prediction_1']=$items_old[$result['variety_id']]['quantity_prediction_1'];
+                    $item['quantity_prediction_2']=$items_old[$result['variety_id']]['quantity_prediction_2'];
+                    $item['quantity_prediction_3']=$items_old[$result['variety_id']]['quantity_prediction_3'];
                 }
                 else
                 {
                     $item['quantity_budget']='';
-                    $item['quantity_budget_1']='';
-                    $item['quantity_budget_2']='';
-                    $item['quantity_budget_3']='';
+                    $item['quantity_prediction_1']='';
+                    $item['quantity_prediction_2']='';
+                    $item['quantity_prediction_3']='';
                 }
             }
             else
             {
                 $item['quantity_budget']='';
-                $item['quantity_budget_1']='';
-                $item['quantity_budget_2']='';
-                $item['quantity_budget_3']='';
+                $item['quantity_prediction_1']='';
+                $item['quantity_prediction_2']='';
+                $item['quantity_prediction_3']='';
             }
             
             $items[]=$item;
@@ -462,20 +462,20 @@ class Budget_hom_budget_target extends Root_Controller
         $this->db->trans_start();  //DB Transaction Handle START
         foreach($items as $variety_id=>$quantity_budget)
         {
-            $quantity_budget_1=0;
-            $quantity_budget_2=0;
-            $quantity_budget_3=0;
+            $quantity_prediction_1=0;
+            $quantity_prediction_2=0;
+            $quantity_prediction_3=0;
             if(isset($items_quantity_budget[1][$variety_id]))
             {
-                $quantity_budget_1=$items_quantity_budget[1][$variety_id];
+                $quantity_prediction_1=$items_quantity_budget[1][$variety_id];
             }
             if(isset($items_quantity_budget[2][$variety_id]))
             {
-                $quantity_budget_2=$items_quantity_budget[2][$variety_id];
+                $quantity_prediction_2=$items_quantity_budget[2][$variety_id];
             }
             if(isset($items_quantity_budget[3][$variety_id]))
             {
-                $quantity_budget_3=$items_quantity_budget[3][$variety_id];
+                $quantity_prediction_3=$items_quantity_budget[3][$variety_id];
             }
             
             if(isset($items_old[$variety_id]))
@@ -489,9 +489,9 @@ class Budget_hom_budget_target extends Root_Controller
                     Query_helper::update($this->config->item('table_bms_hom_budget_target_hom'),$data,array('id='.$items_old[$variety_id]['id']));
                 }*/
                 /* need to descussion {revision count for all field like budget_1, 2,3} & checking input if or not*/
-                $data['quantity_budget_1']=$quantity_budget_1;
-                $data['quantity_budget_2']=$quantity_budget_2;
-                $data['quantity_budget_3']=$quantity_budget_3;
+                $data['quantity_prediction_1']=$quantity_prediction_1;
+                $data['quantity_prediction_2']=$quantity_prediction_2;
+                $data['quantity_prediction_3']=$quantity_prediction_3;
                 $data['quantity_budget']=$quantity_budget;
                 $data['date_updated_budget']=$time;
                 $data['user_updated_budget']=$user->user_id;
@@ -512,9 +512,9 @@ class Budget_hom_budget_target extends Root_Controller
                 {
                     $data['quantity_budget']=0;
                 }
-                $data['quantity_budget_1']=$quantity_budget_1;
-                $data['quantity_budget_2']=$quantity_budget_2;
-                $data['quantity_budget_3']=$quantity_budget_3;
+                $data['quantity_prediction_1']=$quantity_prediction_1;
+                $data['quantity_prediction_2']=$quantity_prediction_2;
+                $data['quantity_prediction_3']=$quantity_prediction_3;
                 $data['date_updated_budget'] = $time;
                 $data['user_updated_budget'] = $user->user_id;
                 Query_helper::add($this->config->item('table_bms_hom_budget_target_hom'),$data,false);
@@ -578,7 +578,7 @@ class Budget_hom_budget_target extends Root_Controller
             $data['acres']=$this->get_acres();
 
             $data['fiscal_year_budget_target']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id ='.$fiscal_year_id),1);
-            $data['title']="Forward/Complete budget";
+            $data['title']="HOM Forward/Complete budget";
             $data['options']['fiscal_year_id']=$fiscal_year_id;
 
             $ajax['status']=true;
@@ -706,31 +706,31 @@ class Budget_hom_budget_target extends Root_Controller
             if(isset($old_items[$result['variety_id']]))
             {
                 $info['quantity_budget']=$old_items[$result['variety_id']]['quantity_budget'];
-                $info['quantity_budget_1']=$old_items[$result['variety_id']]['quantity_budget_1'];
-                $info['quantity_budget_2']=$old_items[$result['variety_id']]['quantity_budget_2'];
-                $info['quantity_budget_3']=$old_items[$result['variety_id']]['quantity_budget_3'];
+                $info['quantity_prediction_1']=$old_items[$result['variety_id']]['quantity_prediction_1'];
+                $info['quantity_prediction_2']=$old_items[$result['variety_id']]['quantity_prediction_2'];
+                $info['quantity_prediction_3']=$old_items[$result['variety_id']]['quantity_prediction_3'];
 
                 $type_total['quantity_budget']+=$info['quantity_budget'];
-                $type_total['quantity_budget_1']+=$info['quantity_budget_1'];
-                $type_total['quantity_budget_2']+=$info['quantity_budget_2'];
-                $type_total['quantity_budget_3']+=$info['quantity_budget_3'];
+                $type_total['quantity_prediction_1']+=$info['quantity_prediction_1'];
+                $type_total['quantity_prediction_2']+=$info['quantity_prediction_2'];
+                $type_total['quantity_prediction_3']+=$info['quantity_prediction_3'];
 
                 $crop_total['quantity_budget']+=$info['quantity_budget'];
-                $crop_total['quantity_budget_1']+=$info['quantity_budget_1'];
-                $crop_total['quantity_budget_2']+=$info['quantity_budget_2'];
-                $crop_total['quantity_budget_3']+=$info['quantity_budget_3'];
+                $crop_total['quantity_prediction_1']+=$info['quantity_prediction_1'];
+                $crop_total['quantity_prediction_2']+=$info['quantity_prediction_2'];
+                $crop_total['quantity_prediction_3']+=$info['quantity_prediction_3'];
 
                 $grand_total['quantity_budget']+=$info['quantity_budget'];
-                $grand_total['quantity_budget_1']+=$info['quantity_budget_1'];
-                $grand_total['quantity_budget_2']+=$info['quantity_budget_2'];
-                $grand_total['quantity_budget_3']+=$info['quantity_budget_3'];
+                $grand_total['quantity_prediction_1']+=$info['quantity_prediction_1'];
+                $grand_total['quantity_prediction_2']+=$info['quantity_prediction_2'];
+                $grand_total['quantity_prediction_3']+=$info['quantity_prediction_3'];
             }
             $quantity_budget_division_total=0;
             foreach($division_ids as $division_id)
             {
                 if(isset($budget_divisions[$division_id][$result['variety_id']]))
                 {
-                    $info['quantity_budget_division_'.$division_id]=$budget_divisions[$division_id][$result['variety_id']]['quantity_budget'];
+                    $info['quantity_prediction_division_'.$division_id]=$budget_divisions[$division_id][$result['variety_id']]['quantity_budget'];
                     $quantity_budget_division_total+=$info['quantity_budget_division_'.$division_id];
                     $type_total['quantity_budget_division_'.$division_id]+=$info['quantity_budget_division_'.$division_id];
                     $crop_total['quantity_budget_division_'.$division_id]+=$info['quantity_budget_division_'.$division_id];
@@ -759,9 +759,9 @@ class Budget_hom_budget_target extends Root_Controller
         $row['variety_name']=$variety_name;
 
         $row['quantity_budget']=0;
-        $row['quantity_budget_1']=0;
-        $row['quantity_budget_2']=0;
-        $row['quantity_budget_3']=0;
+        $row['quantity_prediction_1']=0;
+        $row['quantity_prediction_2']=0;
+        $row['quantity_prediction_3']=0;
         $row['quantity_budget_division_total']=0;
 
         foreach($fiscal_years as $fy)

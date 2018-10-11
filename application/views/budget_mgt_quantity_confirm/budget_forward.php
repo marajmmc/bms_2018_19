@@ -193,7 +193,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             {
                 ++$serial;
                     ?>
-                { name: 'quantity_prediction_<?php echo $serial; ?>', type: 'string' },
+                { name: 'quantity_budget_<?php echo $serial; ?>', type: 'string' },
                 <?php
             }
             ?>
@@ -332,7 +332,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                             {
                                 ++$serial;
                                 ?>
-                                {columngroup: 'next_years',text: '<?php echo $budget['name']; ?>', dataField: 'quantity_prediction_<?php echo $serial; ?>',width:'100',filterable: false,cellsrenderer: cellsrenderer,align:'center',cellsAlign:'right',editable:false,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg
+                                {columngroup: 'next_years',text: '<?php echo $budget['name']; ?>', dataField: 'quantity_budget_<?php echo $serial; ?>',width:'100',filterable: false,cellsrenderer: cellsrenderer,align:'center',cellsAlign:'right',editable:false,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg
                                 },
                                 <?php
                             }

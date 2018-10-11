@@ -228,7 +228,7 @@ class Budget_zi_budget_target extends Root_Controller
             $data['system_preference_items']= $this->get_preference_headers($method);
             $data['fiscal_year']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id ='.$fiscal_year_id),1);
             $data['zone']=Query_helper::get_info($this->config->item('table_login_setup_location_zones'),'*',array('id ='.$zone_id,'status ="'.$this->config->item('system_status_active').'"'),1);
-            $data['title']="Yearly Budget Crop list";
+            $data['title']="ZI Yearly Budget Crop list";
             $data['options']['fiscal_year_id']=$fiscal_year_id;
             $data['options']['zone_id']=$zone_id;
             $ajax['status']=true;
@@ -339,7 +339,7 @@ class Budget_zi_budget_target extends Root_Controller
             $data['acres']=$this->get_acres($zone_id,$crop_id);
 
             $data['system_preference_items']= $this->get_preference_headers($method);
-            $data['title']="Yearly Budget for (".$data['crop']['name'].')';
+            $data['title']="ZI Yearly Budget for (".$data['crop']['name'].')';
             $data['options']['fiscal_year_id']=$fiscal_year_id;
             $data['options']['zone_id']=$zone_id;
             $data['options']['crop_id']=$crop_id;
@@ -636,7 +636,7 @@ class Budget_zi_budget_target extends Root_Controller
             $data['acres']=$this->get_acres($zone_id);
             $data['fiscal_year_budget_target']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id ='.$fiscal_year_id),1);
             $data['zone']=Query_helper::get_info($this->config->item('table_login_setup_location_zones'),'*',array('id ='.$zone_id,'status ="'.$this->config->item('system_status_active').'"'),1);
-            $data['title']="Forward/Complete budget";
+            $data['title']="ZI Forward/Complete budget";
             $data['options']['fiscal_year_id']=$fiscal_year_id;
             $data['options']['zone_id']=$zone_id;
 

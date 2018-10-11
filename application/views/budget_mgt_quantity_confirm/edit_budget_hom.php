@@ -5,7 +5,7 @@ $action_buttons=array();
 $action_buttons[]=array
 (
     'label'=>$CI->lang->line("ACTION_BACK"),
-    'href'=>site_url($CI->controller_url.'/index/list_budget_zone/'.$options['fiscal_year_id'].'/'.$options['zone_id'])
+    'href'=>site_url($CI->controller_url.'/index/list_budget_hom/'.$options['fiscal_year_id'])
 );
 if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(isset($CI->permissions['action2']) && ($CI->permissions['action2']==1)))
 {
@@ -36,7 +36,9 @@ if(isset($CI->permissions['action5']) && ($CI->permissions['action5']==1))
 }
 
 $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
-
+/*echo '<pre>';
+print_r($fiscal_years_next_budgets);
+echo '</pre>';*/
 ?>
 <div class="row widget">
     <div class="widget-header">
@@ -51,14 +53,6 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         </div>
         <div class="col-sm-4 col-xs-8">
             <label class="control-label"><?php echo $fiscal_year['name'];?></label>
-        </div>
-    </div>
-    <div style="" class="row show-grid">
-        <div class="col-xs-4">
-            <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_ZONE_NAME');?></label>
-        </div>
-        <div class="col-sm-4 col-xs-8">
-            <label class="control-label"><?php echo $zone['name'];?></label>
         </div>
     </div>
     <div style="" class="row show-grid">
@@ -132,9 +126,8 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             ?>
         </div>
     </div>
-    <form id="save_form_jqx" action="<?php echo site_url($CI->controller_url.'/index/save_budget_zone');?>" method="post">
+    <form id="save_form_jqx" action="<?php echo site_url($CI->controller_url.'/index/save_budget_hom');?>" method="post">
         <input type="hidden" name="item[fiscal_year_id]" value="<?php echo $options['fiscal_year_id']; ?>" />
-        <input type="hidden" name="item[zone_id]" value="<?php echo $options['zone_id']; ?>" />
         <div id="jqx_inputs">
         </div>
     </form>
@@ -156,6 +149,16 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             for(var i=0;i<data.length;i++)
             {
                 $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+']" value="'+data[i]['quantity_budget']+'">');
+                <?php 
+                $serial=0;
+                foreach($fiscal_years_next_budgets as $budget)
+                {
+                    ++$serial;
+                        ?>
+                    $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items_quantity_budget[<?php echo $serial;?>]['+data[i]['variety_id']+']" value="'+data[i]['quantity_budget_<?php echo $serial; ?>']+'">');
+                    <?php
+                }
+                ?>
             }
             var sure = confirm('<?php echo $CI->lang->line('MSG_CONFIRM_SAVE'); ?>');
             if(sure)
@@ -164,7 +167,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             }
         });
 
-        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_edit_budget_zone');?>";
+        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_edit_budget_hom');?>";
 
         // prepare the data
         var source =
@@ -178,16 +181,24 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 { name: '<?php echo $key ?>', type: 'string' },
                 <?php
             }
-            foreach($outlets as $outlet)
+            foreach($divisions as $division)
             {
                     ?>
-                { name: 'quantity_budget_outlet_<?php echo $outlet['outlet_id']?>', type: 'string' },
+                { name: 'quantity_budget_division_<?php echo $division['division_id']?>', type: 'string' },
                 <?php
             }
             foreach($fiscal_years_previous_sales as $fy)
             {
                     ?>
                 { name: 'quantity_sale_<?php echo $fy['id']; ?>', type: 'string' },
+                <?php
+            }
+            $serial=0;
+            foreach($fiscal_years_next_budgets as $budget)
+            {
+                ++$serial;
+                    ?>
+                { name: 'quantity_budget_<?php echo $serial; ?>', type: 'string' },
                 <?php
             }
             ?>
@@ -221,7 +232,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         var cellsrenderer = function(row, column, value, defaultHtml, columnSettings, record)
         {
             var element = $(defaultHtml);
-            if(column.substr(0,23)=='quantity_budget_outlet_')
+            if(column.substr(0,21)=='quantity_budget_division_')
             {
                 if(value==0)
                 {
@@ -232,7 +243,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                     element.html(get_string_kg(value));
                 }
             }
-            else if(column=='quantity_budget')
+            else if(column=='quantity_budget' || column=='quantity_budget_1' || column=='quantity_budget_2' || column=='quantity_budget_3')
             {
 
                 element.html('<div class="jqxgrid_input">'+value+'</div>');
@@ -268,19 +279,19 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 selectionmode: 'singlerow',
                 altrows: true,
                 rowsheight: 35,
-                columnsheight: 40,
                 editable:true,
                 columns:
                 [
-                    { text: '<?php echo $CI->lang->line('LABEL_CROP_TYPE_NAME'); ?>', dataField: 'crop_type_name',width:'100', filtertype:'list',renderer: header_render,pinned:true,editable:false},
-                    { text: '<?php echo $CI->lang->line('LABEL_VARIETY_NAME'); ?>', dataField: 'variety_name',width:'150',renderer: header_render,pinned:true,editable:false},
+                    { text: '<?php echo $CI->lang->line('LABEL_CROP_TYPE_NAME'); ?>', dataField: 'crop_type_name',width:'100', filtertype:'list',pinned:true,editable:false},
+                    { text: '<?php echo $CI->lang->line('LABEL_VARIETY_NAME'); ?>', dataField: 'variety_name',width:'150',pinned:true,editable:false},
                     <?php
                         for($i=sizeof($fiscal_years_previous_sales)-1;$i>=0;$i--)
+                            //foreach($fiscal_years_previous_sales as $fy)
                             {?>{columngroup: 'previous_years',text: '<?php echo $fiscal_years_previous_sales[$i]['name']; ?>', dataField: 'quantity_sale_<?php echo $fiscal_years_previous_sales[$i]['id']; ?>',width:'100',filterable: false,cellsrenderer: cellsrenderer,align:'center',cellsAlign:'right',editable:false},
                         <?php
                         }
                     ?>
-                    { text: '<?php echo $CI->lang->line('LABEL_QUANTITY_BUDGET_KG'); ?>',datafield: 'quantity_budget', width: 100,filterable: false,renderer: header_render,cellsrenderer: cellsrenderer,cellsalign: 'right',columntype: 'custom',
+                    { text: '<?php echo $CI->lang->line('LABEL_QUANTITY_BUDGET_KG'); ?><?php echo "<br>".$fiscal_year['name'];?>',datafield: 'quantity_budget', width: 100,filterable: false,cellsrenderer: cellsrenderer,cellsalign: 'right',columntype: 'custom',
                         initeditor: function (row, cellvalue, editor, celltext, pressedkey)
                         {
                             editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');
@@ -293,14 +304,42 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                             return editor.find('input').val();
                         }
                     },
-                    { text: 'Total</br>Budget', dataField: 'quantity_budget_outlet_total',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
                     <?php
                     $serial=0;
-                    foreach($outlets as $outlet)
+                    foreach ($fiscal_years_next_budgets as $budget)
                     {
                     ++$serial;
                     ?>
-                    { text: '<?php echo $serial.'. '.$outlet['outlet_name']?>',renderer: header_render, dataField: 'quantity_budget_outlet_<?php echo $outlet['outlet_id']?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
+                    { columngroup: 'next_years',text: '<?php echo $budget['name']; ?>',datafield: 'quantity_budget_<?php echo $serial; ?>', width: 100,filterable: false,cellsalign: 'right',cellsrenderer: cellsrenderer,columntype: 'custom',
+                        cellbeginedit: function (row)
+                        {
+                            var selectedRowData = $('#system_jqx_container').jqxGrid('getrowdata', row);//only last selected
+                            return selectedRowData['editable_<?php echo $serial; ?>'];
+                        },
+                        initeditor: function (row, cellvalue, editor, celltext, pressedkey)
+                        {
+                            editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');
+                        },
+                        geteditorvalue: function (row, cellvalue, editor)
+                        {
+                            // return the editor's value.
+                            var value=editor.find('input').val();
+                            var selectedRowData = $('#system_jqx_container').jqxGrid('getrowdata', row);
+                            return editor.find('input').val();
+                        }
+                    },
+                    <?php
+                    }
+                     ?>
+                    
+                    { text: 'Total</br>Budget', dataField: 'quantity_budget_division_total',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
+                    <?php
+                    $serial=0;
+                    foreach($divisions as $division)
+                    {
+                    ++$serial;
+                    ?>
+                    { text: '<?php echo $serial.'. '.$division['division_name']?>',dataField: 'quantity_budget_division_<?php echo $division['division_id']?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
                     <?php
                     }
                     ?>
@@ -308,7 +347,8 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 ],
                 columngroups:
                 [
-                    { text: '<?php echo $CI->lang->line('LABEL_PREVIOUS_YEARS'); ?> Achieved', align: 'center', name: 'previous_years' }
+                    { text: '<?php echo $CI->lang->line('LABEL_PREVIOUS_YEARS'); ?> Achieved', align: 'center', name: 'previous_years' },
+                    { text: 'Next Year Budget', align: 'center', name: 'next_years' }
                 ]
             });
     });

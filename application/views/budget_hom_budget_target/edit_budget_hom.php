@@ -15,6 +15,25 @@ if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(is
         'id'=>'button_action_save_jqx'
     );
 }
+if(isset($CI->permissions['action4']) && ($CI->permissions['action4']==1))
+{
+    $action_buttons[]=array(
+        'type'=>'button',
+        'label'=>$CI->lang->line("ACTION_PRINT"),
+        'class'=>'button_action_download',
+        'data-title'=>"Print",
+        'data-print'=>true
+    );
+}
+if(isset($CI->permissions['action5']) && ($CI->permissions['action5']==1))
+{
+    $action_buttons[]=array(
+        'type'=>'button',
+        'label'=>$CI->lang->line("ACTION_DOWNLOAD"),
+        'class'=>'button_action_download',
+        'data-title'=>"Download"
+    );
+}
 
 $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
 /*echo '<pre>';
@@ -136,7 +155,7 @@ echo '</pre>';*/
                 {
                     ++$serial;
                         ?>
-                    $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items_quantity_budget[<?php echo $serial;?>]['+data[i]['variety_id']+']" value="'+data[i]['quantity_budget_<?php echo $serial; ?>']+'">');
+                    $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items_quantity_budget[<?php echo $serial;?>]['+data[i]['variety_id']+']" value="'+data[i]['quantity_prediction_<?php echo $serial; ?>']+'">');
                     <?php
                 }
                 ?>
@@ -179,7 +198,7 @@ echo '</pre>';*/
             {
                 ++$serial;
                     ?>
-                { name: 'quantity_budget_<?php echo $serial; ?>', type: 'string' },
+                { name: 'quantity_prediction_<?php echo $serial; ?>', type: 'string' },
                 <?php
             }
             ?>
@@ -224,7 +243,7 @@ echo '</pre>';*/
                     element.html(get_string_kg(value));
                 }
             }
-            else if(column=='quantity_budget' || column=='quantity_budget_1' || column=='quantity_budget_2' || column=='quantity_budget_3')
+            else if(column=='quantity_budget' || column=='quantity_prediction_1' || column=='quantity_prediction_2' || column=='quantity_prediction_3')
             {
 
                 element.html('<div class="jqxgrid_input">'+value+'</div>');
@@ -291,7 +310,7 @@ echo '</pre>';*/
                     {
                     ++$serial;
                     ?>
-                    { columngroup: 'next_years',text: '<?php echo $budget['name']; ?>',datafield: 'quantity_budget_<?php echo $serial; ?>', width: 100,filterable: false,cellsalign: 'right',cellsrenderer: cellsrenderer,columntype: 'custom',
+                    { columngroup: 'next_years',text: '<?php echo $budget['name']; ?>',datafield: 'quantity_prediction_<?php echo $serial; ?>', width: 100,filterable: false,cellsalign: 'right',cellsrenderer: cellsrenderer,columntype: 'custom',
                         cellbeginedit: function (row)
                         {
                             var selectedRowData = $('#system_jqx_container').jqxGrid('getrowdata', row);//only last selected
