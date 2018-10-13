@@ -232,7 +232,7 @@ echo '</pre>';*/
         var cellsrenderer = function(row, column, value, defaultHtml, columnSettings, record)
         {
             var element = $(defaultHtml);
-            if(column.substr(0,21)=='quantity_budget_division_')
+            if(column.substr(0,25)=='quantity_budget_division_')
             {
                 if(value==0)
                 {
@@ -243,7 +243,7 @@ echo '</pre>';*/
                     element.html(get_string_kg(value));
                 }
             }
-            else if(column=='quantity_budget' || column=='quantity_prediction_1' || column=='quantity_prediction_2' || column=='quantity_prediction_3')
+            else if(column=='quantity_budget_division_total' || column=='quantity_budget' || column=='quantity_prediction_1' || column=='quantity_prediction_2' || column=='quantity_prediction_3')
             {
 
                 element.html('<div class="jqxgrid_input">'+value+'</div>');

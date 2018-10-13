@@ -726,7 +726,7 @@ class Budget_hom_budget_target extends Root_Controller
             {
                 if(isset($budget_divisions[$division_id][$result['variety_id']]))
                 {
-                    $info['quantity_prediction_division_'.$division_id]=$budget_divisions[$division_id][$result['variety_id']]['quantity_budget'];
+                    $info['quantity_budget_division_'.$division_id]=$budget_divisions[$division_id][$result['variety_id']]['quantity_budget'];
                     $quantity_budget_division_total+=$info['quantity_budget_division_'.$division_id];
                     $type_total['quantity_budget_division_'.$division_id]+=$info['quantity_budget_division_'.$division_id];
                     $crop_total['quantity_budget_division_'.$division_id]+=$info['quantity_budget_division_'.$division_id];
