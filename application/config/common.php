@@ -7,4 +7,3 @@ require_once($configs_path.'table_bms.php');
 require_once($configs_path.'table_login.php');
 require_once($configs_path.'table_pos.php');
 require_once($configs_path.'table_sms.php');
-

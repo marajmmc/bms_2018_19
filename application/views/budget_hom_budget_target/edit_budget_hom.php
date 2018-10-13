@@ -348,7 +348,7 @@ echo '</pre>';*/
                 columngroups:
                 [
                     { text: '<?php echo $CI->lang->line('LABEL_PREVIOUS_YEARS'); ?> Achieved', align: 'center', name: 'previous_years' },
-                    { text: 'Next Year Budget', align: 'center', name: 'next_years' }
+                    { text: 'Next Year Prediction', align: 'center', name: 'next_years' }
                 ]
             });
     });

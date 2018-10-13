@@ -7,9 +7,9 @@ if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(is
     $action_buttons[]=array
     (
         'type'=>'button',
-        'label'=>$CI->lang->line('ACTION_EDIT').' HOM Budget',
+        'label'=>$CI->lang->line('ACTION_EDIT').' MGT Budget',
         'class'=>'button_jqx_action',
-        'data-action-link'=>site_url($CI->controller_url.'/index/list_budget_hom')
+        'data-action-link'=>site_url($CI->controller_url.'/index/edit_budget_mgt')
 
     );
 }
@@ -18,9 +18,9 @@ if((isset($CI->permissions['action7']) && ($CI->permissions['action7']==1)))
     $action_buttons[]=array
     (
         'type'=>'button',
-        'label'=>'Forward Budget',
+        'label'=>'Confirm Budget',
         'class'=>'button_jqx_action',
-        'data-action-link'=>site_url($CI->controller_url.'/index/budget_forward')
+        'data-action-link'=>site_url($CI->controller_url.'/index/budget_confirm')
     );
 }
 if(isset($CI->permissions['action0']) && ($CI->permissions['action0']==1))
@@ -96,7 +96,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 columns:
                 [
                     { text: '<?php echo $CI->lang->line('LABEL_FISCAL_YEAR'); ?>', dataField: 'fiscal_year',width:'80',filtertype: 'list'},
-                    { text: '<?php echo $CI->lang->line('LABEL_STATUS_BUDGET_FORWARD'); ?>', dataField: 'status_budget_forward', width:'100',filtertype: 'list'}
+                    { text: '<?php echo $CI->lang->line('LABEL_STATUS_BUDGET_QUANTITY_CONFIRM'); ?>', dataField: 'status_budget_quantity_confirm', width:'100',filtertype: 'list'}
                 ]
             });
     });

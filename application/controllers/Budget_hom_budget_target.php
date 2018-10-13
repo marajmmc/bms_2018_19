@@ -477,26 +477,22 @@ class Budget_hom_budget_target extends Root_Controller
             {
                 $quantity_prediction_3=$items_quantity_budget[3][$variety_id];
             }
-            
             if(isset($items_old[$variety_id]))
             {
-                /*if($items_old[$variety_id]['quantity_budget']!=$quantity_budget)
+                if(($items_old[$variety_id]['quantity_budget'] != $quantity_budget)|| ($items_old[$variety_id]['quantity_prediction_1'] != $quantity_prediction_1) || ($items_old[$variety_id]['quantity_prediction_2'] != $quantity_prediction_2) || ($items_old[$variety_id]['quantity_prediction_3'] != $quantity_prediction_3))
                 {
+                    if($items_old[$variety_id]['quantity_budget']!=$quantity_budget && $quantity_budget)
+                    {
+                        $this->db->set('revision_count_budget','revision_count_budget+1',false);
+                    }
+                    $data['quantity_prediction_1']=$quantity_prediction_1;
+                    $data['quantity_prediction_2']=$quantity_prediction_2;
+                    $data['quantity_prediction_3']=$quantity_prediction_3;
                     $data['quantity_budget']=$quantity_budget;
                     $data['date_updated_budget']=$time;
                     $data['user_updated_budget']=$user->user_id;
-                    $this->db->set('revision_count_budget','revision_count_budget+1',false);
                     Query_helper::update($this->config->item('table_bms_hom_budget_target_hom'),$data,array('id='.$items_old[$variety_id]['id']));
-                }*/
-                /* need to descussion {revision count for all field like budget_1, 2,3} & checking input if or not*/
-                $data['quantity_prediction_1']=$quantity_prediction_1;
-                $data['quantity_prediction_2']=$quantity_prediction_2;
-                $data['quantity_prediction_3']=$quantity_prediction_3;
-                $data['quantity_budget']=$quantity_budget;
-                $data['date_updated_budget']=$time;
-                $data['user_updated_budget']=$user->user_id;
-                $this->db->set('revision_count_budget','revision_count_budget+1',false);
-                Query_helper::update($this->config->item('table_bms_hom_budget_target_hom'),$data,array('id='.$items_old[$variety_id]['id']));
+                }
             }
             else
             {
