@@ -118,11 +118,17 @@ echo '</pre>';*/
             ?>
         </div>
     </div>
-    <form id="save_form_jqx" action="<?php echo site_url($CI->controller_url.'/index/save_budget_hom');?>" method="post">
+    <form id="save_form_jqx" action="<?php echo site_url($CI->controller_url.'/index/save_mgt_budget_quantity_confirm');?>" method="post">
         <input type="hidden" name="item[fiscal_year_id]" value="<?php echo $options['fiscal_year_id']; ?>" />
         <div id="jqx_inputs">
         </div>
     </form>
+    <div style="font-size: 12px;margin-top: -10px;font-style: italic; color: red;" class="row show-grid">
+        <div class="col-xs-4"></div>
+        <div class="col-sm-4 col-xs-8 text-center">
+            <strong>Note:</strong> <?php echo $CI->lang->line('LABEL_ALL_ITEM_SHOWING_KG');?>
+        </div>
+    </div>
     <div class="col-xs-12" id="system_jqx_container">
 
     </div>
@@ -140,7 +146,7 @@ echo '</pre>';*/
             var data=$('#system_jqx_container').jqxGrid('getrows');
             for(var i=0;i<data.length;i++)
             {
-                $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+']" value="'+data[i]['quantity_budget']+'">');
+                $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+']" value="'+data[i]['quantity_budget_quantity_confirm']+'">');
             }
             var sure = confirm('<?php echo $CI->lang->line('MSG_CONFIRM_SAVE'); ?>');
             if(sure)
@@ -149,7 +155,7 @@ echo '</pre>';*/
             }
         });
 
-        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_edit_budget_mgt');?>";
+        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_edit_mgt_budget_quantity_confirm');?>";
 
         // prepare the data
         var source =
@@ -163,7 +169,14 @@ echo '</pre>';*/
                     { name: '<?php echo $key ?>', type: 'string' },
                     <?php
                 }
+                foreach($fiscal_years_previous_sales as $fy)
+                {
+                    ?>
+                    { name: 'quantity_sale_<?php echo $fy['id']; ?>', type: 'string' },
+                    <?php
+                }
                 ?>
+
             ],
             id: 'id',
             type: 'POST',
@@ -205,9 +218,20 @@ echo '</pre>';*/
                     element.html(get_string_kg(value));
                 }
             }
-            else if(column=='quantity_budget_confirm')
+            else if(column=='quantity_budget_quantity_confirm')
             {
                 element.html('<div class="jqxgrid_input">'+value+'</div>');
+            }
+            else if(column.substr(0,14)=='quantity_sale_')
+            {
+                if(value==0)
+                {
+                    element.html('');
+                }
+                else
+                {
+                    element.html(get_string_kg(value));
+                }
             }
             element.css({'margin': '0px','width': '100%', 'height': '100%',padding:'5px','line-height':'25px'});
             return element[0].outerHTML;
@@ -235,10 +259,16 @@ echo '</pre>';*/
                     { text: '<?php echo $CI->lang->line('LABEL_CROP_NAME'); ?>', dataField: 'crop_name',width:'100', filtertype:'list',pinned:true,editable:false},
                     { text: '<?php echo $CI->lang->line('LABEL_CROP_TYPE_NAME'); ?>', dataField: 'crop_type_name',width:'100',pinned:true,editable:false},
                     { text: '<?php echo $CI->lang->line('LABEL_VARIETY_NAME'); ?>', dataField: 'variety_name',width:'150',pinned:true,editable:false},
+                    <?php
+                        for($i=sizeof($fiscal_years_previous_sales)-1;$i>=0;$i--)
+                            {?>{columngroup: 'previous_years',text: '<?php echo $fiscal_years_previous_sales[$i]['name']; ?>', dataField: 'quantity_sale_<?php echo $fiscal_years_previous_sales[$i]['id']; ?>',width:'100',filterable: false,cellsrenderer: cellsrenderer,align:'center',cellsAlign:'right',editable:false},
+                        <?php
+                        }
+                    ?>
                     { text: 'HQ Current Stock', dataField: 'stock_current_hq',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
                     { text: 'HOM Budget Qty', dataField: 'quantity_budget_hom',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
                     { text: 'Budget Qty Needed', dataField: 'quantity_budget_needed',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
-                    { text: 'MGT <?php echo $CI->lang->line('LABEL_QUANTITY_BUDGET_KG'); ?><?php echo "<br>".$fiscal_year['name'];?>',datafield: 'quantity_budget_confirm', width: 100,filterable: false,cellsrenderer: cellsrenderer,cellsalign: 'right',columntype: 'custom',
+                    { text: 'MGT Budget<br> Qty Confirm <?php echo "".$fiscal_year['name'];?>',datafield: 'quantity_budget_quantity_confirm', width: 100,filterable: false,cellsrenderer: cellsrenderer,cellsalign: 'right',columntype: 'custom',
                         initeditor: function (row, cellvalue, editor, celltext, pressedkey)
                         {
                             editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');
@@ -251,7 +281,7 @@ echo '</pre>';*/
                             return editor.find('input').val();
                         }
                     }
-                ],
+                ],  
                 columngroups:
                 [
                     { text: '<?php echo $CI->lang->line('LABEL_PREVIOUS_YEARS'); ?> Achieved', align: 'center', name: 'previous_years' }

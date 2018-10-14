@@ -7,9 +7,9 @@ if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(is
     $action_buttons[]=array
     (
         'type'=>'button',
-        'label'=>$CI->lang->line('ACTION_EDIT').' MGT Budget',
+        'label'=>$CI->lang->line('ACTION_EDIT').' MGT Budget Qty Confirm',
         'class'=>'button_jqx_action',
-        'data-action-link'=>site_url($CI->controller_url.'/index/edit_budget_mgt')
+        'data-action-link'=>site_url($CI->controller_url.'/index/edit_mgt_budget_quantity_confirm')
 
     );
 }
@@ -96,7 +96,8 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 columns:
                 [
                     { text: '<?php echo $CI->lang->line('LABEL_FISCAL_YEAR'); ?>', dataField: 'fiscal_year',width:'80',filtertype: 'list'},
-                    { text: '<?php echo $CI->lang->line('LABEL_STATUS_BUDGET_QUANTITY_CONFIRM'); ?>', dataField: 'status_budget_quantity_confirm', width:'100',filtertype: 'list'}
+                    { text: 'Budgeted Time(s)', dataField: 'revision_count_mgt_budget_quantity_confirm', width:'100',filtertype: 'list'},
+                    { text: 'MGT Target Forward Status', dataField: 'status_mgt_target_forward', width:'100',filtertype: 'list'}
                 ]
             });
     });

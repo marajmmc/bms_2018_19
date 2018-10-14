@@ -23,7 +23,6 @@ $config['system_status_approved']='Approved';
 $config['system_status_delivered']='Delivered';
 $config['system_status_received']='Received';
 $config['system_status_rejected']='Rejected';
-$config['system_status_confirm']='Confirm';
 
 $config['system_base_url_profile_picture']='http://180.234.223.205/login_2018_19/';
 $config['system_base_url_picture']='http://180.234.223.205/bms_2018_19/';
