@@ -38,13 +38,25 @@ class Budget_mgt_budget_target extends Root_Controller
         {
             $this->system_save_mgt_budget_quantity_confirm();
         }
+        elseif($action=="edit_mgt_target_hom")
+        {
+            $this->system_edit_mgt_target_hom($id);
+        }
+        elseif($action=="get_items_edit_mgt_target_hom")
+        {
+            $this->system_get_items_edit_mgt_target_hom();
+        }
+        elseif($action=="save_mgt_target_hom")
+        {
+            $this->system_save_mgt_target_hom();
+        }
         elseif($action=="target_forward")
         {
             $this->system_target_forward($id);
         }
-        elseif($action=="save_target_budget")
+        elseif($action=="save_target_forward")
         {
-            $this->system_save_target_budget();
+            $this->system_save_target_forward();
         }
         else
         {
@@ -61,7 +73,32 @@ class Budget_mgt_budget_target extends Root_Controller
             $data['revision_count_mgt_budget_quantity_confirm']= 1;
             $data['status_mgt_target_forward']= 1;
         }
-        else if($method=='edit_mgt_budget_quantity_confirm' || $method=='target_forward')
+        else if($method=='edit_mgt_budget_quantity_confirm')
+        {
+            $data['crop_name']= 1;
+            $data['crop_type_name']= 1;
+            $data['variety_name']= 1;
+            $data['variety_id']= 1;
+            //more data
+            $data['stock_current_hq']= 1;
+            $data['quantity_budget_hom']= 1;
+            $data['quantity_budget_needed']= 1;
+            $data['quantity_budget_quantity_confirm']= 1;
+        }
+        else if($method=='edit_mgt_target_hom')
+        {
+            $data['crop_name']= 1;
+            $data['crop_type_name']= 1;
+            $data['variety_name']= 1;
+            $data['variety_id']= 1;
+            //more data
+            $data['quantity_budget_hom']= 1;
+            $data['stock_current_hq']= 1;
+            $data['quantity_budget_quantity_confirm']= 1;
+            $data['quantity_target_available']= 1;
+            $data['quantity_target_hom']= 1;
+        }
+        else if($method=='target_forward')
         {
             $data['crop_name']= 1;
             $data['crop_type_name']= 1;
@@ -391,10 +428,270 @@ class Budget_mgt_budget_target extends Root_Controller
             $this->json_return($ajax);
         }
     }
-    private function system_budget_forward($fiscal_year_id=0)
+    private function system_edit_mgt_target_hom($fiscal_year_id=0)
     {
-        //$user = User_helper::get_user();
-        $method='budget_forward';
+        $method='edit_mgt_target_hom';
+        if((isset($this->permissions['action1']) && ($this->permissions['action1']==1))||(isset($this->permissions['action2']) && ($this->permissions['action2']==1)))
+        {
+            if(!($fiscal_year_id>0))
+            {
+                $fiscal_year_id=$this->input->post('fiscal_year_id');
+            }
+            //validation fiscal year
+            if(!Budget_helper::check_validation_fiscal_year($fiscal_year_id))
+            {
+                System_helper::invalid_try(__FUNCTION__,$fiscal_year_id,'Invalid Fiscal year');
+                $ajax['status']=false;
+                $ajax['system_message']='Invalid Fiscal Year';
+                $this->json_return($ajax);
+            }
+            //validation forward
+            $get_info_budget_target=$this->get_info_budget_target($fiscal_year_id);
+            if(($get_info_budget_target['status_mgt_target_forward']==$this->config->item('system_status_forwarded')))
+            {
+                if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
+                {
+                    $ajax['status']=false;
+                    $ajax['system_message']='Target Already Forwarded.';
+                    $this->json_return($ajax);
+                }
+            }
+            $data['fiscal_years_previous_sales']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id <'.$fiscal_year_id),Budget_helper::$NUM_FISCAL_YEAR_PREVIOUS_SALE,0,array('id DESC'));
+            $data['fiscal_year']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id ='.$fiscal_year_id),1);
+            $data['acres']=$this->get_acres();
+
+            $data['system_preference_items']= $this->get_preference_headers($method);
+            $data['title']="MGT Set Yearly Target For HOM (All Variety)";
+            $data['options']['fiscal_year_id']=$fiscal_year_id;
+            $ajax['status']=true;
+            $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/edit_mgt_target_hom",$data,true));
+            if($this->message)
+            {
+                $ajax['system_message']=$this->message;
+            }
+            $ajax['system_page_url']=site_url($this->controller_url.'/index/edit_mgt_target_hom/'.$fiscal_year_id);
+            $this->json_return($ajax);
+        }
+        else
+        {
+            $ajax['status']=false;
+            $ajax['system_message']=$this->lang->line("YOU_DONT_HAVE_ACCESS");
+            $this->json_return($ajax);
+        }
+    }
+    private function system_get_items_edit_mgt_target_hom()
+    {
+        $items=array();
+        //$this->json_return($items);
+        $fiscal_year_id=$this->input->post('fiscal_year_id');
+
+        $fiscal_years_previous_sales=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id <'.$fiscal_year_id),Budget_helper::$NUM_FISCAL_YEAR_PREVIOUS_SALE,0,array('id DESC'));
+        $sales_previous=$this->get_sales_previous_years_hq($fiscal_years_previous_sales);
+
+        //HQ Current Stock
+        $this->db->from($this->config->item('table_sms_stock_summary_variety').' stock_summary_variety');
+        $this->db->select('SUM((pack.name*stock_summary_variety.current_stock)/1000) current_stock, stock_summary_variety.variety_id');
+        $this->db->join($this->config->item('table_login_setup_classification_pack_size').' pack','pack.id=stock_summary_variety.pack_size_id','LEFT');
+        //$this->db->where('stock_summary_variety.pack_size_id > 0');
+        $this->db->group_by('stock_summary_variety.variety_id');
+        $results=$this->db->get()->result_array();
+        $stocks=array();
+        foreach($results as $result)
+        {
+            $stocks[$result['variety_id']]=$result;
+        }
+        //old items
+        $results=Query_helper::get_info($this->config->item('table_bms_hom_budget_target_hom'),'*',array('fiscal_year_id ='.$fiscal_year_id));
+        $items_old=array();
+        foreach($results as $result)
+        {
+            $items_old[$result['variety_id']]=$result;
+        }
+
+        //variety lists
+        $this->db->from($this->config->item('table_login_setup_classification_varieties').' v');
+        $this->db->select('v.id variety_id,v.name variety_name');
+        $this->db->join($this->config->item('table_login_setup_classification_crop_types').' crop_type','crop_type.id = v.crop_type_id','INNER');
+        $this->db->select('crop_type.name crop_type_name');
+        $this->db->join($this->config->item('table_login_setup_classification_crops').' crop','crop.id = crop_type.crop_id','INNER');
+        $this->db->select('crop.name crop_name');
+        $this->db->where('v.status',$this->config->item('system_status_active'));
+        $this->db->where('v.whose','ARM');
+        $this->db->order_by('crop.ordering','ASC');
+        $this->db->order_by('crop.id','ASC');
+        $this->db->order_by('crop_type.ordering','ASC');
+        $this->db->order_by('crop_type.id','ASC');
+        $this->db->order_by('v.ordering','ASC');
+        $this->db->order_by('v.id','ASC');
+        $results=$this->db->get()->result_array();
+        foreach($results as $result)
+        {
+            $item=$result;
+            foreach($fiscal_years_previous_sales as $fy)
+            {
+                if(isset($sales_previous[$fy['id']][$result['variety_id']]))
+                {
+                    $item['quantity_sale_'.$fy['id']]=$sales_previous[$fy['id']][$result['variety_id']]/1000;
+                }
+                else
+                {
+                    $item['quantity_sale_'.$fy['id']]=0;
+                }
+            }
+            if(isset($items_old[$result['variety_id']]))
+            {
+                if($items_old[$result['variety_id']]['quantity_budget']>0)
+                {
+                    $item['quantity_budget_hom']=$items_old[$result['variety_id']]['quantity_budget'];
+                }
+                else
+                {
+                    $item['quantity_budget_hom']='';
+                }
+                if($items_old[$result['variety_id']]['quantity_budget_quantity_confirm']>0)
+                {
+                    $item['quantity_budget_quantity_confirm']=$items_old[$result['variety_id']]['quantity_budget_quantity_confirm'];
+                }
+                else
+                {
+                    $item['quantity_budget_quantity_confirm']='';
+                }
+            }
+            else
+            {
+                $item['quantity_budget_hom']='';
+                $item['quantity_budget_quantity_confirm']='';
+            }
+            if(isset($stocks[$result['variety_id']]))
+            {
+                if($stocks[$result['variety_id']]['current_stock']>0)
+                {
+                    $item['stock_current_hq']=$stocks[$result['variety_id']]['current_stock'];
+                }
+                else
+                {
+                    $item['stock_current_hq']='';
+                }
+            }
+            else
+            {
+                $item['stock_current_hq']='';
+            }
+            $quantity_budget_needed=($item['stock_current_hq']-$item['quantity_budget_hom']);
+            if($quantity_budget_needed>0)
+            {
+                $item['quantity_budget_needed']=$quantity_budget_needed;
+            }
+            else
+            {
+                $item['quantity_budget_needed']='';
+            }
+            $item['quantity_target_hom']='';
+            $items[]=$item;
+        }
+
+        $this->json_return($items);
+    }
+    private function system_save_mgt_target_hom()
+    {
+        $user = User_helper::get_user();
+        $time=time();
+        $item_head=$this->input->post('item');
+        $items=$this->input->post('items');
+        if(!((isset($this->permissions['action1']) && ($this->permissions['action1']==1))||(isset($this->permissions['action2']) && ($this->permissions['action2']==1))))
+        {
+            $ajax['status']=false;
+            $ajax['system_message']=$this->lang->line("YOU_DONT_HAVE_ACCESS");
+            $this->json_return($ajax);
+        }
+        //validation fiscal year
+        if(!Budget_helper::check_validation_fiscal_year($item_head['fiscal_year_id']))
+        {
+            System_helper::invalid_try(__FUNCTION__,$item_head['fiscal_year_id'],'Invalid Fiscal year');
+            $ajax['status']=false;
+            $ajax['system_message']='Invalid Fiscal Year';
+            $this->json_return($ajax);
+        }
+        //validation target forward
+        $info_budget_target=$this->get_info_budget_target($item_head['fiscal_year_id']);
+        if(($info_budget_target['status_mgt_target_forward']==$this->config->item('system_status_forwarded')))
+        {
+            if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
+            {
+                $ajax['status']=false;
+                $ajax['system_message']='Budget Already Forwarded.';
+                $this->json_return($ajax);
+            }
+        }
+        //old items
+        $results=Query_helper::get_info($this->config->item('table_bms_hom_budget_target_hom'),'*',array('fiscal_year_id ='.$item_head['fiscal_year_id']));
+        $items_old=array();
+        foreach($results as $result)
+        {
+            $items_old[$result['variety_id']]=$result;
+        }
+        $this->db->trans_start();  //DB Transaction Handle START
+        $revision_count_mgt_budget_quantity_confirm_status=false;
+        foreach($items as $variety_id=>$quantity_budget_quantity_confirm)
+        {
+            if(isset($items_old[$variety_id]))
+            {
+                if($items_old[$variety_id]['quantity_budget_quantity_confirm']!=$quantity_budget_quantity_confirm && $quantity_budget_quantity_confirm)
+                {
+                    $this->db->set('revision_count_budget_quantity_confirm','revision_count_budget_quantity_confirm+1',false);
+                    $data['quantity_budget_quantity_confirm']=$quantity_budget_quantity_confirm;
+                    /*$data['date_updated_budget']=$time;
+                    $data['user_updated_budget']=$user->user_id;*/
+                    Query_helper::update($this->config->item('table_bms_hom_budget_target_hom'),$data,array('id='.$items_old[$variety_id]['id']));
+                    $revision_count_mgt_budget_quantity_confirm_status=true;
+                }
+            }
+            else
+            {
+                $data=array();
+                $data['fiscal_year_id']=$item_head['fiscal_year_id'];
+                $data['variety_id']=$variety_id;
+                if($quantity_budget_quantity_confirm>0)
+                {
+                    $data['quantity_budget_quantity_confirm']=$quantity_budget_quantity_confirm;
+                    $data['revision_count_budget_quantity_confirm']=1;
+                    $revision_count_mgt_budget_quantity_confirm_status=true;
+                }
+                else
+                {
+                    $data['quantity_budget_quantity_confirm']=0;
+                }
+                /*$data['date_updated_budget'] = $time;
+                $data['user_updated_budget'] = $user->user_id;*/
+                Query_helper::add($this->config->item('table_bms_hom_budget_target_hom'),$data,false);
+            }
+            if($revision_count_mgt_budget_quantity_confirm_status)
+            {
+                $data=array();
+                $data['date_updated_mgt_budget_quantity_confirm'] = $time;
+                $data['user_updated_mgt_budget_quantity_confirm'] = $user->user_id;
+                // problem:: revision count wrong insert ?
+                //$this->db->set('revision_count_mgt_budget_quantity_confirm','revision_count_mgt_budget_quantity_confirm+1',false);
+                Query_helper::update($this->config->item('table_bms_hom_budget_target'),$data,array('fiscal_year_id ='.$item_head['fiscal_year_id']));
+            }
+        }
+        $this->db->trans_complete();   //DB Transaction Handle END
+        if ($this->db->trans_status() === TRUE)
+        {
+            $this->message=$this->lang->line("MSG_SAVED_SUCCESS");
+            $this->system_list();
+
+        }
+        else
+        {
+            $ajax['status']=false;
+            $ajax['system_message']=$this->lang->line("MSG_SAVED_FAIL");
+            $this->json_return($ajax);
+        }
+    }
+    private function system_target_forward($fiscal_year_id=0)
+    {
+        $method='target_forward';
         if(isset($this->permissions['action7'])&&($this->permissions['action7']==1))
         {
             if(!($fiscal_year_id>0))
@@ -411,33 +708,18 @@ class Budget_mgt_budget_target extends Root_Controller
             }
             //validation forward
             $info_budget_target=$this->get_info_budget_target($fiscal_year_id);
-            if(($info_budget_target['status_budget_forward']==$this->config->item('system_status_forwarded')))
+            if(($info_budget_target['status_mgt_target_forward']==$this->config->item('system_status_forwarded')))
             {
                 $ajax['status']=false;
-                $ajax['system_message']='Budget Already Forwarded.';
+                $ajax['system_message']='Target Already Forwarded.';
                 $this->json_return($ajax);
             }
-
             $data['system_preference_items']= $this->get_preference_headers($method);
             $data['fiscal_years_previous_sales']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id <'.$fiscal_year_id),Budget_helper::$NUM_FISCAL_YEAR_PREVIOUS_SALE,0,array('id DESC'));
-            $data['fiscal_years_next_budgets']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id >'.$fiscal_year_id),Budget_helper::$NUM_FISCAL_YEAR_NEXT_BUDGET_TARGET,0);
-            // get zone list
-            $this->db->from($this->config->item('table_bms_di_budget_target_division').' budget_target_division');
-            $this->db->join($this->config->item('table_bms_di_budget_target').' budget_target','budget_target.fiscal_year_id=budget_target_division.fiscal_year_id AND budget_target.division_id=budget_target_division.division_id','INNER');
-            $this->db->join($this->config->item('table_login_setup_location_divisions').' divisions','divisions.id = budget_target_division.division_id','INNER');
-            $this->db->select('divisions.id division_id, divisions.name division_name');
-            $this->db->where('budget_target.status_budget_forward',$this->config->item('system_status_forwarded'));
-            $this->db->where('budget_target_division.fiscal_year_id',$fiscal_year_id);
-            $this->db->group_by('budget_target_division.division_id');
-            $this->db->order_by('divisions.ordering, divisions.id');
-            $data['divisions']=$this->db->get()->result_array();
-
             $data['acres']=$this->get_acres();
-
-            $data['fiscal_year_budget_target']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id ='.$fiscal_year_id),1);
-            $data['title']="HOM Forward/Complete budget";
+            $data['fiscal_year']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id ='.$fiscal_year_id),1);
+            $data['title']="MGT Set Target For HOM";
             $data['options']['fiscal_year_id']=$fiscal_year_id;
-
             $ajax['status']=true;
             $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/budget_forward",$data,true));
             if($this->message)
@@ -454,9 +736,10 @@ class Budget_mgt_budget_target extends Root_Controller
             $this->json_return($ajax);
         }
     }
-    public function budget_forward_items()
+    public function target_forward_items()
     {
         $items=array();
+        $this->json_return($items);
         $fiscal_year_id=$this->input->post('fiscal_year_id');
         $fiscal_years_previous_sales=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id <'.$fiscal_year_id),Budget_helper::$NUM_FISCAL_YEAR_PREVIOUS_SALE,0,array('id DESC'));
         $sales_previous=$this->get_sales_previous_years_division($fiscal_years_previous_sales);
@@ -606,7 +889,6 @@ class Budget_mgt_budget_target extends Root_Controller
         $items[]=$crop_total;
         $items[]=$grand_total;
         $this->json_return($items);
-
     }
     private function initialize_row($fiscal_years,$zone_ids,$crop_name,$crop_type_name,$variety_name)
     {

@@ -12,15 +12,23 @@ if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(is
         'data-action-link'=>site_url($CI->controller_url.'/index/edit_mgt_budget_quantity_confirm')
 
     );
+    $action_buttons[]=array
+    (
+        'type'=>'button',
+        'label'=>$CI->lang->line('ACTION_EDIT').' HOM Target',
+        'class'=>'button_jqx_action',
+        'data-action-link'=>site_url($CI->controller_url.'/index/edit_mgt_target_hom')
+
+    );
 }
 if((isset($CI->permissions['action7']) && ($CI->permissions['action7']==1)))
 {
     $action_buttons[]=array
     (
         'type'=>'button',
-        'label'=>'Confirm Budget',
+        'label'=>'Forward HOM Target',
         'class'=>'button_jqx_action',
-        'data-action-link'=>site_url($CI->controller_url.'/index/budget_confirm')
+        'data-action-link'=>site_url($CI->controller_url.'/index/tar')
     );
 }
 if(isset($CI->permissions['action0']) && ($CI->permissions['action0']==1))
