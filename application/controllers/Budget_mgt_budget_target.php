@@ -577,19 +577,9 @@ class Budget_mgt_budget_target extends Root_Controller
             {
                 $item['stock_current_hq']='';
             }
-            $quantity_budget_needed=($item['stock_current_hq']-$item['quantity_budget_hom']);
-            if($quantity_budget_needed>0)
-            {
-                $item['quantity_budget_needed']=$quantity_budget_needed;
-            }
-            else
-            {
-                $item['quantity_budget_needed']='';
-            }
-            $item['quantity_target_hom']='';
+            $item['quantity_target_available']=($item['stock_current_hq']+$item['quantity_budget_quantity_confirm']);
             $items[]=$item;
         }
-
         $this->json_return($items);
     }
     private function system_save_mgt_target_hom()
