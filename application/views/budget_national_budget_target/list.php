@@ -7,17 +7,9 @@ if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(is
     $action_buttons[]=array
     (
         'type'=>'button',
-        'label'=>$CI->lang->line('ACTION_EDIT').' MGT Budget Qty Confirm',
+        'label'=>$CI->lang->line('ACTION_EDIT').' National Target',
         'class'=>'button_jqx_action',
-        'data-action-link'=>site_url($CI->controller_url.'/index/edit_mgt_budget_quantity_confirm')
-
-    );
-    $action_buttons[]=array
-    (
-        'type'=>'button',
-        'label'=>$CI->lang->line('ACTION_EDIT').' HOM Target',
-        'class'=>'button_jqx_action',
-        'data-action-link'=>site_url($CI->controller_url.'/index/edit_mgt_target_hom')
+        'data-action-link'=>site_url($CI->controller_url.'/index/edit_target_national')
 
     );
 }
@@ -26,9 +18,30 @@ if((isset($CI->permissions['action7']) && ($CI->permissions['action7']==1)))
     $action_buttons[]=array
     (
         'type'=>'button',
-        'label'=>'Forward HOM Target',
+        'label'=>'Forward National Target',
         'class'=>'button_jqx_action',
-        'data-action-link'=>site_url($CI->controller_url.'/index/tar')
+        'data-action-link'=>site_url($CI->controller_url.'/index/forward_target_national')
+    );
+}
+if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(isset($CI->permissions['action2']) && ($CI->permissions['action2']==1)))
+{
+    $action_buttons[]=array
+    (
+        'type'=>'button',
+        'label'=>$CI->lang->line('ACTION_EDIT').' Next Year Target',
+        'class'=>'button_jqx_action',
+        'data-action-link'=>site_url($CI->controller_url.'/index/edit_target_national_prediction')
+
+    );
+}
+if((isset($CI->permissions['action7']) && ($CI->permissions['action7']==1)))
+{
+    $action_buttons[]=array
+    (
+        'type'=>'button',
+        'label'=>'Forward Next Year Target',
+        'class'=>'button_jqx_action',
+        'data-action-link'=>site_url($CI->controller_url.'/index/forward_target_national_prediction')
     );
 }
 if(isset($CI->permissions['action0']) && ($CI->permissions['action0']==1))
@@ -89,24 +102,26 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         var dataAdapter = new $.jqx.dataAdapter(source);
         // create jqxgrid.
         $("#system_jqx_container").jqxGrid(
-            {
-                width: '100%',
-                source: dataAdapter,
-                filterable: true,
-                sortable: true,
-                showfilterrow: true,
-                columnsresize: true,
-                selectionmode: 'singlerow',
-                altrows: true,
-                height: '250px',
-                columnsreorder: true,
-                enablebrowserselection: true,
-                columns:
-                [
-                    { text: '<?php echo $CI->lang->line('LABEL_FISCAL_YEAR'); ?>', dataField: 'fiscal_year',width:'80',filtertype: 'list'},
-                    { text: 'Budgeted Time(s)', dataField: 'revision_count_mgt_budget_quantity_confirm', width:'100',filtertype: 'list'},
-                    { text: 'MGT Target Forward Status', dataField: 'status_mgt_target_forward', width:'100',filtertype: 'list'}
-                ]
-            });
+        {
+            width: '100%',
+            source: dataAdapter,
+            filterable: true,
+            sortable: true,
+            showfilterrow: true,
+            columnsresize: true,
+            selectionmode: 'singlerow',
+            altrows: true,
+            height: '250px',
+            columnsreorder: true,
+            enablebrowserselection: true,
+            columns:
+            [
+                { text: '<?php echo $CI->lang->line('LABEL_FISCAL_YEAR'); ?>', dataField: 'fiscal_year',width:'80',filtertype: 'list'},
+                { text: 'Principal Qty Confirm Time(s)', dataField: 'revision_count_principal_quantity_confirm', width:'100',filtertype: 'list'},
+                { text: 'HOM Targeted Qty Time(s)', dataField: 'revision_count_quantity_target_hom', width:'100',filtertype: 'list'},
+                { text: 'HOM Target Forward Status', dataField: 'status_forward_national_budget_quantity_confirm', width:'100',filtertype: 'list'},
+                { text: 'Next Year Target Forward Status', dataField: 'status_forward_national_target_quantity_prediction', width:'100',filtertype: 'list'}
+            ]
+        });
     });
 </script>

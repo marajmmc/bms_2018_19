@@ -118,7 +118,7 @@ echo '</pre>';*/
             ?>
         </div>
     </div>
-    <form id="save_form_jqx" action="<?php echo site_url($CI->controller_url.'/index/save_mgt_budget_quantity_confirm');?>" method="post">
+    <form id="save_form_jqx" action="<?php echo site_url($CI->controller_url.'/index/save_target_national');?>" method="post">
         <input type="hidden" name="item[fiscal_year_id]" value="<?php echo $options['fiscal_year_id']; ?>" />
         <div id="jqx_inputs">
         </div>
@@ -155,7 +155,7 @@ echo '</pre>';*/
             }
         });
 
-        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_edit_mgt_budget_quantity_confirm');?>";
+        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_edit_target_national');?>";
 
         // prepare the data
         var source =
@@ -207,7 +207,7 @@ echo '</pre>';*/
         var cellsrenderer = function(row, column, value, defaultHtml, columnSettings, record)
         {
             var element = $(defaultHtml);
-            if(column=='quantity_budget_hom' || column=='stock_current_hq' || column=='quantity_budget_needed')
+            if(column=='stock_current_hq' || column=='quantity_budget_hom' || column=='quantity_budget_needed' || column=='quantity_target_available')
             {
                 if(value==0)
                 {
@@ -218,7 +218,7 @@ echo '</pre>';*/
                     element.html(get_string_kg(value));
                 }
             }
-            else if(column=='quantity_budget_quantity_confirm')
+            else if(column=='quantity_principal_quantity_confirm' || column=='quantity_target_hom')
             {
                 element.html('<div class="jqxgrid_input">'+value+'</div>');
             }
@@ -265,10 +265,24 @@ echo '</pre>';*/
                         <?php
                         }
                     ?>
-                    { text: 'HQ Current Stock', dataField: 'stock_current_hq',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
-                    { text: 'HOM Budget Qty', dataField: 'quantity_budget_hom',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
-                    { text: 'Budget Qty Needed', dataField: 'quantity_budget_needed',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
-                    { text: 'MGT Budget<br> Qty Confirm <?php echo "".$fiscal_year['name'];?>',datafield: 'quantity_budget_quantity_confirm', width: 100,filterable: false,cellsrenderer: cellsrenderer,cellsalign: 'right',columntype: 'custom',
+                    { text: 'HQ CS', dataField: 'stock_current_hq',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
+                    { text: 'HOM Qty', dataField: 'quantity_budget_hom',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
+                    { text: 'Qty Needed', dataField: 'quantity_budget_needed',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
+                    { text: 'Principal Qty<br> Confirm <?php echo "".$fiscal_year['name'];?>',datafield: 'quantity_principal_quantity_confirm', width: 100,filterable: false,cellsrenderer: cellsrenderer,cellsalign: 'right',columntype: 'custom',
+                        initeditor: function (row, cellvalue, editor, celltext, pressedkey)
+                        {
+                            editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');
+                        },
+                        geteditorvalue: function (row, cellvalue, editor)
+                        {
+                            // return the editor's value.
+                            var value=editor.find('input').val();
+                            var selectedRowData = $('#system_jqx_container').jqxGrid('getrowdata', row);
+                            return editor.find('input').val();
+                        }
+                    },
+                    { text: 'Available<br> Target Qty', dataField: 'quantity_target_available',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
+                    { text: 'HOM Target<br> Qty <?php echo "".$fiscal_year['name'];?>',datafield: 'quantity_target_hom', width: 100,filterable: false,cellsrenderer: cellsrenderer,cellsalign: 'right',columntype: 'custom',
                         initeditor: function (row, cellvalue, editor, celltext, pressedkey)
                         {
                             editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');

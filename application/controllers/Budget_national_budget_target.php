@@ -1,6 +1,6 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Budget_mgt_budget_target extends Root_Controller
+class Budget_national_budget_target extends Root_Controller
 {
     public $message;
     public $permissions;
@@ -26,19 +26,19 @@ class Budget_mgt_budget_target extends Root_Controller
         {
             $this->system_get_items();
         }
-        elseif($action=="edit_mgt_budget_quantity_confirm")
+        elseif($action=="edit_target_national")
         {
-            $this->system_edit_mgt_budget_quantity_confirm($id);
+            $this->system_edit_target_national($id);
         }
-        elseif($action=="get_items_edit_mgt_budget_quantity_confirm")
+        elseif($action=="get_items_edit_target_national")
         {
-            $this->system_get_items_edit_mgt_budget_quantity_confirm();
+            $this->system_get_items_edit_target_national();
         }
-        elseif($action=="save_mgt_budget_quantity_confirm")
+        elseif($action=="save_target_national")
         {
-            $this->system_save_mgt_budget_quantity_confirm();
+            $this->system_save_target_national();
         }
-        elseif($action=="edit_mgt_target_hom")
+        /*elseif($action=="edit_mgt_target_hom")
         {
             $this->system_edit_mgt_target_hom($id);
         }
@@ -49,14 +49,14 @@ class Budget_mgt_budget_target extends Root_Controller
         elseif($action=="save_mgt_target_hom")
         {
             $this->system_save_mgt_target_hom();
-        }
-        elseif($action=="target_forward")
+        }*/
+        elseif($action=="target_forward_national")
         {
-            $this->system_target_forward($id);
+            $this->system_target_forward_national($id);
         }
-        elseif($action=="save_target_forward")
+        elseif($action=="save_target_forward_national")
         {
-            $this->system_save_target_forward();
+            $this->system_save_target_forward_national();
         }
         else
         {
@@ -70,10 +70,12 @@ class Budget_mgt_budget_target extends Root_Controller
         {
             $data['fiscal_year_id']= 1;
             $data['fiscal_year']= 1;
-            $data['revision_count_mgt_budget_quantity_confirm']= 1;
-            $data['status_mgt_target_forward']= 1;
+            $data['revision_count_principal_quantity_confirm']= 1;
+            $data['revision_count_quantity_target_hom']= 1;
+            $data['status_forward_national_budget_quantity_confirm']= 1;
+            $data['status_forward_national_target_quantity_prediction']= 1;
         }
-        else if($method=='edit_mgt_budget_quantity_confirm')
+        else if($method=='edit_target_national')
         {
             $data['crop_name']= 1;
             $data['crop_type_name']= 1;
@@ -83,9 +85,10 @@ class Budget_mgt_budget_target extends Root_Controller
             $data['stock_current_hq']= 1;
             $data['quantity_budget_hom']= 1;
             $data['quantity_budget_needed']= 1;
-            $data['quantity_budget_quantity_confirm']= 1;
+            $data['quantity_principal_quantity_confirm']= 1;
+            $data['quantity_target_available']= 1;
         }
-        else if($method=='edit_mgt_target_hom')
+        /*else if($method=='edit_mgt_target_hom')
         {
             $data['crop_name']= 1;
             $data['crop_type_name']= 1;
@@ -94,11 +97,11 @@ class Budget_mgt_budget_target extends Root_Controller
             //more data
             $data['quantity_budget_hom']= 1;
             $data['stock_current_hq']= 1;
-            $data['quantity_budget_quantity_confirm']= 1;
+            $data['quantity_principal_quantity_confirm']= 1;
             $data['quantity_target_available']= 1;
             $data['quantity_target_hom']= 1;
         }
-        else if($method=='target_forward')
+        else if($method=='target_forward_national')
         {
             $data['crop_name']= 1;
             $data['crop_type_name']= 1;
@@ -108,8 +111,8 @@ class Budget_mgt_budget_target extends Root_Controller
             $data['stock_current_hq']= 1;
             $data['quantity_budget_hom']= 1;
             $data['quantity_budget_needed']= 1;
-            $data['quantity_budget_quantity_confirm']= 1;
-        }
+            $data['quantity_principal_quantity_confirm']= 1;
+        }*/
         return $data;
     }
     private function system_list()
@@ -119,7 +122,7 @@ class Budget_mgt_budget_target extends Root_Controller
         if(isset($this->permissions['action0'])&&($this->permissions['action0']==1))
         {
             $data['system_preference_items']= $this->get_preference_headers($method);
-            $data['title']="Yearly MGT Budget Quantity Confirmed & Target";
+            $data['title']="Yearly National Budget :: Principal Qty Confirm & Target List";
             $ajax['status']=true;
             $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/list",$data,true));
             if($this->message)
@@ -138,39 +141,24 @@ class Budget_mgt_budget_target extends Root_Controller
     }
     private function system_get_items()
     {
-        $fiscal_years=Budget_helper::get_fiscal_years();
+        $items=array();
         $this->db->from($this->config->item('table_bms_hom_budget_target').' budget_target');
         $this->db->select('budget_target.fiscal_year_id');
-        $this->db->select('budget_target.revision_count_mgt_budget_quantity_confirm');
-        $this->db->select('budget_target.status_mgt_target_forward');
-        $results=$this->db->get()->result_array();
-        $budget_target=array();
-        foreach($results as $result)
-        {
-            $budget_target[$result['fiscal_year_id']]=$result;
-        }
-        $items=array();
-        foreach($fiscal_years as $fy)
-        {
-            $data=array();
-            $data['fiscal_year_id']=$fy['id'];
-            $data['fiscal_year']=$fy['text'];
-            if(isset($budget_target[$fy['id']]))
-            {
-                $data['status_mgt_target_forward']=$budget_target[$fy['id']]['status_mgt_target_forward'];
-            }
-            else
-            {
-                $data['status_mgt_target_forward']=$this->config->item('system_status_confirm');
-            }
-            $data['revision_count_mgt_budget_quantity_confirm']=$budget_target[$fy['id']]['revision_count_mgt_budget_quantity_confirm'];
-            $items[]=$data;
-        }
+        $this->db->select('budget_target.revision_count_principal_quantity_confirm');
+        $this->db->select('budget_target.revision_count_quantity_target_hom');
+        $this->db->select('budget_target.status_forward_national_budget_quantity_confirm');
+        $this->db->select('budget_target.status_forward_national_target_quantity_prediction');
+        
+        $this->db->join($this->config->item('table_login_basic_setup_fiscal_year').' fy','fy.id=budget_target.fiscal_year_id','INNER');
+        $this->db->select('fy.name fiscal_year');
+        
+        $this->db->where('budget_target.status_budget_forward',$this->config->item('system_status_forwarded'));
+        $items=$this->db->get()->result_array();
         $this->json_return($items);
     }
-    private function system_edit_mgt_budget_quantity_confirm($fiscal_year_id=0)
+    private function system_edit_target_national($fiscal_year_id=0)
     {
-        $method='edit_mgt_budget_quantity_confirm';
+        $method='edit_target_national';
         if((isset($this->permissions['action1']) && ($this->permissions['action1']==1))||(isset($this->permissions['action2']) && ($this->permissions['action2']==1)))
         {
             if(!($fiscal_year_id>0))
@@ -187,7 +175,15 @@ class Budget_mgt_budget_target extends Root_Controller
             }
             //validation forward
             $get_info_budget_target=$this->get_info_budget_target($fiscal_year_id);
-            if(($get_info_budget_target['status_mgt_target_forward']==$this->config->item('system_status_forwarded')))
+            // Checking HOM budget forward.
+            if(($get_info_budget_target['status_budget_forward']!=$this->config->item('system_status_forwarded')))
+            {
+                $ajax['status']=false;
+                $ajax['system_message']='HOM Budget Not Already Forwarded.';
+                $this->json_return($ajax);
+            }
+            // Checking Target forward.
+            if(($get_info_budget_target['status_forward_national_budget_quantity_confirm']==$this->config->item('system_status_forwarded')))
             {
                 if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
                 {
@@ -201,15 +197,15 @@ class Budget_mgt_budget_target extends Root_Controller
             $data['acres']=$this->get_acres();
 
             $data['system_preference_items']= $this->get_preference_headers($method);
-            $data['title']="MGT Yearly Budget Quantity Confirm For All Variety";
+            $data['title']="Yearly National Budget :: Principal Qty Confirm & Target Edit (For All Variety)";
             $data['options']['fiscal_year_id']=$fiscal_year_id;
             $ajax['status']=true;
-            $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/edit_mgt_budget_quantity_confirm",$data,true));
+            $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/edit_target_national",$data,true));
             if($this->message)
             {
                 $ajax['system_message']=$this->message;
             }
-            $ajax['system_page_url']=site_url($this->controller_url.'/index/edit_mgt_budget_quantity_confirm/'.$fiscal_year_id);
+            $ajax['system_page_url']=site_url($this->controller_url.'/index/edit_target_national/'.$fiscal_year_id);
             $this->json_return($ajax);
         }
         else
@@ -219,7 +215,7 @@ class Budget_mgt_budget_target extends Root_Controller
             $this->json_return($ajax);
         }
     }
-    private function system_get_items_edit_mgt_budget_quantity_confirm()
+    private function system_get_items_edit_target_national()
     {
         $items=array();
         //$this->json_return($items);
@@ -288,19 +284,28 @@ class Budget_mgt_budget_target extends Root_Controller
                 {
                     $item['quantity_budget_hom']='';
                 }
-                if($items_old[$result['variety_id']]['quantity_budget_quantity_confirm']>0)
+                if($items_old[$result['variety_id']]['quantity_principal_quantity_confirm']>0)
                 {
-                    $item['quantity_budget_quantity_confirm']=$items_old[$result['variety_id']]['quantity_budget_quantity_confirm'];
+                    $item['quantity_principal_quantity_confirm']=$items_old[$result['variety_id']]['quantity_principal_quantity_confirm'];
                 }
                 else
                 {
-                    $item['quantity_budget_quantity_confirm']='';
+                    $item['quantity_principal_quantity_confirm']='';
+                }
+                if($items_old[$result['variety_id']]['quantity_target_hom']>0)
+                {
+                    $item['quantity_target_hom']=$items_old[$result['variety_id']]['quantity_target_hom'];
+                }
+                else
+                {
+                    $item['quantity_target_hom']='';
                 }
             }
             else
             {
                 $item['quantity_budget_hom']='';
-                $item['quantity_budget_quantity_confirm']='';
+                $item['quantity_principal_quantity_confirm']='';
+                $item['quantity_target_hom']='';
             }
             if(isset($stocks[$result['variety_id']]))
             {
@@ -317,7 +322,7 @@ class Budget_mgt_budget_target extends Root_Controller
             {
                 $item['stock_current_hq']='';
             }
-            $quantity_budget_needed=($item['stock_current_hq']-$item['quantity_budget_hom']);
+            $quantity_budget_needed=($item['quantity_budget_hom']-$item['stock_current_hq']);
             if($quantity_budget_needed>0)
             {
                 $item['quantity_budget_needed']=$quantity_budget_needed;
@@ -326,12 +331,13 @@ class Budget_mgt_budget_target extends Root_Controller
             {
                 $item['quantity_budget_needed']='';
             }
+            $item['quantity_target_available']=($item['stock_current_hq']+$item['quantity_principal_quantity_confirm']);
             $items[]=$item;
         }
 
         $this->json_return($items);
     }
-    private function system_save_mgt_budget_quantity_confirm()
+    private function system_save_target_national()
     {
         $user = User_helper::get_user();
         $time=time();
@@ -353,7 +359,7 @@ class Budget_mgt_budget_target extends Root_Controller
         }
         //validation target forward
         $info_budget_target=$this->get_info_budget_target($item_head['fiscal_year_id']);
-        if(($info_budget_target['status_mgt_target_forward']==$this->config->item('system_status_forwarded')))
+        if(($info_budget_target['status_forward_target_national']==$this->config->item('system_status_forwarded')))
         {
             if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
             {
@@ -370,19 +376,19 @@ class Budget_mgt_budget_target extends Root_Controller
             $items_old[$result['variety_id']]=$result;
         }
         $this->db->trans_start();  //DB Transaction Handle START
-        $revision_count_mgt_budget_quantity_confirm_status=false;
-        foreach($items as $variety_id=>$quantity_budget_quantity_confirm)
+        $revision_count_national_budget_quantity_confirm_status=false;
+        foreach($items as $variety_id=>$quantity_principal_quantity_confirm)
         {
             if(isset($items_old[$variety_id]))
             {
-                if($items_old[$variety_id]['quantity_budget_quantity_confirm']!=$quantity_budget_quantity_confirm && $quantity_budget_quantity_confirm)
+                if($items_old[$variety_id]['quantity_principal_quantity_confirm']!=$quantity_principal_quantity_confirm && $quantity_principal_quantity_confirm)
                 {
                     $this->db->set('revision_count_budget_quantity_confirm','revision_count_budget_quantity_confirm+1',false);
-                    $data['quantity_budget_quantity_confirm']=$quantity_budget_quantity_confirm;
+                    $data['quantity_principal_quantity_confirm']=$quantity_principal_quantity_confirm;
                     /*$data['date_updated_budget']=$time;
                     $data['user_updated_budget']=$user->user_id;*/
                     Query_helper::update($this->config->item('table_bms_hom_budget_target_hom'),$data,array('id='.$items_old[$variety_id]['id']));
-                    $revision_count_mgt_budget_quantity_confirm_status=true;
+                    $revision_count_national_budget_quantity_confirm_status=true;
                 }
             }
             else
@@ -390,27 +396,27 @@ class Budget_mgt_budget_target extends Root_Controller
                 $data=array();
                 $data['fiscal_year_id']=$item_head['fiscal_year_id'];
                 $data['variety_id']=$variety_id;
-                if($quantity_budget_quantity_confirm>0)
+                if($quantity_principal_quantity_confirm>0)
                 {
-                    $data['quantity_budget_quantity_confirm']=$quantity_budget_quantity_confirm;
+                    $data['quantity_principal_quantity_confirm']=$quantity_principal_quantity_confirm;
                     $data['revision_count_budget_quantity_confirm']=1;
-                    $revision_count_mgt_budget_quantity_confirm_status=true;
+                    $revision_count_national_budget_quantity_confirm_status=true;
                 }
                 else
                 {
-                    $data['quantity_budget_quantity_confirm']=0;
+                    $data['quantity_principal_quantity_confirm']=0;
                 }
                 /*$data['date_updated_budget'] = $time;
                 $data['user_updated_budget'] = $user->user_id;*/
                 Query_helper::add($this->config->item('table_bms_hom_budget_target_hom'),$data,false);
             }
-            if($revision_count_mgt_budget_quantity_confirm_status)
+            if($revision_count_national_budget_quantity_confirm_status)
             {
                 $data=array();
-                $data['date_updated_mgt_budget_quantity_confirm'] = $time;
-                $data['user_updated_mgt_budget_quantity_confirm'] = $user->user_id;
+                $data['date_updated_national_budget_quantity_confirm'] = $time;
+                $data['user_updated_national_budget_quantity_confirm'] = $user->user_id;
                 // problem:: revision count wrong insert ?
-                //$this->db->set('revision_count_mgt_budget_quantity_confirm','revision_count_mgt_budget_quantity_confirm+1',false);
+                //$this->db->set('revision_count_national_budget_quantity_confirm','revision_count_national_budget_quantity_confirm+1',false);
                 Query_helper::update($this->config->item('table_bms_hom_budget_target'),$data,array('fiscal_year_id ='.$item_head['fiscal_year_id']));
             }
         }
@@ -447,7 +453,7 @@ class Budget_mgt_budget_target extends Root_Controller
             }
             //validation forward
             $get_info_budget_target=$this->get_info_budget_target($fiscal_year_id);
-            if(($get_info_budget_target['status_mgt_target_forward']==$this->config->item('system_status_forwarded')))
+            if(($get_info_budget_target['status_forward_target_national']==$this->config->item('system_status_forwarded')))
             {
                 if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
                 {
@@ -548,19 +554,19 @@ class Budget_mgt_budget_target extends Root_Controller
                 {
                     $item['quantity_budget_hom']='';
                 }
-                if($items_old[$result['variety_id']]['quantity_budget_quantity_confirm']>0)
+                if($items_old[$result['variety_id']]['quantity_principal_quantity_confirm']>0)
                 {
-                    $item['quantity_budget_quantity_confirm']=$items_old[$result['variety_id']]['quantity_budget_quantity_confirm'];
+                    $item['quantity_principal_quantity_confirm']=$items_old[$result['variety_id']]['quantity_principal_quantity_confirm'];
                 }
                 else
                 {
-                    $item['quantity_budget_quantity_confirm']='';
+                    $item['quantity_principal_quantity_confirm']='';
                 }
             }
             else
             {
                 $item['quantity_budget_hom']='';
-                $item['quantity_budget_quantity_confirm']='';
+                $item['quantity_principal_quantity_confirm']='';
             }
             if(isset($stocks[$result['variety_id']]))
             {
@@ -577,7 +583,7 @@ class Budget_mgt_budget_target extends Root_Controller
             {
                 $item['stock_current_hq']='';
             }
-            $item['quantity_target_available']=($item['stock_current_hq']+$item['quantity_budget_quantity_confirm']);
+            $item['quantity_target_available']=($item['stock_current_hq']+$item['quantity_principal_quantity_confirm']);
             $items[]=$item;
         }
         $this->json_return($items);
@@ -604,7 +610,7 @@ class Budget_mgt_budget_target extends Root_Controller
         }
         //validation target forward
         $info_budget_target=$this->get_info_budget_target($item_head['fiscal_year_id']);
-        if(($info_budget_target['status_mgt_target_forward']==$this->config->item('system_status_forwarded')))
+        if(($info_budget_target['status_forward_target_national']==$this->config->item('system_status_forwarded')))
         {
             if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
             {
@@ -621,19 +627,19 @@ class Budget_mgt_budget_target extends Root_Controller
             $items_old[$result['variety_id']]=$result;
         }
         $this->db->trans_start();  //DB Transaction Handle START
-        $revision_count_mgt_budget_quantity_confirm_status=false;
-        foreach($items as $variety_id=>$quantity_budget_quantity_confirm)
+        $revision_count_national_budget_quantity_confirm_status=false;
+        foreach($items as $variety_id=>$quantity_principal_quantity_confirm)
         {
             if(isset($items_old[$variety_id]))
             {
-                if($items_old[$variety_id]['quantity_budget_quantity_confirm']!=$quantity_budget_quantity_confirm && $quantity_budget_quantity_confirm)
+                if($items_old[$variety_id]['quantity_principal_quantity_confirm']!=$quantity_principal_quantity_confirm && $quantity_principal_quantity_confirm)
                 {
                     $this->db->set('revision_count_budget_quantity_confirm','revision_count_budget_quantity_confirm+1',false);
-                    $data['quantity_budget_quantity_confirm']=$quantity_budget_quantity_confirm;
+                    $data['quantity_principal_quantity_confirm']=$quantity_principal_quantity_confirm;
                     /*$data['date_updated_budget']=$time;
                     $data['user_updated_budget']=$user->user_id;*/
                     Query_helper::update($this->config->item('table_bms_hom_budget_target_hom'),$data,array('id='.$items_old[$variety_id]['id']));
-                    $revision_count_mgt_budget_quantity_confirm_status=true;
+                    $revision_count_national_budget_quantity_confirm_status=true;
                 }
             }
             else
@@ -641,27 +647,27 @@ class Budget_mgt_budget_target extends Root_Controller
                 $data=array();
                 $data['fiscal_year_id']=$item_head['fiscal_year_id'];
                 $data['variety_id']=$variety_id;
-                if($quantity_budget_quantity_confirm>0)
+                if($quantity_principal_quantity_confirm>0)
                 {
-                    $data['quantity_budget_quantity_confirm']=$quantity_budget_quantity_confirm;
+                    $data['quantity_principal_quantity_confirm']=$quantity_principal_quantity_confirm;
                     $data['revision_count_budget_quantity_confirm']=1;
-                    $revision_count_mgt_budget_quantity_confirm_status=true;
+                    $revision_count_national_budget_quantity_confirm_status=true;
                 }
                 else
                 {
-                    $data['quantity_budget_quantity_confirm']=0;
+                    $data['quantity_principal_quantity_confirm']=0;
                 }
                 /*$data['date_updated_budget'] = $time;
                 $data['user_updated_budget'] = $user->user_id;*/
                 Query_helper::add($this->config->item('table_bms_hom_budget_target_hom'),$data,false);
             }
-            if($revision_count_mgt_budget_quantity_confirm_status)
+            if($revision_count_national_budget_quantity_confirm_status)
             {
                 $data=array();
-                $data['date_updated_mgt_budget_quantity_confirm'] = $time;
-                $data['user_updated_mgt_budget_quantity_confirm'] = $user->user_id;
+                $data['date_updated_national_budget_quantity_confirm'] = $time;
+                $data['user_updated_national_budget_quantity_confirm'] = $user->user_id;
                 // problem:: revision count wrong insert ?
-                //$this->db->set('revision_count_mgt_budget_quantity_confirm','revision_count_mgt_budget_quantity_confirm+1',false);
+                //$this->db->set('revision_count_national_budget_quantity_confirm','revision_count_national_budget_quantity_confirm+1',false);
                 Query_helper::update($this->config->item('table_bms_hom_budget_target'),$data,array('fiscal_year_id ='.$item_head['fiscal_year_id']));
             }
         }
@@ -679,9 +685,9 @@ class Budget_mgt_budget_target extends Root_Controller
             $this->json_return($ajax);
         }
     }
-    private function system_target_forward($fiscal_year_id=0)
+    private function system_target_forward_national($fiscal_year_id=0)
     {
-        $method='target_forward';
+        $method='target_forward_national';
         if(isset($this->permissions['action7'])&&($this->permissions['action7']==1))
         {
             if(!($fiscal_year_id>0))
@@ -698,7 +704,7 @@ class Budget_mgt_budget_target extends Root_Controller
             }
             //validation forward
             $info_budget_target=$this->get_info_budget_target($fiscal_year_id);
-            if(($info_budget_target['status_mgt_target_forward']==$this->config->item('system_status_forwarded')))
+            if(($info_budget_target['status_forward_target_national']==$this->config->item('system_status_forwarded')))
             {
                 $ajax['status']=false;
                 $ajax['system_message']='Target Already Forwarded.';
@@ -726,7 +732,7 @@ class Budget_mgt_budget_target extends Root_Controller
             $this->json_return($ajax);
         }
     }
-    public function target_forward_items()
+    public function target_forward_national_items()
     {
         $items=array();
         $this->json_return($items);
