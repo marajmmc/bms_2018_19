@@ -42,7 +42,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_FISCAL_YEAR');?></label>
         </div>
         <div class="col-sm-4 col-xs-8">
-            <label class="control-label"><?php echo $fiscal_year_budget_target['name'];?></label>
+            <label class="control-label"><?php echo $fiscal_year['name'];?></label>
         </div>
     </div>
     <div class="panel panel-default">
@@ -119,21 +119,21 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
     </div>
 </div>
 
-<form id="save_form" action="<?php echo site_url($CI->controller_url.'/index/save_forward_budget');?>" method="post">
+<form id="save_form" action="<?php echo site_url($CI->controller_url.'/index/save_forward_target_hom');?>" method="post">
     <input type="hidden" name="item[fiscal_year_id]" value="<?php echo $options['fiscal_year_id']; ?>" />
     <div class="row widget">
         <div class="widget-header">
             <div class="title">
-                Forward Budget
+                Forward HOM Target
             </div>
             <div class="clearfix"></div>
         </div>
         <div class="row show-grid">
             <div class="col-xs-4">
-                <label class="control-label pull-right">Forward Budget<span style="color:#FF0000">*</span></label>
+                <label class="control-label pull-right">Forward Target<span style="color:#FF0000">*</span></label>
             </div>
             <div class="col-sm-4 col-xs-8">
-                <select class="form-control" name="item[status_budget_forward]">
+                <select class="form-control" name="item[status_forward_hom_target]">
                     <option value=""><?php echo $CI->lang->line('SELECT');?></option>
                     <option value="<?php echo $this->config->item('system_status_forwarded')?>">Forward</option>
                 </select>
@@ -162,7 +162,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         system_off_events();
         system_preset({controller:'<?php echo $CI->router->class; ?>'});
 
-        var url = "<?php echo site_url($CI->controller_url.'/budget_forward_items');?>";
+        var url = "<?php echo site_url($CI->controller_url.'/get_items_forward_target_hom');?>";
 
         // prepare the data
         var source =
@@ -176,24 +176,10 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 { name: '<?php echo $key ?>', type: 'string' },
                 <?php
             }
-            foreach($divisions as $division)
-            {
-                    ?>
-                { name: 'quantity_budget_division_<?php echo $division['division_id']?>', type: 'string' },
-                <?php
-            }
             foreach($fiscal_years_previous_sales as $fy)
             {
                     ?>
                 { name: 'quantity_sale_<?php echo $fy['id']; ?>', type: 'string' },
-                <?php
-            }
-            $serial=0;
-            foreach($fiscal_years_next_budgets as $budget)
-            {
-                ++$serial;
-                    ?>
-                { name: 'quantity_budget_<?php echo $serial; ?>', type: 'string' },
                 <?php
             }
             ?>
@@ -203,7 +189,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             url: url,
             data:JSON.parse('<?php echo json_encode($options);?>')
         };
-        var header_render=function (text, align)
+        /*var header_render=function (text, align)
         {
             var words = text.split(" ");
             var label=words[0];
@@ -223,7 +209,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
 
             }
             return '<div style="margin: 5px;">'+label+'</div>';
-        };
+        };*/
         var cellsrenderer = function(row, column, value, defaultHtml, columnSettings, record)
         {
             var element = $(defaultHtml);
@@ -318,42 +304,22 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                         { text: '<?php echo $CI->lang->line('LABEL_VARIETY_NAME'); ?>', dataField: 'variety_name',width:'150',pinned:true,editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer},
                         <?php
                         for($i=sizeof($fiscal_years_previous_sales)-1;$i>=0;$i--)
-                        //foreach($fiscal_years_previous_sales as $fy)
-                            {
-                            ?>
-                        {columngroup: 'previous_years',text: '<?php echo $fiscal_years_previous_sales[$i]['name']; ?>', dataField: 'quantity_sale_<?php echo $fiscal_years_previous_sales[$i]['id']; ?>',width:'100',filterable: false,cellsrenderer: cellsrenderer,align:'center',cellsAlign:'right',editable:false,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
-                                <?php
-                            }
+                        {
                         ?>
-                        { text: 'Total</br>Budget', dataField: 'quantity_budget',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
-                        <?php
-                            $serial=0;
-                            foreach ($fiscal_years_next_budgets as $budget)
-                            {
-                                ++$serial;
-                                ?>
-                                {columngroup: 'next_years',text: '<?php echo $budget['name']; ?>', dataField: 'quantity_budget_<?php echo $serial; ?>',width:'100',filterable: false,cellsrenderer: cellsrenderer,align:'center',cellsAlign:'right',editable:false,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg
-                                },
-                                <?php
-                            }
-                         ?>
-                        { text: 'Total</br>Division Budget', dataField: 'quantity_budget_division_total',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
-                        <?php
-                    $serial=0;
-                    foreach($divisions as $division)
-                    {
-                    ++$serial;
-                    ?>
-                        { text: '<?php echo $serial.'. '.$division['division_name']?>',renderer: header_render, dataField: 'quantity_budget_division_<?php echo $division['division_id']?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
-                        <?php
+                            {columngroup: 'previous_years',text: '<?php echo $fiscal_years_previous_sales[$i]['name']; ?>', dataField: 'quantity_sale_<?php echo $fiscal_years_previous_sales[$i]['id']; ?>',width:'100',filterable: false,cellsrenderer: cellsrenderer,align:'center',cellsAlign:'right',editable:false,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
+                            <?php
                         }
                         ?>
-
+                        { text: 'HQ CS', dataField: 'stock_current_hq',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
+                        { text: 'HOM Qty', dataField: 'quantity_budget_hom',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
+                        { text: 'Qty Needed', dataField: 'quantity_budget_needed',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
+                        { text: 'Principal Qty<br> Confirm <?php echo $fiscal_year['name'];?>', dataField: 'quantity_principal_quantity_confirm',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
+                        { text: 'Available<br> Target Qty', dataField: 'quantity_target_available',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
+                        { text: 'HOM Target<br> Qty <?php echo "".$fiscal_year['name'];?>', dataField: 'quantity_target_hom',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg}
                     ],
                 columngroups:
                     [
-                        { text: '<?php echo $CI->lang->line('LABEL_PREVIOUS_YEARS'); ?> Achieved', align: 'center', name: 'previous_years' },
-                        { text: 'Next Year Budget', align: 'center', name: 'next_years' }
+                        { text: '<?php echo $CI->lang->line('LABEL_PREVIOUS_YEARS'); ?> Achieved', align: 'center', name: 'previous_years' }
                     ]
             });
     });

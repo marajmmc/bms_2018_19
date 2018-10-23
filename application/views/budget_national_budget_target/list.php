@@ -9,7 +9,7 @@ if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(is
         'type'=>'button',
         'label'=>$CI->lang->line('ACTION_EDIT').' National Target',
         'class'=>'button_jqx_action',
-        'data-action-link'=>site_url($CI->controller_url.'/index/edit_target_national')
+        'data-action-link'=>site_url($CI->controller_url.'/index/edit_target_hom')
 
     );
 }
@@ -20,7 +20,7 @@ if((isset($CI->permissions['action7']) && ($CI->permissions['action7']==1)))
         'type'=>'button',
         'label'=>'Forward National Target',
         'class'=>'button_jqx_action',
-        'data-action-link'=>site_url($CI->controller_url.'/index/forward_target_national')
+        'data-action-link'=>site_url($CI->controller_url.'/index/forward_target_hom')
     );
 }
 if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(isset($CI->permissions['action2']) && ($CI->permissions['action2']==1)))
@@ -28,9 +28,9 @@ if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(is
     $action_buttons[]=array
     (
         'type'=>'button',
-        'label'=>$CI->lang->line('ACTION_EDIT').' Next Year Target',
+        'label'=>$CI->lang->line('ACTION_EDIT').' Next 3Y HOM Target',
         'class'=>'button_jqx_action',
-        'data-action-link'=>site_url($CI->controller_url.'/index/edit_target_national_prediction')
+        'data-action-link'=>site_url($CI->controller_url.'/index/edit_target_hom_prediction')
 
     );
 }
@@ -39,9 +39,9 @@ if((isset($CI->permissions['action7']) && ($CI->permissions['action7']==1)))
     $action_buttons[]=array
     (
         'type'=>'button',
-        'label'=>'Forward Next Year Target',
+        'label'=>'Forward Next 3Y HOM Target',
         'class'=>'button_jqx_action',
-        'data-action-link'=>site_url($CI->controller_url.'/index/forward_target_national_prediction')
+        'data-action-link'=>site_url($CI->controller_url.'/index/forward_target_hom_prediction')
     );
 }
 if(isset($CI->permissions['action0']) && ($CI->permissions['action0']==1))
@@ -117,10 +117,10 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             columns:
             [
                 { text: '<?php echo $CI->lang->line('LABEL_FISCAL_YEAR'); ?>', dataField: 'fiscal_year',width:'80',filtertype: 'list'},
-                { text: 'Principal Qty Confirm Time(s)', dataField: 'revision_count_principal_quantity_confirm', width:'100',filtertype: 'list'},
-                { text: 'HOM Targeted Qty Time(s)', dataField: 'revision_count_quantity_target_hom', width:'100',filtertype: 'list'},
-                { text: 'HOM Target Forward Status', dataField: 'status_forward_national_budget_quantity_confirm', width:'100',filtertype: 'list'},
-                { text: 'Next Year Target Forward Status', dataField: 'status_forward_national_target_quantity_prediction', width:'100',filtertype: 'list'}
+                { text: 'Principal Qty Confirm Time(s)', dataField: 'revision_count_principal_quantity_confirm', width:'200',filtertype: 'list'},
+                { text: 'HOM Targeted Qty Time(s)', dataField: 'revision_count_quantity_target_hom', width:'200',filtertype: 'list'},
+                { text: 'HOM Target Fwd Status', dataField: 'status_forward_hom_target', width:'200',filtertype: 'list'},
+                { text: 'Nxt 3Y HOM Target Fwd Status', dataField: 'status_forward_hom_next_year_target', width:'200',filtertype: 'list'}
             ]
         });
     });
