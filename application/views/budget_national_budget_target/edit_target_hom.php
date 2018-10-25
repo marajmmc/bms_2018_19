@@ -147,7 +147,7 @@ echo '</pre>';*/
             for(var i=0;i<data.length;i++)
             {
                 $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+'][quantity_principal_quantity_confirm]" value="'+data[i]['quantity_principal_quantity_confirm']+'">');
-                $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+'][quantity_target_hom]" value="'+data[i]['quantity_target_hom']+'">');
+                $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+'][quantity_target]" value="'+data[i]['quantity_target']+'">');
             }
             var sure = confirm('<?php echo $CI->lang->line('MSG_CONFIRM_SAVE'); ?>');
             if(sure)
@@ -232,7 +232,7 @@ echo '</pre>';*/
                     element.html(get_string_kg(quantity_target_available));
                 }
             }
-            else if(column=='quantity_principal_quantity_confirm' || column=='quantity_target_hom')
+            else if(column=='quantity_principal_quantity_confirm' || column=='quantity_target')
             {
                 element.html('<div class="jqxgrid_input">'+value+'</div>');
             }
@@ -296,7 +296,7 @@ echo '</pre>';*/
                         }
                     },
                     { text: 'Available<br> Target Qty', dataField: 'quantity_target_available',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
-                    { text: 'HOM Target<br> Qty <?php echo "".$fiscal_year['name'];?>',datafield: 'quantity_target_hom', width: 100,filterable: false,cellsrenderer: cellsrenderer,cellsalign: 'right',columntype: 'custom',
+                    { text: 'HOM Target<br> Qty <?php echo "".$fiscal_year['name'];?>',datafield: 'quantity_target', width: 100,filterable: false,cellsrenderer: cellsrenderer,cellsalign: 'right',columntype: 'custom',
                         initeditor: function (row, cellvalue, editor, celltext, pressedkey)
                         {
                             editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');

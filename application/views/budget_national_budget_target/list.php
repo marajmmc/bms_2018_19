@@ -23,27 +23,6 @@ if((isset($CI->permissions['action7']) && ($CI->permissions['action7']==1)))
         'data-action-link'=>site_url($CI->controller_url.'/index/forward_target_hom')
     );
 }
-if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(isset($CI->permissions['action2']) && ($CI->permissions['action2']==1)))
-{
-    $action_buttons[]=array
-    (
-        'type'=>'button',
-        'label'=>$CI->lang->line('ACTION_EDIT').' Next 3Y HOM Target',
-        'class'=>'button_jqx_action',
-        'data-action-link'=>site_url($CI->controller_url.'/index/edit_target_hom_next_year')
-
-    );
-}
-if((isset($CI->permissions['action7']) && ($CI->permissions['action7']==1)))
-{
-    $action_buttons[]=array
-    (
-        'type'=>'button',
-        'label'=>'Forward Next 3Y HOM Target',
-        'class'=>'button_jqx_action',
-        'data-action-link'=>site_url($CI->controller_url.'/index/forward_target_hom_next_year')
-    );
-}
 if(isset($CI->permissions['action0']) && ($CI->permissions['action0']==1))
 {
     $action_buttons[]=array
@@ -118,9 +97,8 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             [
                 { text: '<?php echo $CI->lang->line('LABEL_FISCAL_YEAR'); ?>', dataField: 'fiscal_year',width:'80',filtertype: 'list'},
                 { text: 'Principal Qty Confirm Time(s)', dataField: 'revision_count_principal_quantity_confirm', width:'200',filtertype: 'list'},
-                { text: 'HOM Targeted Qty Time(s)', dataField: 'revision_count_quantity_target_hom', width:'200',filtertype: 'list'},
-                { text: 'HOM Target Fwd Status', dataField: 'status_forward_hom_target', width:'200',filtertype: 'list'},
-                { text: 'Nxt 3Y HOM Target Fwd Status', dataField: 'status_forward_hom_target_next_year', width:'200',filtertype: 'list'}
+                { text: 'HOM Targeted Qty Time(s)', dataField: 'revision_count_target', width:'200',filtertype: 'list'},
+                { text: 'HOM Target Fwd Status', dataField: 'status_target_forward', width:'200',filtertype: 'list'}
             ]
         });
     });

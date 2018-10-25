@@ -133,7 +133,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 <label class="control-label pull-right">Forward Target<span style="color:#FF0000">*</span></label>
             </div>
             <div class="col-sm-4 col-xs-8">
-                <select class="form-control" name="item[status_forward_hom_target]">
+                <select class="form-control" name="item[status_target_forward]">
                     <option value=""><?php echo $CI->lang->line('SELECT');?></option>
                     <option value="<?php echo $this->config->item('system_status_forwarded')?>">Forward</option>
                 </select>
@@ -315,7 +315,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                         { text: 'Qty Needed', dataField: 'quantity_budget_needed',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
                         { text: 'Principal Qty<br> Confirm <?php echo $fiscal_year['name'];?>', dataField: 'quantity_principal_quantity_confirm',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
                         { text: 'Available<br> Target Qty', dataField: 'quantity_target_available',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
-                        { text: 'HOM Target<br> Qty <?php echo "".$fiscal_year['name'];?>', dataField: 'quantity_target_hom',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg}
+                        { text: 'HOM Target<br> Qty <?php echo "".$fiscal_year['name'];?>', dataField: 'quantity_target',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg}
                     ],
                 columngroups:
                     [
