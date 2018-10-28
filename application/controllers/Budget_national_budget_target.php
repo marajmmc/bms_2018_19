@@ -42,6 +42,10 @@ class Budget_national_budget_target extends Root_Controller
         {
             $this->system_forward_target_hom($id);
         }
+        elseif($action=="get_items_forward_target_hom")
+        {
+            $this->system_get_items_forward_target_hom();
+        }
         elseif($action=="save_forward_target_hom")
         {
             $this->system_save_forward_target_hom();
@@ -187,7 +191,7 @@ class Budget_national_budget_target extends Root_Controller
         $fiscal_year_id=$this->input->post('fiscal_year_id');
 
         $fiscal_years_previous_sales=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id <'.$fiscal_year_id),Budget_helper::$NUM_FISCAL_YEAR_PREVIOUS_SALE,0,array('id DESC'));
-        $sales_previous=$this->get_sales_previous_years_hq($fiscal_years_previous_sales);
+        $sales_previous=$this->get_sales_previous_years_hom($fiscal_years_previous_sales);
 
         //HQ Current Stock
         $this->db->from($this->config->item('table_sms_stock_summary_variety').' stock_summary_variety');
@@ -227,60 +231,54 @@ class Budget_national_budget_target extends Root_Controller
         $results=$this->db->get()->result_array();
         foreach($results as $result)
         {
-            $item=$result;
+            $info=$this->initialize_row_edit_target_hom($fiscal_years_previous_sales,$result['crop_name'],$result['crop_type_name'],$result['variety_name']);
             foreach($fiscal_years_previous_sales as $fy)
             {
-                $item['quantity_sale_'.$fy['id']]=0;
                 if(isset($sales_previous[$fy['id']][$result['variety_id']]))
                 {
-                    $item['quantity_sale_'.$fy['id']]=$sales_previous[$fy['id']][$result['variety_id']]/1000;
+                    $info['quantity_sale_'.$fy['id']]=$sales_previous[$fy['id']][$result['variety_id']]/1000;
                 }
             }
-
-            $item['quantity_budget_hom']='';
-            $item['quantity_principal_quantity_confirm']='';
-            $item['quantity_target']='';
             if(isset($items_old[$result['variety_id']]))
             {
-                $item['quantity_budget_hom']='';
-                if($items_old[$result['variety_id']]['quantity_budget']>0)
-                {
-                    $item['quantity_budget_hom']=$items_old[$result['variety_id']]['quantity_budget'];
-                }
-
-                $item['quantity_principal_quantity_confirm']='';
-                if($items_old[$result['variety_id']]['quantity_principal_quantity_confirm']>0)
-                {
-                    $item['quantity_principal_quantity_confirm']=$items_old[$result['variety_id']]['quantity_principal_quantity_confirm'];
-                }
-
-                $item['quantity_target']='';
-                if($items_old[$result['variety_id']]['quantity_target']>0)
-                {
-                    $item['quantity_target']=$items_old[$result['variety_id']]['quantity_target'];
-                }
+                $info['quantity_budget_hom']=$items_old[$result['variety_id']]['quantity_budget'];
+                $info['quantity_principal_quantity_confirm']=$items_old[$result['variety_id']]['quantity_principal_quantity_confirm'];
+                $info['quantity_target']=$items_old[$result['variety_id']]['quantity_target'];
             }
-            
-            $item['stock_current_hq']='';
+
             if(isset($stocks[$result['variety_id']]))
-            {    
-                if($stocks[$result['variety_id']]['current_stock']>0)
-                {
-                    $item['stock_current_hq']=$stocks[$result['variety_id']]['current_stock'];
-                }
+            {
+                $info['stock_current_hq']=$stocks[$result['variety_id']]['current_stock'];
             }
-            
-            $item['quantity_budget_needed']='';
-            $quantity_budget_needed=($item['quantity_budget_hom']-$item['stock_current_hq']);
+
+            $quantity_budget_needed=($info['quantity_budget_hom']-$info['stock_current_hq']);
             if($quantity_budget_needed>0)
             {
-                $item['quantity_budget_needed']=$quantity_budget_needed;
+                $info['quantity_budget_needed']=$quantity_budget_needed;
             }
-            $item['quantity_target_available']=($item['stock_current_hq']+$item['quantity_principal_quantity_confirm']);
-            $items[]=$item;
+            $info['quantity_target_available']=($info['stock_current_hq']+$info['quantity_principal_quantity_confirm']);
+            $items[]=$info;
         }
 
         $this->json_return($items);
+    }
+    private function initialize_row_edit_target_hom($fiscal_years,$crop_name,$crop_type_name,$variety_name)
+    {
+        $row=array();
+        $row['crop_name']=$crop_name;
+        $row['crop_type_name']=$crop_type_name;
+        $row['variety_name']=$variety_name;
+        foreach($fiscal_years as $fy)
+        {
+            $row['quantity_sale_'.$fy['id']]=0;
+        }
+        $row['quantity_budget_hom']=0;
+        $row['quantity_principal_quantity_confirm']=0;
+        $row['quantity_target']=0;
+        $row['stock_current_hq']=0;
+        $row['quantity_budget_needed']=0;
+        $row['quantity_target_available']=0;
+        return $row;
     }
     private function system_save_target_hom()
     {
@@ -456,13 +454,13 @@ class Budget_national_budget_target extends Root_Controller
             $this->json_return($ajax);
         }
     }
-    public function get_items_forward_target_hom()
+    private function system_get_items_forward_target_hom()
     {
         $items=array();
         //$this->json_return($items);
         $fiscal_year_id=$this->input->post('fiscal_year_id');
         $fiscal_years_previous_sales=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id <'.$fiscal_year_id),Budget_helper::$NUM_FISCAL_YEAR_PREVIOUS_SALE,0,array('id DESC'));
-        $sales_previous=$this->get_sales_previous_years_hq($fiscal_years_previous_sales);
+        $sales_previous=$this->get_sales_previous_years_hom($fiscal_years_previous_sales);
 
         //HQ Current Stock
         $this->db->from($this->config->item('table_sms_stock_summary_variety').' stock_summary_variety');
@@ -720,7 +718,7 @@ class Budget_national_budget_target extends Root_Controller
         $info=Query_helper::get_info($this->config->item('table_bms_hom_budget_target'),'*',array('fiscal_year_id ='.$fiscal_year_id),1);
         return $info;
     }
-    private function get_sales_previous_years_hq($fiscal_years)
+    private function get_sales_previous_years_hom($fiscal_years)
     {
         $sales=array();
         foreach($fiscal_years as $fy)

@@ -21,9 +21,16 @@ class Test extends CI_Controller {
     public function index()
     {
         //$this->user_order();
-        echo base_url('maraj');
+        /*echo base_url('maraj');
         echo "<br />";
-        echo site_url('maraj');
+        echo site_url('maraj');*/
+        $a='';
+        for($i=1; $i<10; $i++)
+        {
+            $a=$a.$i;
+            echo '<br />'.$a;
+        }
+
     }
     public function get_child_ids_designation($designation_id)
     {

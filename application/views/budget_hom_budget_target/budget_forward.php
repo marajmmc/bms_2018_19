@@ -162,7 +162,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         system_off_events();
         system_preset({controller:'<?php echo $CI->router->class; ?>'});
 
-        var url = "<?php echo site_url($CI->controller_url.'/budget_forward_items');?>";
+        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_forward_budget_hom');?>";
 
         // prepare the data
         var source =
