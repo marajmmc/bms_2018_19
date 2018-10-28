@@ -984,12 +984,18 @@ class Budget_hom_budget_target extends Root_Controller
             }
             //validation forward
             $info_budget_target=$this->get_info_budget_target($fiscal_year_id);
-            if(($info_budget_target['status_budget_forward']==$this->config->item('system_status_forwarded')))
+            if(($info_budget_target['status_target_forward']!=$this->config->item('system_status_forwarded')))
+            {
+                $ajax['status']=false;
+                $ajax['system_message']='HOM Target Not Forwarded.';
+                $this->json_return($ajax);
+            }
+            if(($info_budget_target['status_target_di_forward']==$this->config->item('system_status_forwarded')))
             {
                 if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
                 {
                     $ajax['status']=false;
-                    $ajax['system_message']='Budget Already Forwarded.';
+                    $ajax['system_message']='DI Target Already Assigned.';
                     $this->json_return($ajax);
                 }
             }
