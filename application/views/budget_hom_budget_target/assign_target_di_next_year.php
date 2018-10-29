@@ -5,7 +5,7 @@ $action_buttons=array();
 $action_buttons[]=array
 (
     'label'=>$CI->lang->line("ACTION_BACK"),
-    'href'=>site_url($CI->controller_url.'/index/list_target_di/'.$options['fiscal_year_id'])
+    'href'=>site_url($CI->controller_url.'/index/list_target_di_next_year/'.$options['fiscal_year_id'])
 );
 if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(isset($CI->permissions['action2']) && ($CI->permissions['action2']==1)))
 {
@@ -126,7 +126,7 @@ echo '</pre>';*/
             ?>
         </div>
     </div>
-    <form id="save_form_jqx" action="<?php echo site_url($CI->controller_url.'/index/save_target_di');?>" method="post">
+    <form id="save_form_jqx" action="<?php echo site_url($CI->controller_url.'/index/save_target_di_next_year');?>" method="post">
         <input type="hidden" name="item[fiscal_year_id]" value="<?php echo $options['fiscal_year_id']; ?>" />
         <div id="jqx_inputs">
         </div>
@@ -158,7 +158,7 @@ echo '</pre>';*/
             }
         });
 
-        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_assign_target_di');?>";
+        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_assign_target_di_next_year');?>";
 
         // prepare the data
         var source =
@@ -170,6 +170,14 @@ echo '</pre>';*/
                  {
                     ?>
                 { name: '<?php echo $key ?>', type: 'string' },
+                <?php
+            }
+            $serial=0;
+            foreach($fiscal_years_next_budgets as $budget)
+            {
+                ++$serial;
+                    ?>
+                { name: 'quantity_prediction_<?php echo $serial; ?>', type: 'string' },
                 <?php
             }
             foreach($divisions as $division)
@@ -278,36 +286,39 @@ echo '</pre>';*/
                     { text: 'Total Target', dataField: 'quantity_target',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
                     <?php
                     $serial=0;
-                    foreach($divisions as $division)
+                    foreach($fiscal_years_next_budgets as $budget)
                     {
-                    ++$serial;
-                    ?>
-                    { columngroup: 'assign_targeted_division',text: '<?php echo $serial.'. '.$division['division_name']?>',datafield: 'quantity_target_division_<?php echo $division['division_id']?>', width: 100,filterable: false,cellsalign: 'right',cellsrenderer: cellsrenderer,columntype: 'custom',
-                        cellbeginedit: function (row)
+                        ++$serial;
+                        ?>
+                        { columngroup: 'next_years_<?php echo $serial;?>', text: 'Prediction', dataField: 'quantity_prediction_<?php echo $serial;?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
+                        <?php
+                        $division_sl=0;
+                        foreach($divisions as $division)
                         {
-                            var selectedRowData = $('#system_jqx_container').jqxGrid('getrowdata', row);//only last selected
-                            return selectedRowData['editable_<?php echo $serial; ?>'];
-                        },
-                        initeditor: function (row, cellvalue, editor, celltext, pressedkey)
-                        {
-                            editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');
-                        },
-                        geteditorvalue: function (row, cellvalue, editor)
-                        {
-                            // return the editor's value.
-                            var value=editor.find('input').val();
-                            var selectedRowData = $('#system_jqx_container').jqxGrid('getrowdata', row);
-                            return editor.find('input').val();
+                            ++$division_sl;
+                            ?>
+                            {columngroup: 'next_years_<?php echo $serial;?>', text: '<?php echo $division_sl.'. '.$division['division_name']?>', dataField: 'quantity_target_division_<?php echo $serial;?>_<?php echo $division['division_id']?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
+                            <?php
                         }
-                    },
-                    <?php
+                        ?>
+                        { columngroup: 'next_years_<?php echo $serial;?>', text: 'Total Target', dataField: 'quantity_target_total_di_<?php echo $serial;?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
+                        <?php
                     }
                     ?>
                     { text: 'Total DI Target', dataField: 'quantity_target_division_total',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer}
                 ],
                 columngroups:
                 [
-                    { text: 'Assign Target Division List', align: 'center', name: 'assign_targeted_division' }
+                    <?php
+                    $serial=0;
+                    foreach($fiscal_years_next_budgets as $budget)
+                    {
+                        ++$serial;
+                        ?>
+                        { text: '<?php echo $budget['name']; ?>', align: 'center', name: 'next_years_<?php echo $serial;?>' },
+                        <?php
+                    }
+                    ?>
                 ]
             });
     });
