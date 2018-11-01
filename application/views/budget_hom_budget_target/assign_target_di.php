@@ -148,8 +148,15 @@ echo '</pre>';*/
             var data=$('#system_jqx_container').jqxGrid('getrows');
             for(var i=0;i<data.length;i++)
             {
-                $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+']" value="'+data[i]['quantity_budget']+'">');
-
+                //$('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+']" value="'+data[i]['quantity_budget']+'">');
+                <?php
+                foreach($divisions as $division)
+                {
+                ?>
+                $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items_quantity_target[<?php echo $division['division_id']?>]['+data[i]['variety_id']+']" value="'+data[i]['quantity_target_division_<?php echo $division['division_id']; ?>']+'">');
+                <?php
+            }
+            ?>
             }
             var sure = confirm('<?php echo $CI->lang->line('MSG_CONFIRM_SAVE'); ?>');
             if(sure)
@@ -233,13 +240,20 @@ echo '</pre>';*/
                 <?php
                 }
                 ?>
-                if(quantity_target_division_total==0)
+                if(quantity_target_division_total>0)
+                {
+                    if(quantity_target_division_total==parseFloat(record['quantity_target']))
+                    {
+                        element.html('<div style="background-color: green; color: #ffffff; padding-right: 5px;">'+get_string_kg(quantity_target_division_total)+'</div>');
+                    }
+                    else
+                    {
+                        element.html('<div style="background-color: red; color: #ffffff; padding-right: 5px;">'+get_string_kg(quantity_target_division_total)+'</div>');
+                    }
+                }
+                else
                 {
                     element.html('');
-                }
-                else if(quantity_target_division_total>0)
-                {
-                    element.html(get_string_kg(quantity_target_division_total));
                 }
             }
             else if(column.substr(0,25)=='quantity_target_division_')

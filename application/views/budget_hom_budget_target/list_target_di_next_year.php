@@ -93,7 +93,8 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 columns:
                 [
                     { text: '<?php echo $CI->lang->line('LABEL_ID'); ?>', dataField: 'crop_id',width:'50',cellsAlign:'right'},
-                    { text: '<?php echo $CI->lang->line('LABEL_CROP_NAME'); ?>', dataField: 'crop_name', width:100}
+                    { text: '<?php echo $CI->lang->line('LABEL_CROP_NAME'); ?>', dataField: 'crop_name', width:100},
+                    { text: 'Targeted Time(s)', dataField: 'revision_count_target_prediction', width:'100',filtertype: 'list',cellsAlign:'right'}
                 ]
             });
     });
