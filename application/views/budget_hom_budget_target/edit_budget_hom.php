@@ -307,6 +307,17 @@ echo '</pre>';*/
                             return editor.find('input').val();
                         }
                     },
+                    { text: 'Total</br>Budget', dataField: 'quantity_budget_division_total',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
+                    <?php
+                    $serial=0;
+                    foreach($divisions as $division)
+                    {
+                    ++$serial;
+                    ?>
+                    { text: '<?php echo $serial.'. '.$division['division_name']?>',dataField: 'quantity_budget_division_<?php echo $division['division_id']?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
+                    <?php
+                    }
+                    ?>
                     <?php
                     $serial=0;
                     foreach ($fiscal_years_next_budgets as $budget)
@@ -330,17 +341,7 @@ echo '</pre>';*/
                     }
                      ?>
                     
-                    { text: 'Total</br>Budget', dataField: 'quantity_budget_division_total',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
-                    <?php
-                    $serial=0;
-                    foreach($divisions as $division)
-                    {
-                    ++$serial;
-                    ?>
-                    { text: '<?php echo $serial.'. '.$division['division_name']?>',dataField: 'quantity_budget_division_<?php echo $division['division_id']?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
-                    <?php
-                    }
-                    ?>
+
 
                 ],
                 columngroups:
