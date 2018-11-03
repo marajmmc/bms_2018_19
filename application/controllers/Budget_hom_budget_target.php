@@ -1856,8 +1856,8 @@ class Budget_hom_budget_target extends Root_Controller
         $user = User_helper::get_user();
         $time=time();
         $item_head=$this->input->post('item');
-        //$items=$this->input->post('items');
-        $items_quantity_target=$this->input->post('items_quantity_target');
+        $items=$this->input->post('items');
+        //$items_quantity_target=$this->input->post('items_quantity_target');
 
         if(!((isset($this->permissions['action1']) && ($this->permissions['action1']==1))||(isset($this->permissions['action2']) && ($this->permissions['action2']==1))))
         {
@@ -1901,36 +1901,39 @@ class Budget_hom_budget_target extends Root_Controller
 
         $this->db->trans_start();  //DB Transaction Handle START
 
-        foreach($items_quantity_target as $variety_id=>$divisions)
+        foreach($items as $variety_id=>$variety_info)
         {
-            foreach($divisions as $division_id=>$quantity_target)
+            foreach($variety_info as $division_id=>$quantity_info)
             {
                 $quantity_prediction_1=0;
                 $quantity_prediction_2=0;
                 $quantity_prediction_3=0;
-                if(isset($items_quantity_target[$variety_id][$division_id][1]))
+                if(isset($quantity_info['quantity_prediction_1']))
                 {
-                    $quantity_prediction_1=$items_quantity_target[$variety_id][$division_id][1];
+                    $quantity_prediction_1=$quantity_info['quantity_prediction_1'];
                 }
-                if(isset($items_quantity_target[$variety_id][$division_id][2]))
+                if(isset($quantity_info['quantity_prediction_2']))
                 {
-                    $quantity_prediction_2=$items_quantity_target[$variety_id][$division_id][2];
+                    $quantity_prediction_2=$quantity_info['quantity_prediction_2'];
                 }
-                if(isset($items_quantity_target[$variety_id][$division_id][3]))
+                if(isset($quantity_info['quantity_prediction_3']))
                 {
-                    $quantity_prediction_3=$items_quantity_target[$variety_id][$division_id][3];
+                    $quantity_prediction_3=$quantity_info['quantity_prediction_3'];
                 }
 
                 if(isset($items_old[$variety_id][$division_id]))
                 {
-                    $data=array();
-                    $data['quantity_prediction_1']=$quantity_prediction_1;
-                    $data['quantity_prediction_2']=$quantity_prediction_2;
-                    $data['quantity_prediction_3']=$quantity_prediction_3;
-                    $data['date_updated_prediction_target']=$time;
-                    $data['user_updated_prediction_target']=$user->user_id;
-                    $this->db->set('revision_count_target_prediction','revision_count_target_prediction+1',false);
-                    Query_helper::update($this->config->item('table_bms_di_budget_target_division'),$data,array('id='.$items_old[$variety_id][$division_id]['id']));
+                    if(($items_old[$variety_id][$division_id]['quantity_prediction_1']!=$quantity_prediction_1) || ($items_old[$variety_id][$division_id]['quantity_prediction_2']!=$quantity_prediction_2) || ($items_old[$variety_id][$division_id]['quantity_prediction_2']!=$quantity_prediction_2))
+                    {
+                        $data=array();
+                        $data['quantity_prediction_1']=$quantity_prediction_1;
+                        $data['quantity_prediction_2']=$quantity_prediction_2;
+                        $data['quantity_prediction_3']=$quantity_prediction_3;
+                        $data['date_updated_prediction_target']=$time;
+                        $data['user_updated_prediction_target']=$user->user_id;
+                        $this->db->set('revision_count_target_prediction','revision_count_target_prediction+1',false);
+                        Query_helper::update($this->config->item('table_bms_di_budget_target_division'),$data,array('id='.$items_old[$variety_id][$division_id]['id']));
+                    }
                 }
                 else
                 {
@@ -1948,8 +1951,6 @@ class Budget_hom_budget_target extends Root_Controller
                 }
             }
         }
-
-
 
         /*foreach($items_quantity_target as $division_id=>$varieties)
         {
