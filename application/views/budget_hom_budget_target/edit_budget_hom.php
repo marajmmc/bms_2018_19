@@ -148,14 +148,14 @@ echo '</pre>';*/
             var data=$('#system_jqx_container').jqxGrid('getrows');
             for(var i=0;i<data.length;i++)
             {
-                $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+']" value="'+data[i]['quantity_budget']+'">');
+                $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+'][quantity_budget]" value="'+data[i]['quantity_budget']+'">');
                 <?php 
                 $serial=0;
                 foreach($fiscal_years_next_budgets as $budget)
                 {
                     ++$serial;
                         ?>
-                    $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items_quantity_budget[<?php echo $serial;?>]['+data[i]['variety_id']+']" value="'+data[i]['quantity_prediction_<?php echo $serial; ?>']+'">');
+                    $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+'][quantity_prediction_<?php echo $serial;?>]" value="'+data[i]['quantity_prediction_<?php echo $serial; ?>']+'">');
                     <?php
                 }
                 ?>
@@ -314,11 +314,6 @@ echo '</pre>';*/
                     ++$serial;
                     ?>
                     { columngroup: 'next_years',text: '<?php echo $budget['name']; ?>',datafield: 'quantity_prediction_<?php echo $serial; ?>', width: 100,filterable: false,cellsalign: 'right',cellsrenderer: cellsrenderer,columntype: 'custom',
-                        cellbeginedit: function (row)
-                        {
-                            var selectedRowData = $('#system_jqx_container').jqxGrid('getrowdata', row);//only last selected
-                            return selectedRowData['editable_<?php echo $serial; ?>'];
-                        },
                         initeditor: function (row, cellvalue, editor, celltext, pressedkey)
                         {
                             editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');

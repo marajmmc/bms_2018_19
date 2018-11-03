@@ -450,7 +450,7 @@ class Budget_hom_budget_target extends Root_Controller
         $results=$this->db->get()->result_array();
         foreach($results as $result)
         {
-            $info=$this->initialize_row_edit_budget_hom($fiscal_years_previous_sales,$division_ids,$result['crop_type_name'],$result['variety_name']);
+            $info=$this->initialize_row_edit_budget_hom($fiscal_years_previous_sales,$division_ids,$result);
             foreach($fiscal_years_previous_sales as $fy)
             {
                 if(isset($sales_previous[$fy['id']][$result['variety_id']]))
@@ -490,11 +490,12 @@ class Budget_hom_budget_target extends Root_Controller
 
         $this->json_return($items);
     }
-    private function initialize_row_edit_budget_hom($fiscal_years,$zone_ids,$crop_type_name,$variety_name)
+    private function initialize_row_edit_budget_hom($fiscal_years,$zone_ids,$info)
     {
         $row=array();
-        $row['crop_type_name']=$crop_type_name;
-        $row['variety_name']=$variety_name;
+        $row['crop_type_name']=$info['crop_type_name'];
+        $row['variety_name']=$info['variety_name'];
+        $row['variety_id']=$info['variety_id'];
 
         $row['quantity_budget']=0;
         $row['quantity_prediction_1']=0;
@@ -519,7 +520,7 @@ class Budget_hom_budget_target extends Root_Controller
         $time=time();
         $item_head=$this->input->post('item');
         $items=$this->input->post('items');
-        $items_quantity_budget=$this->input->post('items_quantity_budget');
+
         if(!((isset($this->permissions['action1']) && ($this->permissions['action1']==1))||(isset($this->permissions['action2']) && ($this->permissions['action2']==1))))
         {
             $ajax['status']=false;
@@ -552,30 +553,32 @@ class Budget_hom_budget_target extends Root_Controller
         {
             $items_old[$result['variety_id']]=$result;
         }
-        $fiscal_years_next_budgets=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id >'.$item_head['fiscal_year_id']),Budget_helper::$NUM_FISCAL_YEAR_NEXT_BUDGET_TARGET,0);
+
         $this->db->trans_start();  //DB Transaction Handle START
-        foreach($items as $variety_id=>$quantity_budget)
+        foreach($items as $variety_id=>$quantity_info)
         {
+            $quantity_budget=$quantity_info['quantity_budget'];
             $quantity_prediction_1=0;
             $quantity_prediction_2=0;
             $quantity_prediction_3=0;
-            if(isset($items_quantity_budget[1][$variety_id]))
+            if(isset($quantity_info['quantity_prediction_1']))
             {
-                $quantity_prediction_1=$items_quantity_budget[1][$variety_id];
+                $quantity_prediction_1=$quantity_info['quantity_prediction_1'];
             }
-            if(isset($items_quantity_budget[2][$variety_id]))
+            if(isset($quantity_info['quantity_prediction_2']))
             {
-                $quantity_prediction_2=$items_quantity_budget[2][$variety_id];
+                $quantity_prediction_2=$quantity_info['quantity_prediction_2'];
             }
-            if(isset($items_quantity_budget[3][$variety_id]))
+            if(isset($quantity_info['quantity_prediction_3']))
             {
-                $quantity_prediction_3=$items_quantity_budget[3][$variety_id];
+                $quantity_prediction_3=$quantity_info['quantity_prediction_3'];
             }
+
             if(isset($items_old[$variety_id]))
             {
                 if(($items_old[$variety_id]['quantity_budget'] != $quantity_budget)|| ($items_old[$variety_id]['quantity_prediction_1'] != $quantity_prediction_1) || ($items_old[$variety_id]['quantity_prediction_2'] != $quantity_prediction_2) || ($items_old[$variety_id]['quantity_prediction_3'] != $quantity_prediction_3))
                 {
-                    if($items_old[$variety_id]['quantity_budget']!=$quantity_budget && $quantity_budget)
+                    if($items_old[$variety_id]['quantity_budget']!=$quantity_budget)
                     {
                         $this->db->set('revision_count_budget','revision_count_budget+1',false);
                     }
@@ -838,7 +841,7 @@ class Budget_hom_budget_target extends Root_Controller
         $this->json_return($items);
 
     }
-    private function initialize_row($fiscal_years,$zone_ids,$crop_name,$crop_type_name,$variety_name)
+    private function initialize_row($fiscal_years,$division_ids,$crop_name,$crop_type_name,$variety_name)
     {
         $row=array();
         $row['crop_name']=$crop_name;
@@ -855,9 +858,9 @@ class Budget_hom_budget_target extends Root_Controller
         {
             $row['quantity_sale_'.$fy['id']]=0;
         }
-        foreach($zone_ids as $zone_id)
+        foreach($division_ids as $division_id)
         {
-            $row['quantity_budget_division_'.$zone_id]= 0;
+            $row['quantity_budget_division_'.$division_id]= 0;
         }
 
         return $row;
