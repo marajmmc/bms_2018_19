@@ -153,7 +153,7 @@ echo '</pre>';*/
                 foreach($divisions as $division)
                 {
                 ?>
-                $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items_quantity_target[<?php echo $division['division_id']?>]['+data[i]['variety_id']+']" value="'+data[i]['quantity_target_division_<?php echo $division['division_id']; ?>']+'">');
+                $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+'][<?php echo $division['division_id']?>][quantity_target]" value="'+data[i]['quantity_target_division_<?php echo $division['division_id']; ?>']+'">');
                 <?php
             }
             ?>

@@ -588,7 +588,7 @@ class Budget_hom_budget_target extends Root_Controller
                     $data['quantity_budget']=$quantity_budget;
                     $data['date_updated_budget']=$time;
                     $data['user_updated_budget']=$user->user_id;
-                    Query_helper::update($this->config->item('table_bms_hom_budget_target_hom'),$data,array('id='.$items_old[$variety_id]['id']));
+                    Query_helper::update($this->config->item('table_bms_hom_budget_target_hom'),$data,array('id='.$items_old[$variety_id]['id']),false);
                 }
             }
             else
@@ -1195,8 +1195,8 @@ class Budget_hom_budget_target extends Root_Controller
         $user = User_helper::get_user();
         $time=time();
         $item_head=$this->input->post('item');
-        //$items=$this->input->post('items');
-        $items_quantity_target=$this->input->post('items_quantity_target');
+        $items=$this->input->post('items');
+        //$items_quantity_target=$this->input->post('items_quantity_target');
         if(!((isset($this->permissions['action1']) && ($this->permissions['action1']==1))||(isset($this->permissions['action2']) && ($this->permissions['action2']==1))))
         {
             $ajax['status']=false;
@@ -1239,20 +1239,20 @@ class Budget_hom_budget_target extends Root_Controller
 
         $this->db->trans_start();  //DB Transaction Handle START
 
-        foreach($items_quantity_target as $division_id=>$varieties)
+        foreach($items as $variety_id=>$variety_info)
         {
-            foreach($varieties as $variety_id=>$quantity_target)
+            foreach($variety_info as $division_id=>$quantity_info)
             {
                 if(isset($items_old[$division_id][$variety_id]))
                 {
-                    if($items_old[$division_id][$variety_id]['quantity_target']!=$quantity_target)
+                    if($items_old[$division_id][$variety_id]['quantity_target']!=$quantity_info['quantity_target'])
                     {
                         $data=array();
-                        $data['quantity_target']=$quantity_target;
+                        $data['quantity_target']=$quantity_info['quantity_target'];
                         $data['date_updated_target']=$time;
                         $data['user_updated_target']=$user->user_id;
                         $this->db->set('revision_count_target','revision_count_target+1',false);
-                        Query_helper::update($this->config->item('table_bms_di_budget_target_division'),$data,array('id='.$items_old[$division_id][$variety_id]['id']));
+                        Query_helper::update($this->config->item('table_bms_di_budget_target_division'),$data,array('id='.$items_old[$division_id][$variety_id]['id']),false);
                     }
                 }
                 else
@@ -1261,9 +1261,9 @@ class Budget_hom_budget_target extends Root_Controller
                     $data['fiscal_year_id']=$item_head['fiscal_year_id'];
                     $data['division_id']=$division_id;
                     $data['variety_id']=$variety_id;
-                    if($quantity_target>0)
+                    if($quantity_info['quantity_target']>0)
                     {
-                        $data['quantity_target']=$quantity_target;
+                        $data['quantity_target']=$quantity_info['quantity_target'];
                         $data['revision_count_target']=1;
                     }
                     else
