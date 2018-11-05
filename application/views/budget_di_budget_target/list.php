@@ -7,7 +7,7 @@ if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(is
     $action_buttons[]=array
     (
         'type'=>'button',
-        'label'=>$CI->lang->line('ACTION_EDIT').' DI Budget',
+        'label'=>$CI->lang->line('ACTION_EDIT').' Budget',
         'class'=>'button_jqx_action',
         'data-action-link'=>site_url($CI->controller_url.'/index/list_budget_division')
 
@@ -21,6 +21,48 @@ if((isset($CI->permissions['action7']) && ($CI->permissions['action7']==1)))
         'label'=>'Forward Budget',
         'class'=>'button_jqx_action',
         'data-action-link'=>site_url($CI->controller_url.'/index/budget_forward')
+    );
+}
+if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(isset($CI->permissions['action2']) && ($CI->permissions['action2']==1)))
+{
+    $action_buttons[]=array
+    (
+        'type'=>'button',
+        'label'=>' Assign TI Target',
+        'class'=>'button_jqx_action',
+        'data-action-link'=>site_url($CI->controller_url.'/index/list_target_ti')
+
+    );
+}
+if((isset($CI->permissions['action7']) && ($CI->permissions['action7']==1)))
+{
+    $action_buttons[]=array
+    (
+        'type'=>'button',
+        'label'=>'Forward TI Target',
+        'class'=>'button_jqx_action',
+        'data-action-link'=>site_url($CI->controller_url.'/index/assign_target_ti_forward')
+    );
+}
+if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(isset($CI->permissions['action2']) && ($CI->permissions['action2']==1)))
+{
+    $action_buttons[]=array
+    (
+        'type'=>'button',
+        'label'=>' Next 3Y TI Target',
+        'class'=>'button_jqx_action',
+        'data-action-link'=>site_url($CI->controller_url.'/index/list_target_ti_next_year')
+
+    );
+}
+if((isset($CI->permissions['action7']) && ($CI->permissions['action7']==1)))
+{
+    $action_buttons[]=array
+    (
+        'type'=>'button',
+        'label'=>'Forward Next 3Y TI Target',
+        'class'=>'button_jqx_action',
+        'data-action-link'=>site_url($CI->controller_url.'/index/assign_target_ti_forward_next_year')
     );
 }
 if(isset($CI->permissions['action0']) && ($CI->permissions['action0']==1))
@@ -97,7 +139,9 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 [
                     { text: '<?php echo $CI->lang->line('LABEL_FISCAL_YEAR'); ?>', dataField: 'fiscal_year',width:'80',filtertype: 'list'},
                     { text: '<?php echo $CI->lang->line('LABEL_DIVISION_NAME'); ?>', dataField: 'division_name',width:'200',filtertype: 'list'},
-                    { text: '<?php echo $CI->lang->line('LABEL_STATUS_BUDGET_FORWARD'); ?>', dataField: 'status_budget_forward', width:'100',filtertype: 'list'}
+                    { text: '<?php echo $CI->lang->line('LABEL_STATUS_BUDGET_FORWARD'); ?>', dataField: 'status_budget_forward', width:'100',filtertype: 'list'},
+                    { text: '(TI) <?php echo $CI->lang->line('LABEL_STATUS_TARGET_FORWARD'); ?>', dataField: 'status_target_ti_forward', width:'150',filtertype: 'list'},
+                    { text: '(TI NXT 3Y) <?php echo $CI->lang->line('LABEL_STATUS_TARGET_FORWARD'); ?>', dataField: 'status_target_ti_next_year_forward', width:'150',filtertype: 'list'}
                 ]
             });
     });

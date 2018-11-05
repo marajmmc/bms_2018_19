@@ -95,6 +95,8 @@ class Budget_di_budget_target extends Root_Controller
             $data['division_id']= 1;
             $data['division_name']= 1;
             $data['status_budget_forward']= 1;
+            $data['status_target_ti_forward']= 1;
+            $data['status_target_ti_next_year_forward']= 1;
         }
         else if($method=='list_budget_division')
         {
@@ -123,6 +125,8 @@ class Budget_di_budget_target extends Root_Controller
         }
         return $data;
     }
+
+    // Budget & Target main list
     private function system_list()
     {
         //$user = User_helper::get_user();
@@ -151,7 +155,7 @@ class Budget_di_budget_target extends Root_Controller
     {
         $fiscal_years=Budget_helper::get_fiscal_years();
         $this->db->from($this->config->item('table_bms_di_budget_target').' budget_target');
-        $this->db->select('budget_target.status_budget_forward');
+        $this->db->select('budget_target.status_budget_forward, budget_target.status_target_ti_forward, budget_target.status_target_ti_next_year_forward');
         $this->db->select('budget_target.fiscal_year_id');
         $this->db->select('budget_target.division_id');
         $this->db->where_in('budget_target.division_id',$this->user_division_ids);
@@ -174,16 +178,22 @@ class Budget_di_budget_target extends Root_Controller
                 if(isset($budget_target[$fy['id']][$division['division_id']]))
                 {
                     $data['status_budget_forward']=$budget_target[$fy['id']][$division['division_id']]['status_budget_forward'];
+                    $data['status_target_ti_forward']=$budget_target[$fy['id']][$division['division_id']]['status_target_ti_forward'];
+                    $data['status_target_ti_next_year_forward']=$budget_target[$fy['id']][$division['division_id']]['status_target_ti_next_year_forward'];
                 }
                 else
                 {
                     $data['status_budget_forward']=$this->config->item('system_status_pending');
+                    $data['status_target_ti_forward']=$this->config->item('system_status_pending');
+                    $data['status_target_ti_next_year_forward']=$this->config->item('system_status_pending');
                 }
                 $items[]=$data;
             }
         }
         $this->json_return($items);
     }
+
+    // Budget Edit
     private function system_list_budget_division($fiscal_year_id=0,$division_id=0)
     {
         //$user = User_helper::get_user();
@@ -416,60 +426,65 @@ class Budget_di_budget_target extends Root_Controller
         $results=$this->db->get()->result_array();
         foreach($results as $result)
         {
-            $item=$result;
+            $info=$this->initialize_row_edit_budget_division($fiscal_years_previous_sales,$zone_ids,$result);
             foreach($fiscal_years_previous_sales as $fy)
             {
                 if(isset($sales_previous[$fy['id']][$result['variety_id']]))
                 {
-                    $item['quantity_sale_'.$fy['id']]=$sales_previous[$fy['id']][$result['variety_id']]/1000;
-                }
-                else
-                {
-                    $item['quantity_sale_'.$fy['id']]=0;
+                    $info['quantity_sale_'.$fy['id']]=$sales_previous[$fy['id']][$result['variety_id']]/1000;
                 }
             }
 
             $quantity_budget_zone_total=0;
             foreach($zones as $zone)
             {
+                $info['quantity_budget_zone_'.$zone['zone_id']]= 'N/D';
                 if(isset($budget_zones[$zone['zone_id']][$result['variety_id']]))
                 {
                     if($budget_zones[$zone['zone_id']][$result['variety_id']]['status_budget_forward']==$this->config->item('system_status_pending'))
                     {
-                        $item['quantity_budget_zone_'.$zone['zone_id']]= 'N/F';
+                        $info['quantity_budget_zone_'.$zone['zone_id']]= 'N/F';
                     }
                     else
                     {
-                        $item['quantity_budget_zone_'.$zone['zone_id']]= $budget_zones[$zone['zone_id']][$result['variety_id']]['quantity_budget'];
+                        $info['quantity_budget_zone_'.$zone['zone_id']]= $budget_zones[$zone['zone_id']][$result['variety_id']]['quantity_budget'];
                         $quantity_budget_zone_total+=$budget_zones[$zone['zone_id']][$result['variety_id']]['quantity_budget'];
                     }
                 }
-                else
-                {
-                    $item['quantity_budget_zone_'.$zone['zone_id']]= 'N/D';
-                }
             }
-            $item['quantity_budget_zone_total']= $quantity_budget_zone_total;
+            $info['quantity_budget_zone_total']= $quantity_budget_zone_total;
 
             if(isset($items_old[$result['variety_id']]))
             {
-                if($items_old[$result['variety_id']]['quantity_budget']>0)
-                {
-                    $item['quantity_budget']=$items_old[$result['variety_id']]['quantity_budget'];
-                }
-                else
-                {
-                    $item['quantity_budget']='';
-                }
+                $info['quantity_budget']=$items_old[$result['variety_id']]['quantity_budget'];
             }
-            else
-            {
-                $item['quantity_budget']='';
-            }
-            $items[]=$item;
+
+            $items[]=$info;
         }
 
         $this->json_return($items);
+    }
+    private function initialize_row_edit_budget_division($fiscal_years,$zone_ids,$info)
+    {
+        $row=array();
+        $row['crop_type_name']=$info['crop_type_name'];
+        $row['variety_name']=$info['variety_name'];
+        $row['variety_id']=$info['variety_id'];
+
+        $row['quantity_budget']=0;
+        $row['quantity_budget_division']=0;
+        $row['quantity_budget_zone_total']=0;
+
+        foreach($fiscal_years as $fy)
+        {
+            $row['quantity_sale_'.$fy['id']]=0;
+        }
+        foreach($zone_ids as $zone_id)
+        {
+            $row['quantity_budget_zone_'.$zone_id]= 0;
+        }
+
+        return $row;
     }
     private function system_save_budget_division()
     {
@@ -565,6 +580,8 @@ class Budget_di_budget_target extends Root_Controller
             $this->json_return($ajax);
         }
     }
+
+    // Budget Forward
     private function system_budget_forward($fiscal_year_id=0,$division_id=0)
     {
         //$user = User_helper::get_user();
@@ -710,16 +727,14 @@ class Budget_di_budget_target extends Root_Controller
         $prev_type_name='';
         $first_row=true;
 
-        $type_total=$this->initialize_row($fiscal_years_previous_sales,$zone_ids,'','','Total Type','');
-        $crop_total=$this->initialize_row($fiscal_years_previous_sales,$zone_ids,'','Total Crop','','');
-        $grand_total=$this->initialize_row($fiscal_years_previous_sales,$zone_ids,'Grand Total','','','');
+        $type_total=$this->initialize_row_budget_forward($fiscal_years_previous_sales,$zone_ids,'','','Total Type','');
+        $crop_total=$this->initialize_row_budget_forward($fiscal_years_previous_sales,$zone_ids,'','Total Crop','','');
+        $grand_total=$this->initialize_row_budget_forward($fiscal_years_previous_sales,$zone_ids,'Grand Total','','','');
 
 
         foreach($results as $result)
         {
-            $info=$this->initialize_row($fiscal_years_previous_sales,$zone_ids,$result['crop_name'],$result['crop_type_name'],$result['variety_name']);
-
-
+            $info=$this->initialize_row_budget_forward($fiscal_years_previous_sales,$zone_ids,$result['crop_name'],$result['crop_type_name'],$result['variety_name']);
             if(!$first_row)
             {
                 if($prev_crop_name!=$result['crop_name'])
@@ -801,7 +816,7 @@ class Budget_di_budget_target extends Root_Controller
         $this->json_return($items);
 
     }
-    private function initialize_row($fiscal_years,$zone_ids,$crop_name,$crop_type_name,$variety_name)
+    private function initialize_row_budget_forward($fiscal_years,$zone_ids,$crop_name,$crop_type_name,$variety_name)
     {
         $row=array();
         $row['crop_name']=$crop_name;
@@ -821,17 +836,6 @@ class Budget_di_budget_target extends Root_Controller
         }
 
         return $row;
-    }
-    private function reset_row($info)
-    {
-        foreach($info as $key=>$r)
-        {
-            if(!(($key=='crop_name')||($key=='crop_type_name')||($key=='variety_name')))
-            {
-                $info[$key]=0;
-            }
-        }
-        return $info;
     }
     private function system_save_forward_budget()
     {
@@ -895,6 +899,8 @@ class Budget_di_budget_target extends Root_Controller
             $this->json_return($ajax);
         }
     }
+
+
     private function get_info_budget_target($fiscal_year_id,$division_id)
     {
 
@@ -912,7 +918,17 @@ class Budget_di_budget_target extends Root_Controller
         }
         return $info;
     }
-    
+    private function reset_row($info)
+    {
+        foreach($info as $key=>$r)
+        {
+            if(!(($key=='crop_name')||($key=='crop_type_name')||($key=='variety_name')))
+            {
+                $info[$key]=0;
+            }
+        }
+        return $info;
+    }
     private function get_sales_previous_years_division($fiscal_years,$division_id)
     {
         $sales=array();

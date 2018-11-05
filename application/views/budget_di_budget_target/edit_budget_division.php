@@ -233,7 +233,10 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             }
             else if(column=='quantity_budget')
             {
-
+                if(value==0)
+                {
+                    value='';
+                }
                 element.html('<div class="jqxgrid_input">'+value+'</div>');
             }
             else if(column.substr(0,14)=='quantity_sale_')

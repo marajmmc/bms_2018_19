@@ -516,7 +516,7 @@ class Budget_hom_budget_target extends Root_Controller
 
         $this->json_return($items);
     }
-    private function initialize_row_edit_budget_hom($fiscal_years,$zone_ids,$info)
+    private function initialize_row_edit_budget_hom($fiscal_years,$division_ids,$info)
     {
         $row=array();
         $row['crop_type_name']=$info['crop_type_name'];
@@ -533,9 +533,9 @@ class Budget_hom_budget_target extends Root_Controller
         {
             $row['quantity_sale_'.$fy['id']]=0;
         }
-        foreach($zone_ids as $zone_id)
+        foreach($division_ids as $division_id)
         {
-            $row['quantity_budget_division_'.$zone_id]= 0;
+            $row['quantity_budget_division_'.$division_id]= 0;
         }
 
         return $row;
@@ -764,13 +764,13 @@ class Budget_hom_budget_target extends Root_Controller
         $prev_type_name='';
         $first_row=true;
 
-        $type_total=$this->initialize_row($fiscal_years_previous_sales,$division_ids,'','','Total Type','');
-        $crop_total=$this->initialize_row($fiscal_years_previous_sales,$division_ids,'','Total Crop','','');
-        $grand_total=$this->initialize_row($fiscal_years_previous_sales,$division_ids,'Grand Total','','','');
+        $type_total=$this->initialize_row_forward_budget_hom($fiscal_years_previous_sales,$division_ids,'','','Total Type','');
+        $crop_total=$this->initialize_row_forward_budget_hom($fiscal_years_previous_sales,$division_ids,'','Total Crop','','');
+        $grand_total=$this->initialize_row_forward_budget_hom($fiscal_years_previous_sales,$division_ids,'Grand Total','','','');
 
         foreach($results as $result)
         {
-            $info=$this->initialize_row($fiscal_years_previous_sales,$division_ids,$result['crop_name'],$result['crop_type_name'],$result['variety_name']);
+            $info=$this->initialize_row_forward_budget_hom($fiscal_years_previous_sales,$division_ids,$result['crop_name'],$result['crop_type_name'],$result['variety_name']);
             if(!$first_row)
             {
                 if($prev_crop_name!=$result['crop_name'])
@@ -867,7 +867,7 @@ class Budget_hom_budget_target extends Root_Controller
         $this->json_return($items);
 
     }
-    private function initialize_row($fiscal_years,$division_ids,$crop_name,$crop_type_name,$variety_name)
+    private function initialize_row_forward_budget_hom($fiscal_years,$division_ids,$crop_name,$crop_type_name,$variety_name)
     {
         $row=array();
         $row['crop_name']=$crop_name;
