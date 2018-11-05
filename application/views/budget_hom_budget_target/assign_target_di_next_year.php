@@ -206,8 +206,11 @@ echo "</pre>";*/
                         { name: 'quantity_target_division_<?php echo $budget['id']; ?>_<?php echo $division['division_id']?>', type: 'string' },
                         <?php
                     }
+                    ?>
+                    { name: 'quantity_target_total_di_<?php echo $budget['id']; ?>', type: 'string' },
+                    <?php
                 }
-                ?>
+            ?>
             ],
             id: 'id',
             type: 'POST',
@@ -249,19 +252,45 @@ echo "</pre>";*/
                     element.html(get_string_kg(value));
                 }
             }
-            else if(column=='quantity_target_division_total')
+            else if(column.substr(0,25)=='quantity_target_division_')
             {
-                var quantity_target_division_total=0;
+                if(value==0)
+                {
+                    value='';
+                }
+                element.html('<div class="jqxgrid_input">'+value+'</div>');
+            }
+            var quantity_target_division_total=0;
+            <?php
+            foreach($fiscal_years_next_budgets as $budget)
+            {
+                ?>
+                var quantity_target_total_di=0;
                 <?php
-                $serial=0;
                 foreach($divisions as $division)
                 {
-                ++$serial;
-                ?>
-                quantity_target_division_total+=parseFloat(record['quantity_target_division_<?php echo $division['division_id']?>']);
-                <?php
+                    ?>
+                    quantity_target_total_di+=parseFloat(record['quantity_target_division_<?php echo $budget['id'];?>_<?php echo $division['division_id']?>']);
+                    quantity_target_division_total+=parseFloat(record['quantity_target_division_<?php echo $budget['id'];?>_<?php echo $division['division_id']?>']);
+                    <?php
                 }
                 ?>
+                if(column=='quantity_target_total_di_<?php echo $budget['id']?>')
+                {
+                    if(quantity_target_total_di==0)
+                    {
+                        element.html('');
+                    }
+                    else if(quantity_target_total_di>0)
+                    {
+                        element.html(get_string_kg(quantity_target_total_di));
+                    }
+                }
+                <?php
+            }
+            ?>
+            if(column=='quantity_target_division_total')
+            {
                 if(quantity_target_division_total==0)
                 {
                     element.html('');
@@ -270,14 +299,6 @@ echo "</pre>";*/
                 {
                     element.html(get_string_kg(quantity_target_division_total));
                 }
-            }
-            else if(column.substr(0,25)=='quantity_target_division_')
-            {
-                if(value==0)
-                {
-                    value='';
-                }
-                element.html('<div class="jqxgrid_input">'+value+'</div>');
             }
             element.css({'margin': '0px','width': '100%', 'height': '100%',padding:'5px','line-height':'25px'});
             return element[0].outerHTML;
@@ -347,7 +368,7 @@ echo "</pre>";*/
                             <?php
                         }
                         ?>
-                        { columngroup: 'next_years_<?php echo $serial;?>', text: 'Total Target', dataField: 'quantity_target_total_di_<?php echo $serial;?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
+                        { columngroup: 'next_years_<?php echo $serial;?>', text: 'Total Target', dataField: 'quantity_target_total_di_<?php echo $budget['id'];?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
                         <?php
                     }
                     ?>

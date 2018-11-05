@@ -244,12 +244,13 @@ echo '</pre>';*/
                 {
                     if(quantity_target_division_total==parseFloat(record['quantity_target']))
                     {
-                        element.html('<div style="background-color: green; color: #ffffff; padding-right: 5px;">'+get_string_kg(quantity_target_division_total)+'</div>');
+                        element.css({ 'background-color': 'green','color': '#ffffff','margin': '0px','width': '100%', 'height': '100%',padding:'5px','line-height':'25px'});
                     }
                     else
                     {
-                        element.html('<div style="background-color: red; color: #ffffff; padding-right: 5px;">'+get_string_kg(quantity_target_division_total)+'</div>');
+                        element.css({ 'background-color': 'red','color': '#ffffff','margin': '0px','width': '100%', 'height': '100%',padding:'5px','line-height':'25px'});
                     }
+                    element.html(get_string_kg(quantity_target_division_total));
                 }
                 else
                 {
