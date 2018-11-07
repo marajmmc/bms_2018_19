@@ -5,7 +5,7 @@ $action_buttons=array();
 $action_buttons[]=array
 (
     'label'=>$CI->lang->line("ACTION_BACK"),
-    'href'=>site_url($CI->controller_url.'/index/list_target_di_next_year/'.$options['fiscal_year_id'])
+    'href'=>site_url($CI->controller_url.'/index/list_target_zi_next_year/'.$options['fiscal_year_id'].'/'.$options['division_id'])
 );
 if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(isset($CI->permissions['action2']) && ($CI->permissions['action2']==1)))
 {
@@ -36,11 +36,6 @@ if(isset($CI->permissions['action5']) && ($CI->permissions['action5']==1))
 }
 
 $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
-
-/*echo "<pre>";
-print_r($fiscal_years_next_budgets);
-echo "</pre>";*/
-
 ?>
 <div class="row widget">
     <div class="widget-header">
@@ -55,6 +50,14 @@ echo "</pre>";*/
         </div>
         <div class="col-sm-4 col-xs-8">
             <label class="control-label"><?php echo $fiscal_year['name'];?></label>
+        </div>
+    </div>
+    <div style="" class="row show-grid">
+        <div class="col-xs-4">
+            <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_DIVISION_NAME');?></label>
+        </div>
+        <div class="col-sm-4 col-xs-8">
+            <label class="control-label"><?php echo $division['name'];?></label>
         </div>
     </div>
     <div style="" class="row show-grid">
@@ -128,8 +131,9 @@ echo "</pre>";*/
             ?>
         </div>
     </div>
-    <form id="save_form_jqx" action="<?php echo site_url($CI->controller_url.'/index/save_target_di_next_year');?>" method="post">
+    <form id="save_form_jqx" action="<?php echo site_url($CI->controller_url.'/index/save_target_zi_next_year');?>" method="post">
         <input type="hidden" name="item[fiscal_year_id]" value="<?php echo $options['fiscal_year_id']; ?>" />
+        <input type="hidden" name="item[division_id]" value="<?php echo $options['division_id']; ?>" />
         <div id="jqx_inputs">
         </div>
     </form>
@@ -156,10 +160,10 @@ echo "</pre>";*/
                 foreach($fiscal_years_next_budgets as $budget)
                 {
                     ++$serial;
-                    foreach($divisions as $division)
+                    foreach($zones as $zone)
                     {
                     ?>
-                    $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+'][<?php echo $division['division_id'];?>][quantity_prediction_<?php echo $serial;?>]" value="'+data[i]['quantity_target_division_<?php echo $budget['id'];?>_<?php echo $division['division_id']?>']+'">');
+                        $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+'][<?php echo $zone['zone_id'];?>][quantity_prediction_<?php echo $serial;?>]" value="'+data[i]['quantity_prediction_zi_<?php echo $budget['id'];?>_<?php echo $zone['zone_id']?>']+'">');
                     <?php
                     }
                 }
@@ -172,14 +176,13 @@ echo "</pre>";*/
             }
         });
 
-        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_assign_target_di_next_year');?>";
+        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_assign_target_zi_next_year');?>";
 
         // prepare the data
         var source =
         {
             dataType: "json",
-            dataFields:
-            [
+            dataFields: [
                 <?php
                 foreach($system_preference_items as $key=>$item)
                 {
@@ -189,7 +192,7 @@ echo "</pre>";*/
                 }
                 foreach($fiscal_years_previous_sales as $fy)
                 {
-                        ?>
+                    ?>
                     { name: 'quantity_sale_<?php echo $fy['id']; ?>', type: 'string' },
                     <?php
                 }
@@ -200,17 +203,17 @@ echo "</pre>";*/
                         ?>
                     { name: 'quantity_prediction_<?php echo $serial; ?>', type: 'string' },
                     <?php
-                    foreach($divisions as $division)
+                    foreach($zones as $zone)
                     {
                         ?>
-                        { name: 'quantity_target_division_<?php echo $budget['id']; ?>_<?php echo $division['division_id']?>', type: 'string' },
+                        { name: 'quantity_prediction_zi_<?php echo $budget['id']; ?>_<?php echo $zone['zone_id']?>', type: 'string' },
                         <?php
                     }
                     ?>
-                    { name: 'quantity_target_total_di_<?php echo $budget['id']; ?>', type: 'string' },
+                    { name: 'quantity_prediction_sub_total_zi_<?php echo $budget['id']; ?>', type: 'string' },
                     <?php
                 }
-            ?>
+        ?>
             ],
             id: 'id',
             type: 'POST',
@@ -241,7 +244,7 @@ echo "</pre>";*/
         var cellsrenderer = function(row, column, value, defaultHtml, columnSettings, record)
         {
             var element = $(defaultHtml);
-            if(column=='quantity_target')
+            if(column=='quantity_target_di')
             {
                 if(value==0)
                 {
@@ -252,7 +255,18 @@ echo "</pre>";*/
                     element.html(get_string_kg(value));
                 }
             }
-            else if(column.substr(0,25)=='quantity_target_division_')
+            else if(column.substr(0,14)=='quantity_sale_')
+            {
+                if(value==0)
+                {
+                    element.html('');
+                }
+                else if(value>0)
+                {
+                    element.html(get_string_kg(value));
+                }
+            }
+            else if(column.substr(0,23)=='quantity_prediction_zi_')
             {
                 if(value==0)
                 {
@@ -260,46 +274,60 @@ echo "</pre>";*/
                 }
                 element.html('<div class="jqxgrid_input">'+value+'</div>');
             }
-            var quantity_target_division_total=0;
+            var quantity_prediction_total_zi=0;
             <?php
+            $serial=0;
             foreach($fiscal_years_next_budgets as $budget)
             {
+                ++$serial;
                 ?>
-                var quantity_target_total_di=0;
+                var quantity_prediction_sub_total_zi=0;
                 <?php
-                foreach($divisions as $division)
+                foreach($zones as $zone)
                 {
                     ?>
-                    quantity_target_total_di+=parseFloat(record['quantity_target_division_<?php echo $budget['id'];?>_<?php echo $division['division_id']?>']);
-                    quantity_target_division_total+=parseFloat(record['quantity_target_division_<?php echo $budget['id'];?>_<?php echo $division['division_id']?>']);
+                    quantity_prediction_sub_total_zi+=parseFloat(record['quantity_prediction_zi_<?php echo $budget['id'];?>_<?php echo $zone['zone_id']?>']);
+                    quantity_prediction_total_zi+=parseFloat(record['quantity_prediction_zi_<?php echo $budget['id'];?>_<?php echo $zone['zone_id']?>']);
                     <?php
                 }
                 ?>
-                if(column=='quantity_target_total_di_<?php echo $budget['id']?>')
+                if(column=='quantity_prediction_sub_total_zi_<?php echo $budget['id']?>')
                 {
-                    if(quantity_target_total_di==0)
+                    if(quantity_prediction_sub_total_zi==0)
                     {
                         element.html('');
                     }
-                    else if(quantity_target_total_di>0)
+                    else if(quantity_prediction_sub_total_zi>0)
                     {
-                        element.html(get_string_kg(quantity_target_total_di));
+                        element.html(get_string_kg(quantity_prediction_sub_total_zi));
+                    }
+                }
+                if(column=='quantity_prediction_<?php echo $serial;?>')
+                {
+                    if(value==0)
+                    {
+                        element.html('');
+                    }
+                    else if(value>0)
+                    {
+                        element.html(get_string_kg(value));
                     }
                 }
                 <?php
             }
             ?>
-            if(column=='quantity_target_division_total')
+            if(column=='quantity_prediction_total_zi')
             {
-                if(quantity_target_division_total==0)
+                if(quantity_prediction_total_zi==0)
                 {
                     element.html('');
                 }
-                else if(quantity_target_division_total>0)
+                else if(quantity_prediction_total_zi>0)
                 {
-                    element.html(get_string_kg(quantity_target_division_total));
+                    element.html(get_string_kg(quantity_prediction_total_zi));
                 }
             }
+
             element.css({'margin': '0px','width': '100%', 'height': '100%',padding:'5px','line-height':'25px'});
             return element[0].outerHTML;
         };
@@ -323,16 +351,17 @@ echo "</pre>";*/
                 editable:true,
                 columns:
                 [
-                    { text: '<?php echo $CI->lang->line('LABEL_CROP_TYPE_NAME'); ?>', dataField: 'crop_type_name',width:'100', filtertype:'list',pinned:true,editable:false},
-                    { text: '<?php echo $CI->lang->line('LABEL_VARIETY_NAME'); ?>', dataField: 'variety_name',width:'150',pinned:true,editable:false},
+                    { text: '<?php echo $CI->lang->line('LABEL_CROP_TYPE_NAME'); ?>', dataField: 'crop_type_name',width:'100', filtertype:'list',renderer: header_render,pinned:true,editable:false},
+                    { text: '<?php echo $CI->lang->line('LABEL_VARIETY_NAME'); ?>', dataField: 'variety_name',width:'150',renderer: header_render,pinned:true,editable:false},
                     <?php
                         for($i=sizeof($fiscal_years_previous_sales)-1;$i>=0;$i--)
-                        {?>
-                        {columngroup: 'previous_years',text: '<?php echo $fiscal_years_previous_sales[$i]['name']; ?>', dataField: 'quantity_sale_<?php echo $fiscal_years_previous_sales[$i]['id']; ?>',width:'100',filterable: false,cellsrenderer: cellsrenderer,align:'center',cellsAlign:'right',editable:false},
-                        <?php
+                        {
+                            ?>
+                            {columngroup: 'previous_years',text: '<?php echo $fiscal_years_previous_sales[$i]['name']; ?>', dataField: 'quantity_sale_<?php echo $fiscal_years_previous_sales[$i]['id']; ?>',width:'100',filterable: false,cellsrenderer: cellsrenderer,align:'center',cellsAlign:'right',editable:false},
+                            <?php
                         }
                     ?>
-                    { text: 'Current Year<br> Target', dataField: 'quantity_target',width:'100',filterable:false, align: 'center',cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
+                    { text: 'Current Year<br> Target', dataField: 'quantity_target_di',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
                     <?php
                     $serial=0;
                     foreach($fiscal_years_next_budgets as $budget)
@@ -341,18 +370,12 @@ echo "</pre>";*/
                         ?>
                         { columngroup: 'next_years_<?php echo $serial;?>', text: 'Prediction', dataField: 'quantity_prediction_<?php echo $serial;?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
                         <?php
-                        $division_sl=0;
-                        foreach($divisions as $division)
+                        $zone_sl=0;
+                        foreach($zones as $zone)
                         {
-                            ++$division_sl;
+                            ++$zone_sl;
                             ?>
-
-                            {columngroup: 'next_years_<?php echo $serial;?>', text: '<?php echo $division_sl.'. '.$division['division_name']?>', datafield: 'quantity_target_division_<?php echo $budget['id'];?>_<?php echo $division['division_id']?>', width: 100, filterable: false, cellsalign: 'right',cellsrenderer: cellsrenderer,columntype: 'custom',
-                                cellbeginedit: function (row)
-                                {
-                                    var selectedRowData = $('#system_jqx_container').jqxGrid('getrowdata', row);//only last selected
-                                    return selectedRowData['editable_<?php echo $serial; ?>'];
-                                },
+                            {columngroup: 'next_years_<?php echo $serial;?>', text: '<?php echo $zone_sl.'. '.$zone['zone_name']?>', datafield: 'quantity_prediction_zi_<?php echo $budget['id'];?>_<?php echo $zone['zone_id']?>', width: 100, filterable: false, cellsalign: 'right',cellsrenderer: cellsrenderer,columntype: 'custom',
                                 initeditor: function (row, cellvalue, editor, celltext, pressedkey)
                                 {
                                     editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');
@@ -368,11 +391,12 @@ echo "</pre>";*/
                             <?php
                         }
                         ?>
-                        { columngroup: 'next_years_<?php echo $serial;?>', text: 'Total Target', dataField: 'quantity_target_total_di_<?php echo $budget['id'];?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
+                        { columngroup: 'next_years_<?php echo $serial;?>', text: 'Total Target', dataField: 'quantity_prediction_sub_total_zi_<?php echo $budget['id'];?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
                         <?php
                     }
                     ?>
-                    { text: 'Total DI<br> Target', dataField: 'quantity_target_division_total',width:'100',filterable:false,align:'center',cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer}
+                    { text: 'Total ZI Target', dataField: 'quantity_prediction_total_zi',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer}
+
                 ],
                 columngroups:
                 [
