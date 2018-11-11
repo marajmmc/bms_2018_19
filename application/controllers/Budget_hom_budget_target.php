@@ -1981,44 +1981,6 @@ class Budget_hom_budget_target extends Root_Controller
                 }
             }
         }
-
-        /*foreach($items_quantity_target as $division_id=>$varieties)
-        {
-            foreach($varieties as $variety_id=>$quantity_target)
-            {
-                if(isset($items_old[$division_id][$variety_id]))
-                {
-                    if($items_old[$division_id][$variety_id]['quantity_target']!=$quantity_target)
-                    {
-                        $data=array();
-                        $data['quantity_target']=$quantity_target;
-                        $data['date_updated_target']=$time;
-                        $data['user_updated_target']=$user->user_id;
-                        $this->db->set('revision_count_target','revision_count_target+1',false);
-                        Query_helper::update($this->config->item('table_bms_di_budget_target_division'),$data,array('id='.$items_old[$division_id][$variety_id]['id']));
-                    }
-                }
-                else
-                {
-                    $data=array();
-                    $data['fiscal_year_id']=$item_head['fiscal_year_id'];
-                    $data['division_id']=$division_id;
-                    $data['variety_id']=$variety_id;
-                    if($quantity_target>0)
-                    {
-                        $data['quantity_target']=$quantity_target;
-                        $data['revision_count_target']=1;
-                    }
-                    else
-                    {
-                        $data['quantity_target']=0;
-                    }
-                    $data['date_updated_target']=$time;
-                    $data['user_updated_target']=$user->user_id;
-                    Query_helper::add($this->config->item('table_bms_di_budget_target_division'),$data,false);
-                }
-            }
-        }*/
         $this->db->trans_complete();   //DB Transaction Handle END
         if ($this->db->trans_status() === TRUE)
         {
