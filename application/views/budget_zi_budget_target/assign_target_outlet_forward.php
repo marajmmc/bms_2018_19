@@ -28,6 +28,7 @@ if(isset($CI->permissions['action5']) && ($CI->permissions['action5']==1))
 }
 
 $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
+
 ?>
 <div class="row widget">
     <div class="widget-header">
@@ -36,7 +37,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         </div>
         <div class="clearfix"></div>
     </div>
-    <div style="" class="row show-grid">
+    <div class="row show-grid">
         <div class="col-xs-4">
             <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_FISCAL_YEAR');?></label>
         </div>
@@ -44,12 +45,20 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             <label class="control-label"><?php echo $fiscal_year['name'];?></label>
         </div>
     </div>
-    <div style="" class="row show-grid">
+    <div class="row show-grid">
         <div class="col-xs-4">
             <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_DIVISION_NAME');?></label>
         </div>
         <div class="col-sm-4 col-xs-8">
             <label class="control-label"><?php echo $division['name'];?></label>
+        </div>
+    </div>
+    <div class="row show-grid">
+        <div class="col-xs-4">
+            <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_ZONE_NAME');?></label>
+        </div>
+        <div class="col-sm-4 col-xs-8">
+            <label class="control-label"><?php echo $zone['name'];?></label>
         </div>
     </div>
     <div class="panel panel-default">
@@ -115,19 +124,14 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             ?>
         </div>
     </div>
-    <div style="font-size: 12px;margin-top: -10px;font-style: italic; color: red;" class="row show-grid">
-        <div class="col-xs-4"></div>
-        <div class="col-sm-4 col-xs-8 text-center">
-            <strong>Note:</strong> All item amount showing to kg.
-        </div>
-    </div>
     <div class="col-xs-12" id="system_jqx_container">
 
     </div>
 </div>
-<form id="save_form" action="<?php echo site_url($CI->controller_url.'/index/save_target_zi_forward');?>" method="post">
+<div class="clearfix"></div>
+<form id="save_form" action="<?php echo site_url($CI->controller_url.'/index/save_target_outlet_forward');?>" method="post">
     <input type="hidden" name="item[fiscal_year_id]" value="<?php echo $options['fiscal_year_id']; ?>" />
-    <input type="hidden" name="item[division_id]" value="<?php echo $options['division_id']; ?>" />
+    <input type="hidden" name="item[zone_id]" value="<?php echo $options['zone_id']; ?>" />
     <div class="row widget">
         <div class="widget-header">
             <div class="title">
@@ -161,15 +165,14 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         </div>
     </div>
 </form>
-
-<div class="clearfix"></div>
 <script type="text/javascript">
     $(document).ready(function ()
     {
         system_off_events();
         system_preset({controller:'<?php echo $CI->router->class; ?>'});
 
-        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_forward_assign_target_zi');?>";
+        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_forward_assign_target_outlet');?>";
+
         // prepare the data
         var source =
         {
@@ -182,13 +185,13 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                     { name: '<?php echo $key ?>', type: 'string' },
                     <?php
                 }
-                foreach($zones as $zone)
+                foreach($outlets as $outlet)
                 {
                         ?>
-                    { name: 'quantity_target_zi_<?php echo $zone['zone_id']?>', type: 'string' },
+                    { name: 'quantity_target_outlet_<?php echo $outlet['outlet_id']?>', type: 'string' },
                     <?php
                 }
-                ?>
+            ?>
             ],
             id: 'id',
             type: 'POST',
@@ -219,7 +222,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         var cellsrenderer = function(row, column, value, defaultHtml, columnSettings, record)
         {
             var element = $(defaultHtml);
-            if(column=='quantity_target_di')
+            if(column=='quantity_target_zi')
             {
                 if(value==0)
                 {
@@ -230,20 +233,20 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                     element.html(get_string_kg(value));
                 }
             }
-            else if(column=='quantity_target_zi_total')
+            else if(column=='quantity_target_outlet_total')
             {
-                var quantity_target_zi_total=0;
+                var quantity_target_outlet_total=0;
                 <?php
-                foreach($zones as $zone)
+                foreach($outlets as $outlet)
                 {
                     ?>
-                    quantity_target_zi_total+=parseFloat(record['quantity_target_zi_<?php echo $zone['zone_id']?>']);
+                    quantity_target_outlet_total+=parseFloat(record['quantity_target_outlet_<?php echo $outlet['outlet_id']?>']);
                     <?php
                 }
                 ?>
-                if(quantity_target_zi_total>0)
+                if(quantity_target_outlet_total>0)
                 {
-                    if(quantity_target_zi_total==parseFloat(record['quantity_target_di']))
+                    if(quantity_target_outlet_total==parseFloat(record['quantity_target_zi']))
                     {
                         element.css({ 'background-color': 'green','color': '#ffffff','margin': '0px','width': '100%', 'height': '100%',padding:'5px','line-height':'25px'});
                     }
@@ -251,20 +254,31 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                     {
                         element.css({ 'background-color': 'red','color': '#ffffff','margin': '0px','width': '100%', 'height': '100%',padding:'5px','line-height':'25px'});
                     }
-                    element.html(get_string_kg(quantity_target_zi_total));
+                    element.html(get_string_kg(quantity_target_outlet_total));
                 }
                 else
                 {
                     element.html('');
                 }
             }
-            else if(column.substr(0,19)=='quantity_target_zi_')
+            else if(column.substr(0,23)=='quantity_target_outlet_')
             {
                 if(value==0)
                 {
                     element.html('');
                 }
-                else if(value>0)
+                else
+                {
+                    element.html(get_string_kg(value));
+                }
+            }
+            else if(column.substr(0,14)=='quantity_sale_')
+            {
+                if(value==0)
+                {
+                    element.html('');
+                }
+                else
                 {
                     element.html(get_string_kg(value));
                 }
@@ -292,7 +306,6 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             {
                 element.css({'margin': '0px','width': '100%', 'height': '100%',padding:'5px','line-height':'25px'});
             }
-
             element.css({'margin': '0px','width': '100%', 'height': '100%',padding:'5px','line-height':'25px'});
             return element[0].outerHTML;
         };
@@ -346,22 +359,22 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                     { text: '<?php echo $CI->lang->line('LABEL_CROP_NAME'); ?>', dataField: 'crop_name',width:'100', filtertype:'list',pinned:true,editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer},
                     { text: '<?php echo $CI->lang->line('LABEL_CROP_TYPE_NAME'); ?>', dataField: 'crop_type_name',width:'100', pinned:true,editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer},
                     { text: '<?php echo $CI->lang->line('LABEL_VARIETY_NAME'); ?>', dataField: 'variety_name',width:'150',pinned:true,editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer},
-                    { text: 'DI Target', dataField: 'quantity_target_di',width:'100',pinned:true,editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
+                    { text: 'Total ZI <br />Target', dataField: 'quantity_target_zi',width:'100',filterable:false, align: 'center',cellsalign: 'right',cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
                     <?php
                     $serial=0;
-                    foreach($zones as $zone)
+                    foreach($outlets as $outlet)
                     {
                     ++$serial;
                     ?>
-                    { columngroup: 'zone_list', text: '<?php echo $serial.'. '.$zone['zone_name']?>', dataField: 'quantity_target_zi_<?php echo $zone['zone_id']?>',width:'100',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
+                    { columngroup: 'outlets', text: '<?php echo $serial.'. '.$outlet['outlet_name']?>', dataField: 'quantity_target_outlet_<?php echo $outlet['outlet_id']?>',width:'100',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
                     <?php
                     }
                     ?>
-                    { text: 'Total ZI Target', dataField: 'quantity_target_zi_total',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg}
+                    { text: 'Total Outlet <br />Target', dataField: 'quantity_target_outlet_total',width:'100',filterable:false, align: 'center',cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg}
                 ],
                 columngroups:
                 [
-                    { text: 'Zone of <?php echo $division['name']?>', align: 'center', name: 'zone_list' }
+                    { text: 'Outlet Target', align: 'center', name: 'outlets' }
                 ]
             });
     });

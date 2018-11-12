@@ -79,6 +79,40 @@ class Budget_zi_budget_target extends Root_Controller
         {
             $this->system_save_forward_budget();
         }
+
+        elseif($action=="list_target_outlet")
+        {
+            $this->system_list_target_outlet($id,$id1);
+        }
+        elseif($action=="get_items_target_outlet")
+        {
+            $this->system_get_items_target_outlet();
+        }
+        elseif($action=="assign_target_outlet")
+        {
+            $this->system_assign_target_outlet($id,$id1,$id2);
+        }
+        elseif($action=="get_items_assign_target_outlet")
+        {
+            $this->system_get_items_assign_target_outlet();
+        }
+        elseif($action=="save_target_outlet")
+        {
+            $this->system_save_target_outlet();
+        }
+        elseif($action=="assign_target_outlet_forward")
+        {
+            $this->system_assign_target_outlet_forward($id,$id1);
+        }
+        elseif($action=="get_items_forward_assign_target_outlet")
+        {
+            $this->system_get_items_forward_assign_target_outlet();
+        }
+        elseif($action=="save_target_outlet_forward")
+        {
+            $this->system_save_target_outlet_forward();
+        }
+
         else
         {
             $this->system_list();
@@ -94,6 +128,8 @@ class Budget_zi_budget_target extends Root_Controller
             $data['zone_id']= 1;
             $data['zone_name']= 1;
             $data['status_budget_forward']= 1;
+            $data['status_target_forward']= 1;
+            $data['status_target_next_year_forward']= 1;
         }
         else if($method=='list_budget_zone')
         {
@@ -120,8 +156,36 @@ class Budget_zi_budget_target extends Root_Controller
             $data['quantity_budget_zone']= 1;
             $data['quantity_budget_outlet_total']= 1;
         }
+
+        else if($method=='list_target_outlet')
+        {
+            $data['id']= 1;
+            $data['crop_id']= 1;
+            $data['crop_name']= 1;
+            $data['revision_count_target']= 1;
+        }
+        else if($method=='assign_target_outlet')
+        {
+            $data['crop_type_name']= 1;
+            $data['variety_name']= 1;
+            $data['variety_id']= 1;
+            //more data
+            $data['quantity_target_zi']= 1;
+            $data['quantity_target_outlet_total']= 1;
+        }
+        else if($method=='assign_target_outlet_forward')
+        {
+            $data['crop_name']= 1;
+            $data['crop_type_name']= 1;
+            $data['variety_name']= 1;
+            $data['variety_id']= 1;
+            //more data
+            $data['quantity_target_zi']= 1;
+            $data['quantity_target_outlet_total']= 1;
+        }
         return $data;
     }
+
     private function system_list()
     {
         //$user = User_helper::get_user();
@@ -150,7 +214,7 @@ class Budget_zi_budget_target extends Root_Controller
     {
         $fiscal_years=Budget_helper::get_fiscal_years();
         $this->db->from($this->config->item('table_bms_zi_budget_target').' budget_target');
-        $this->db->select('budget_target.status_budget_forward');
+        $this->db->select('budget_target.status_budget_forward, budget_target.status_target_forward, budget_target.status_target_next_year_forward');
         $this->db->select('budget_target.fiscal_year_id');
         $this->db->select('budget_target.zone_id');
         $this->db->where_in('budget_target.zone_id',$this->user_zone_ids);
@@ -170,19 +234,22 @@ class Budget_zi_budget_target extends Root_Controller
                 $data['fiscal_year']=$fy['text'];
                 $data['zone_id']=$zone['zone_id'];
                 $data['zone_name']=$zone['zone_name'];
+                $data['status_budget_forward']=$this->config->item('system_status_pending');
+                $data['status_target_forward']=$this->config->item('system_status_pending');
+                $data['status_target_next_year_forward']=$this->config->item('system_status_pending');
                 if(isset($budget_target[$fy['id']][$zone['zone_id']]))
                 {
                     $data['status_budget_forward']=$budget_target[$fy['id']][$zone['zone_id']]['status_budget_forward'];
-                }
-                else
-                {
-                    $data['status_budget_forward']=$this->config->item('system_status_pending');
+                    $data['status_target_forward']=$budget_target[$fy['id']][$zone['zone_id']]['status_target_forward'];
+                    $data['status_target_next_year_forward']=$budget_target[$fy['id']][$zone['zone_id']]['status_target_next_year_forward'];
                 }
                 $items[]=$data;
             }
         }
         $this->json_return($items);
     }
+
+    /*Zone Budget Edit*/
     private function system_list_budget_zone($fiscal_year_id=0,$zone_id=0)
     {
         //$user = User_helper::get_user();
@@ -565,6 +632,7 @@ class Budget_zi_budget_target extends Root_Controller
             $this->json_return($ajax);
         }
     }
+    /*Zone Budget Forward*/
     private function system_budget_forward($fiscal_year_id=0,$zone_id=0)
     {
         //$user = User_helper::get_user();
@@ -603,7 +671,7 @@ class Budget_zi_budget_target extends Root_Controller
                 $ajax['system_message']='Budget Already Forwarded.';
                 $this->json_return($ajax);
             }
-            
+
             $data['system_preference_items']= $this->get_preference_headers($method);
             $data['fiscal_years_previous_sales']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id <'.$fiscal_year_id),Budget_helper::$NUM_FISCAL_YEAR_PREVIOUS_SALE,0,array('id DESC'));
 
@@ -831,17 +899,6 @@ class Budget_zi_budget_target extends Root_Controller
 
         return $row;
     }
-    private function reset_row($info)
-    {
-        foreach($info as $key=>$r)
-        {
-            if(!(($key=='crop_name')||($key=='crop_type_name')||($key=='variety_name')))
-            {
-                $info[$key]=0;
-            }
-        }
-        return $info;
-    }
     private function system_save_forward_budget()
     {
         $user = User_helper::get_user();
@@ -904,10 +961,1225 @@ class Budget_zi_budget_target extends Root_Controller
             $this->json_return($ajax);
         }
     }
+    /*Assign Outlet Target Edit*/
+    private function system_list_target_outlet($fiscal_year_id=0,$zone_id=0)
+    {
+        $method='list_target_outlet';
+        if((isset($this->permissions['action1']) && ($this->permissions['action1']==1))||(isset($this->permissions['action2']) && ($this->permissions['action2']==1)))
+        {
+            if(!($fiscal_year_id>0))
+            {
+                $fiscal_year_id=$this->input->post('fiscal_year_id');
+            }
+            if(!($zone_id>0))
+            {
+                $zone_id=$this->input->post('zone_id');
+            }
+            //validation fiscal year
+            if(!Budget_helper::check_validation_fiscal_year($fiscal_year_id))
+            {
+                System_helper::invalid_try(__FUNCTION__,$fiscal_year_id,'Invalid Fiscal year');
+                $ajax['status']=false;
+                $ajax['system_message']='Invalid Fiscal Year';
+                $this->json_return($ajax);
+            }
+            // validation assign division
+            if(!in_array($zone_id, $this->user_zone_ids))
+            {
+                System_helper::invalid_try(__FUNCTION__,$zone_id,'Zone Not Assigned');
+                $ajax['status']=false;
+                $ajax['system_message']='Invalid Zone.';
+                $this->json_return($ajax);
+            }
+            //validation forward status
+            $info_budget_target=$this->get_info_budget_target($fiscal_year_id,$zone_id);
+            if(($info_budget_target['status_budget_forward']!=$this->config->item('system_status_forwarded')))
+            {
+                $ajax['status']=false;
+                $ajax['system_message']='ZI Budget Not Forwarded.';
+                $this->json_return($ajax);
+            }
+            if(($info_budget_target['status_target_forward']==$this->config->item('system_status_forwarded')))
+            {
+                if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
+                {
+                    $ajax['status']=false;
+                    $ajax['system_message']='Outlet Target Already Assigned.';
+                    $this->json_return($ajax);
+                }
+            }
+
+            // validation di assign target to zi forward status
+            $info_target_di=$this->get_info_target_di($fiscal_year_id, $info_budget_target['division_id']);
+            if(($info_target_di['status_target_forward']!=$this->config->item('system_status_forwarded')))
+            {
+                $ajax['status']=false;
+                $ajax['system_message']='DI Assign ZI Target Not Forwarded.';
+                $this->json_return($ajax);
+            }
+
+            $data['system_preference_items']= $this->get_preference_headers($method);
+            $data['fiscal_year']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id ='.$fiscal_year_id),1);
+            $data['division']=Query_helper::get_info($this->config->item('table_login_setup_location_divisions'),'*',array('id ='.$info_budget_target['division_id'],'status ="'.$this->config->item('system_status_active').'"'),1);
+            $data['zone']=Query_helper::get_info($this->config->item('table_login_setup_location_zones'),'*',array('id ='.$zone_id,'status ="'.$this->config->item('system_status_active').'"'),1);
+            $data['title']="Assign Outlet Target :: Crop list";
+            $data['options']['fiscal_year_id']=$fiscal_year_id;
+            $data['options']['zone_id']=$zone_id;
+            $ajax['status']=true;
+            $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/list_target_outlet",$data,true));
+            if($this->message)
+            {
+                $ajax['system_message']=$this->message;
+            }
+            $ajax['system_page_url']=site_url($this->controller_url.'/index/list_target_outlet/'.$fiscal_year_id.'/'.$zone_id);
+            $this->json_return($ajax);
+        }
+        else
+        {
+            $ajax['status']=false;
+            $ajax['system_message']=$this->lang->line("YOU_DONT_HAVE_ACCESS");
+            $this->json_return($ajax);
+        }
+    }
+    private function system_get_items_target_outlet()
+    {
+        $items=array();
+        $fiscal_year_id=$this->input->post('fiscal_year_id');
+        $zone_id=$this->input->post('zone_id');
+
+        //get Target Revision
+        $this->db->from($this->config->item('table_pos_si_budget_target_outlet').' budget_target_outlet');
+        $this->db->select('MAX(budget_target_outlet.revision_count_target) revision_count_target');
+
+        $this->db->join($this->config->item('table_login_csetup_cus_info').' customer_info','customer_info.customer_id = budget_target_outlet.outlet_id AND customer_info.revision = 1','INNER');
+        $this->db->select('customer_info.customer_id,customer_info.name,customer_info.type,customer_info.name_short,customer_info.customer_code');
+
+        $this->db->join($this->config->item('table_login_setup_location_districts').' district','district.id = customer_info.district_id','INNER');
+        $this->db->select('district.id district_id,district.name district_name');
+
+        $this->db->join($this->config->item('table_login_setup_location_territories').' territory','territory.id = district.territory_id','INNER');
+        $this->db->select('territory.id territory_id,territory.name territory_name');
+
+        $this->db->join($this->config->item('table_login_setup_classification_varieties').' v','v.id = budget_target_outlet.variety_id','INNER');
+        $this->db->join($this->config->item('table_login_setup_classification_crop_types').' crop_type','crop_type.id = v.crop_type_id','INNER');
+        $this->db->select('crop_type.crop_id');
+
+        $this->db->where('budget_target_outlet.fiscal_year_id',$fiscal_year_id);
+        $this->db->where('territory.zone_id',$zone_id);
+        $this->db->group_by('crop_type.crop_id');
+        $results=$this->db->get()->result_array();
+        $targeted=array();
+        foreach($results as $result)
+        {
+            $targeted[$result['crop_id']]=$result['revision_count_target'];
+        }
+        //crop list
+        $results=Query_helper::get_info($this->config->item('table_login_setup_classification_crops'),array('id crop_id','name crop_name'),array('status ="'.$this->config->item('system_status_active').'"'),0,0,array('ordering ASC','id ASC'));
+        foreach($results as $crop)
+        {
+            $item=$crop;
+            $item['revision_count_target']=0;
+            if(isset($targeted[$crop['crop_id']]))
+            {
+                $item['revision_count_target']=$targeted[$crop['crop_id']];
+            }
+            $items[]=$item;
+        }
+        $this->json_return($items);
+    }
+    private function system_assign_target_outlet($fiscal_year_id=0,$zone_id,$crop_id=0)
+    {
+        //$user = User_helper::get_user();
+        $method='assign_target_outlet';
+        if((isset($this->permissions['action1']) && ($this->permissions['action1']==1))||(isset($this->permissions['action2']) && ($this->permissions['action2']==1)))
+        {
+            if(!($fiscal_year_id>0))
+            {
+                $fiscal_year_id=$this->input->post('fiscal_year_id');
+            }
+            if(!($zone_id>0))
+            {
+                $zone_id=$this->input->post('zone_id');
+            }
+            if(!($crop_id>0))
+            {
+                $crop_id=$this->input->post('crop_id');
+            }
+            //validation fiscal year
+            if(!Budget_helper::check_validation_fiscal_year($fiscal_year_id))
+            {
+                System_helper::invalid_try(__FUNCTION__,$fiscal_year_id,'Invalid Fiscal year');
+                $ajax['status']=false;
+                $ajax['system_message']='Invalid Fiscal Year';
+                $this->json_return($ajax);
+            }
+            // validation assign division
+            if(!in_array($zone_id, $this->user_zone_ids))
+            {
+                System_helper::invalid_try(__FUNCTION__,$zone_id,'Zone Not Assigned');
+                $ajax['status']=false;
+                $ajax['system_message']='Invalid Zone.';
+                $this->json_return($ajax);
+            }
+            //validation ZI Budget & Outlet Target forward status
+            $info_budget_target=$this->get_info_budget_target($fiscal_year_id,$zone_id);
+            if(($info_budget_target['status_budget_forward']!=$this->config->item('system_status_forwarded')))
+            {
+                $ajax['status']=false;
+                $ajax['system_message']='ZI Budget Not Forwarded.';
+                $this->json_return($ajax);
+            }
+            if(($info_budget_target['status_target_forward']==$this->config->item('system_status_forwarded')))
+            {
+                if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
+                {
+                    $ajax['status']=false;
+                    $ajax['system_message']='Outlet Target Already Assigned.';
+                    $this->json_return($ajax);
+                }
+            }
+            // validation DI assign target to ZI forward status
+            $info_target_id=$this->get_info_target_di($fiscal_year_id, $info_budget_target['division_id']);
+            if(($info_target_id['status_target_forward']!=$this->config->item('system_status_forwarded')))
+            {
+                $ajax['status']=false;
+                $ajax['system_message']='DI Assign ZI Target Not Forwarded.';
+                $this->json_return($ajax);
+            }
+
+            $data['fiscal_year']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id ='.$fiscal_year_id),1);
+            $data['division']=Query_helper::get_info($this->config->item('table_login_setup_location_divisions'),'*',array('id ='.$info_budget_target['division_id'],'status ="'.$this->config->item('system_status_active').'"'),1);
+            $data['zone']=Query_helper::get_info($this->config->item('table_login_setup_location_zones'),'*',array('id ='.$zone_id,'status ="'.$this->config->item('system_status_active').'"'),1);
+            $data['crop']=Query_helper::get_info($this->config->item('table_login_setup_classification_crops'),'*',array('id ='.$crop_id),1);
+            $data['outlets']=$this->get_outlets($zone_id);
+            $data['acres']=$this->get_acres($zone_id,$crop_id);
+
+            $data['system_preference_items']= $this->get_preference_headers($method);
+            $data['title']="ZI Yearly Target Assign To Outlet for (".$data['crop']['name'].')';
+            $data['options']['fiscal_year_id']=$fiscal_year_id;
+            $data['options']['zone_id']=$zone_id;
+            $data['options']['crop_id']=$crop_id;
+            $ajax['status']=true;
+            $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/assign_target_outlet",$data,true));
+            if($this->message)
+            {
+                $ajax['system_message']=$this->message;
+            }
+            $ajax['system_page_url']=site_url($this->controller_url.'/index/assign_target_outlet/'.$fiscal_year_id.'/'.$zone_id.'/'.$crop_id);
+            $this->json_return($ajax);
+        }
+        else
+        {
+            $ajax['status']=false;
+            $ajax['system_message']=$this->lang->line("YOU_DONT_HAVE_ACCESS");
+            $this->json_return($ajax);
+        }
+    }
+    private function system_get_items_assign_target_outlet()
+    {
+        $items=array();
+        //$this->json_return($items);
+        $fiscal_year_id=$this->input->post('fiscal_year_id');
+        $zone_id=$this->input->post('zone_id');
+        $crop_id=$this->input->post('crop_id');
+
+        //get zone target
+        $this->db->from($this->config->item('table_bms_zi_budget_target_zone').' budget_target_zone');
+        $this->db->select('budget_target_zone.*');
+
+        $this->db->join($this->config->item('table_login_setup_classification_varieties').' v','v.id=budget_target_zone.variety_id','INNER');
+        $this->db->join($this->config->item('table_login_setup_classification_crop_types').' crop_type','crop_type.id = v.crop_type_id','INNER');
+
+        $this->db->where('crop_type.crop_id',$crop_id);
+        $this->db->where('v.status',$this->config->item('system_status_active'));
+        $this->db->where('v.whose','ARM');
+        $this->db->where('budget_target_zone.fiscal_year_id',$fiscal_year_id);
+        $this->db->where('budget_target_zone.zone_id',$zone_id);
+        $results=$this->db->get()->result_array();
+        $target_zones=array();
+        foreach($results as $result)
+        {
+            $target_zones[$result['variety_id']]=$result;
+        }
+
+        $outlet_ids[0]=0;
+        $outlets=$this->get_outlets($zone_id);
+        foreach ($outlets as $outlet)
+        {
+            $outlet_ids[$outlet['outlet_id']]=$outlet['outlet_id'];
+        }
+
+        // get old items
+
+        $this->db->from($this->config->item('table_pos_si_budget_target_outlet').' budget_target_outlet');
+        $this->db->select('budget_target_outlet.*');
+        $this->db->where('budget_target_outlet.fiscal_year_id',$fiscal_year_id);
+        $this->db->where_in('budget_target_outlet.outlet_id',$outlet_ids);
+        $results=$this->db->get()->result_array();
+        $items_old=array();
+        foreach($results as $result)
+        {
+            $items_old[$result['outlet_id']][$result['variety_id']]=$result;
+        }
+
+        //variety lists
+        $this->db->from($this->config->item('table_login_setup_classification_varieties').' v');
+        $this->db->select('v.id variety_id,v.name variety_name');
+        $this->db->join($this->config->item('table_login_setup_classification_crop_types').' crop_type','crop_type.id = v.crop_type_id','INNER');
+        $this->db->select('crop_type.name crop_type_name');
+        $this->db->where('crop_type.crop_id',$crop_id);
+        $this->db->where('v.status',$this->config->item('system_status_active'));
+        $this->db->where('v.whose','ARM');
+
+        $this->db->order_by('crop_type.ordering','ASC');
+        $this->db->order_by('crop_type.id','ASC');
+        $this->db->order_by('v.ordering','ASC');
+        $this->db->order_by('v.id','ASC');
+        $results=$this->db->get()->result_array();
+        foreach($results as $result)
+        {
+            $info=$this->initialize_row_assign_target_outlet($outlet_ids,$result);
+            if(isset($target_zones[$result['variety_id']]))
+            {
+                $info['quantity_target_zi']=$target_zones[$result['variety_id']]['quantity_target'];
+            }
+            $quantity_target_outlet_total=0;
+            foreach($outlet_ids as $outlet_id)
+            {
+                if(isset($items_old[$outlet_id][$result['variety_id']]))
+                {
+                    $info['quantity_target_outlet_'.$outlet_id]=$items_old[$outlet_id][$result['variety_id']]['quantity_target'];
+                    $quantity_target_outlet_total+=$info['quantity_target_outlet_'.$outlet_id];
+                }
+            }
+            $info['quantity_target_outlet_total']= $quantity_target_outlet_total;
+            $items[]=$info;
+        }
+        $this->json_return($items);
+    }
+    private function initialize_row_assign_target_outlet($outlet_ids,$info)
+    {
+        $row=array();
+        $row['crop_type_name']=$info['crop_type_name'];
+        $row['variety_name']=$info['variety_name'];
+        $row['variety_id']=$info['variety_id'];
+        $row['quantity_target_zi']=0;
+        foreach($outlet_ids as $outlet_id)
+        {
+            $row['quantity_target_outlet_'.$outlet_id]= 0;
+        }
+        $row['quantity_target_outlet_total']=0;
+        return $row;
+    }
+    private function system_save_target_outlet()
+    {
+        $user = User_helper::get_user();
+        $time=time();
+        $item_head=$this->input->post('item');
+        $items=$this->input->post('items');
+
+        if(!((isset($this->permissions['action1']) && ($this->permissions['action1']==1))||(isset($this->permissions['action2']) && ($this->permissions['action2']==1))))
+        {
+            $ajax['status']=false;
+            $ajax['system_message']=$this->lang->line("YOU_DONT_HAVE_ACCESS");
+            $this->json_return($ajax);
+        }
+        //validation fiscal year
+        if(!Budget_helper::check_validation_fiscal_year($item_head['fiscal_year_id']))
+        {
+            System_helper::invalid_try(__FUNCTION__,$item_head['fiscal_year_id'],'Invalid Fiscal year');
+            $ajax['status']=false;
+            $ajax['system_message']='Invalid Fiscal Year';
+            $this->json_return($ajax);
+        }
+        // validation assign zone
+        if(!in_array($item_head['zone_id'], $this->user_zone_ids))
+        {
+            System_helper::invalid_try(__FUNCTION__,$item_head['zone_id'],'Zone Not Assigned');
+            $ajax['status']=false;
+            $ajax['system_message']='Invalid Zone.';
+            $this->json_return($ajax);
+        }
+        //validation DI Budget & ZI Target forward status
+        $info_budget_target=$this->get_info_budget_target($item_head['fiscal_year_id'],$item_head['zone_id']);
+        if(($info_budget_target['status_budget_forward']!=$this->config->item('system_status_forwarded')))
+        {
+            $ajax['status']=false;
+            $ajax['system_message']='ZI Budget Not Forwarded.';
+            $this->json_return($ajax);
+        }
+        // outlet target forward
+        if(($info_budget_target['status_target_forward']==$this->config->item('system_status_forwarded')))
+        {
+            if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
+            {
+                $ajax['status']=false;
+                $ajax['system_message']='Outlet Target Already Assigned.';
+                $this->json_return($ajax);
+            }
+        }
+        // validation DI assign target to zi forward status
+        $info_target_di=$this->get_info_target_di($item_head['fiscal_year_id'], $info_budget_target['division_id']);
+        if(($info_target_di['status_target_forward']!=$this->config->item('system_status_forwarded')))
+        {
+            $ajax['status']=false;
+            $ajax['system_message']='DI Assign ZI Target Not Forwarded.';
+            $this->json_return($ajax);
+        }
+
+        // get outlet ids
+        $outlet_ids[0]=0;
+        $outlets=$this->get_outlets($item_head['zone_id']);
+        foreach ($outlets as $outlet)
+        {
+            $outlet_ids[$outlet['outlet_id']]=$outlet['outlet_id'];
+        }
+
+        //old items
+        $this->db->from($this->config->item('table_pos_si_budget_target_outlet').' budget_target_outlet');
+        $this->db->select('budget_target_outlet.*');
+
+        $this->db->where('budget_target_outlet.fiscal_year_id',$item_head['fiscal_year_id']);
+        $this->db->where_in('budget_target_outlet.outlet_id',$outlet_ids);
+
+        $results=$this->db->get()->result_array();
+        $items_old=array();
+        foreach($results as $result)
+        {
+            $items_old[$result['outlet_id']][$result['variety_id']]=$result;
+        }
+
+        $this->db->trans_start();  //DB Transaction Handle START
+
+        foreach($items as $variety_id=>$variety_info)
+        {
+            foreach($variety_info as $outlet_id=>$quantity_info)
+            {
+                if(isset($items_old[$outlet_id][$variety_id]))
+                {
+                    if($items_old[$outlet_id][$variety_id]['quantity_target']!=$quantity_info['quantity_target'])
+                    {
+                        $data=array();
+                        $data['quantity_target']=$quantity_info['quantity_target'];
+                        $data['date_updated_target']=$time;
+                        $data['user_updated_target']=$user->user_id;
+                        $this->db->set('revision_count_target','revision_count_target+1',false);
+                        Query_helper::update($this->config->item('table_pos_si_budget_target_outlet'),$data,array('id='.$items_old[$outlet_id][$variety_id]['id']),false);
+                    }
+                }
+                else
+                {
+                    $data=array();
+                    $data['fiscal_year_id']=$item_head['fiscal_year_id'];
+                    $data['outlet_id']=$outlet_id;
+                    $data['variety_id']=$variety_id;
+                    if($quantity_info['quantity_target']>0)
+                    {
+                        $data['quantity_target']=$quantity_info['quantity_target'];
+                        $data['revision_count_target']=1;
+                    }
+                    else
+                    {
+                        $data['quantity_target']=0;
+                    }
+                    $data['date_updated_target']=$time;
+                    $data['user_updated_target']=$user->user_id;
+                    Query_helper::add($this->config->item('table_pos_si_budget_target_outlet'),$data,false);
+                }
+            }
+        }
+        $this->db->trans_complete();   //DB Transaction Handle END
+        if ($this->db->trans_status() === TRUE)
+        {
+            $this->message=$this->lang->line("MSG_SAVED_SUCCESS");
+            $this->system_list_target_outlet($item_head['fiscal_year_id'],$item_head['zone_id']);
+
+        }
+        else
+        {
+            $ajax['status']=false;
+            $ajax['system_message']=$this->lang->line("MSG_SAVED_FAIL");
+            $this->json_return($ajax);
+        }
+    }
+    /*Assign outlet target forward*/
+    private function system_assign_target_outlet_forward($fiscal_year_id=0,$zone_id)
+    {
+        $method='assign_target_outlet_forward';
+        if((isset($this->permissions['action7']) && ($this->permissions['action7']==1)))
+        {
+            if(!($fiscal_year_id>0))
+            {
+                $fiscal_year_id=$this->input->post('fiscal_year_id');
+            }
+            if(!($zone_id>0))
+            {
+                $zone_id=$this->input->post('zone_id');
+            }
+            //validation fiscal year
+            if(!Budget_helper::check_validation_fiscal_year($fiscal_year_id))
+            {
+                System_helper::invalid_try(__FUNCTION__,$fiscal_year_id,'Invalid Fiscal year');
+                $ajax['status']=false;
+                $ajax['system_message']='Invalid Fiscal Year';
+                $this->json_return($ajax);
+            }
+            // validation assign division
+            if(!in_array($zone_id, $this->user_zone_ids))
+            {
+                System_helper::invalid_try(__FUNCTION__,$zone_id,'Zone Not Assigned');
+                $ajax['status']=false;
+                $ajax['system_message']='Invalid Zone.';
+                $this->json_return($ajax);
+            }
+            //validation ZI Budget & Outlet Target forward status
+            $info_budget_target=$this->get_info_budget_target($fiscal_year_id,$zone_id);
+            if(($info_budget_target['status_budget_forward']!=$this->config->item('system_status_forwarded')))
+            {
+                $ajax['status']=false;
+                $ajax['system_message']='ZI Budget Not Forwarded.';
+                $this->json_return($ajax);
+            }
+            if(($info_budget_target['status_target_forward']==$this->config->item('system_status_forwarded')))
+            {
+                $ajax['status']=false;
+                $ajax['system_message']='Outlet Target Already Assigned.';
+                $this->json_return($ajax);
+            }
+            // validation DI assign target to ZI forward status
+            $info_target_id=$this->get_info_target_di($fiscal_year_id, $info_budget_target['division_id']);
+            if(($info_target_id['status_target_forward']!=$this->config->item('system_status_forwarded')))
+            {
+                $ajax['status']=false;
+                $ajax['system_message']='DI Assign ZI Target Not Forwarded.';
+                $this->json_return($ajax);
+            }
+
+            $data['fiscal_year']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id ='.$fiscal_year_id),1);
+            $data['division']=Query_helper::get_info($this->config->item('table_login_setup_location_divisions'),'*',array('id ='.$info_budget_target['division_id'],'status ="'.$this->config->item('system_status_active').'"'),1);
+            $data['zone']=Query_helper::get_info($this->config->item('table_login_setup_location_zones'),'*',array('id ='.$zone_id,'status ="'.$this->config->item('system_status_active').'"'),1);
+            $data['outlets']=$this->get_outlets($zone_id);
+            $data['acres']=$this->get_acres($zone_id);
+
+            $data['system_preference_items']= $this->get_preference_headers($method);
+            $data['title']='ZI Yearly Target Forward To Outlet';
+            $data['options']['fiscal_year_id']=$fiscal_year_id;
+            $data['options']['zone_id']=$zone_id;
+            $ajax['status']=true;
+            $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/assign_target_outlet_forward",$data,true));
+            if($this->message)
+            {
+                $ajax['system_message']=$this->message;
+            }
+            $ajax['system_page_url']=site_url($this->controller_url.'/index/assign_target_outlet_forward/'.$fiscal_year_id.'/'.$zone_id);
+            $this->json_return($ajax);
+        }
+        else
+        {
+            $ajax['status']=false;
+            $ajax['system_message']=$this->lang->line("YOU_DONT_HAVE_ACCESS");
+            $this->json_return($ajax);
+        }
+    }
+    private function system_get_items_forward_assign_target_outlet()
+    {
+        $items=array();
+        //$this->json_return($items);
+        $fiscal_year_id=$this->input->post('fiscal_year_id');
+        $zone_id=$this->input->post('zone_id');
+
+        //get zone target
+        $this->db->from($this->config->item('table_bms_zi_budget_target_zone').' budget_target_zone');
+        $this->db->select('budget_target_zone.*');
+
+        $this->db->join($this->config->item('table_login_setup_classification_varieties').' v','v.id=budget_target_zone.variety_id','INNER');
+        $this->db->join($this->config->item('table_login_setup_classification_crop_types').' crop_type','crop_type.id = v.crop_type_id','INNER');
+
+        $this->db->where('v.status',$this->config->item('system_status_active'));
+        $this->db->where('v.whose','ARM');
+        $this->db->where('budget_target_zone.fiscal_year_id',$fiscal_year_id);
+        $this->db->where('budget_target_zone.zone_id',$zone_id);
+        $results=$this->db->get()->result_array();
+        $target_zones=array();
+        foreach($results as $result)
+        {
+            $target_zones[$result['variety_id']]=$result;
+        }
+
+        $outlet_ids[0]=0;
+        $outlets=$this->get_outlets($zone_id);
+        foreach ($outlets as $outlet)
+        {
+            $outlet_ids[$outlet['outlet_id']]=$outlet['outlet_id'];
+        }
+
+        // get old items
+
+        $this->db->from($this->config->item('table_pos_si_budget_target_outlet').' budget_target_outlet');
+        $this->db->select('budget_target_outlet.*');
+        $this->db->where('budget_target_outlet.fiscal_year_id',$fiscal_year_id);
+        $this->db->where_in('budget_target_outlet.outlet_id',$outlet_ids);
+        $results=$this->db->get()->result_array();
+        $items_old=array();
+        foreach($results as $result)
+        {
+            $items_old[$result['outlet_id']][$result['variety_id']]=$result;
+        }
+
+        //variety lists
+        $this->db->from($this->config->item('table_login_setup_classification_varieties').' v');
+        $this->db->select('v.id variety_id,v.name variety_name');
+        $this->db->join($this->config->item('table_login_setup_classification_crop_types').' crop_type','crop_type.id = v.crop_type_id','INNER');
+        $this->db->select('crop_type.name crop_type_name');
+        $this->db->join($this->config->item('table_login_setup_classification_crops').' crop','crop.id = crop_type.crop_id','INNER');
+        $this->db->select('crop.name crop_name');
+        $this->db->where('v.status',$this->config->item('system_status_active'));
+        $this->db->where('v.whose','ARM');
+        $this->db->order_by('crop.ordering','ASC');
+        $this->db->order_by('crop.id','ASC');
+        $this->db->order_by('crop_type.ordering','ASC');
+        $this->db->order_by('crop_type.id','ASC');
+        $this->db->order_by('v.ordering','ASC');
+        $this->db->order_by('v.id','ASC');
+        $results=$this->db->get()->result_array();
+
+        $prev_crop_name='';
+        $prev_type_name='';
+        $first_row=true;
+
+        $type_total=$this->initialize_row_forward_assign_target_outlet($outlet_ids,'','','Total Type','');
+        $crop_total=$this->initialize_row_forward_assign_target_outlet($outlet_ids,'','Total Crop','','');
+        $grand_total=$this->initialize_row_forward_assign_target_outlet($outlet_ids,'Grand Total','','','');
+
+        foreach($results as $result)
+        {
+            $info=$this->initialize_row_forward_assign_target_outlet($outlet_ids,$result['crop_name'],$result['crop_type_name'],$result['variety_name']);
+            if(!$first_row)
+            {
+                if($prev_crop_name!=$result['crop_name'])
+                {
+                    $type_total['crop_name']=$prev_crop_name;
+                    $type_total['crop_type_name']=$prev_type_name;
+                    $crop_total['crop_name']=$prev_crop_name;
+                    $items[]=$type_total;
+                    $items[]=$crop_total;
+
+                    $type_total=$this->reset_row($type_total);
+                    $crop_total=$this->reset_row($crop_total);
+
+                    $prev_crop_name=$result['crop_name'];
+                    $prev_type_name=$result['crop_type_name'];
+
+                }
+                elseif($prev_type_name!=$result['crop_type_name'])
+                {
+                    $type_total['crop_name']=$prev_crop_name;
+                    $type_total['crop_type_name']=$prev_type_name;
+                    $items[]=$type_total;
+                    $type_total=$this->reset_row($type_total);
+                    //$info['crop_name']='';
+                    $prev_type_name=$result['crop_type_name'];
+                }
+                else
+                {
+                    //$info['crop_name']='';
+                    //$info['crop_type_name']='';
+                }
+            }
+            else
+            {
+                $prev_crop_name=$result['crop_name'];
+                $prev_type_name=$result['crop_type_name'];
+                $first_row=false;
+            }
+            if(isset($target_zones[$result['variety_id']]))
+            {
+                $info['quantity_target_zi']=$target_zones[$result['variety_id']]['quantity_target'];
+                $type_total['quantity_target_zi']+=$info['quantity_target_zi'];
+                $crop_total['quantity_target_zi']+=$info['quantity_target_zi'];
+                $grand_total['quantity_target_zi']+=$info['quantity_target_zi'];
+            }
+            $quantity_target_outlet_total=0;
+            foreach($outlet_ids as $outlet_id)
+            {
+                if(isset($items_old[$outlet_id][$result['variety_id']]))
+                {
+                    $info['quantity_target_outlet_'.$outlet_id]=$items_old[$outlet_id][$result['variety_id']]['quantity_target'];
+                    $type_total['quantity_target_outlet_'.$outlet_id]+=$info['quantity_target_outlet_'.$outlet_id];
+                    $crop_total['quantity_target_outlet_'.$outlet_id]+=$info['quantity_target_outlet_'.$outlet_id];
+                    $grand_total['quantity_target_outlet_'.$outlet_id]+=$info['quantity_target_outlet_'.$outlet_id];
+
+                    $quantity_target_outlet_total+=$info['quantity_target_outlet_'.$outlet_id];
+                }
+            }
+            $info['quantity_target_outlet_total']= $quantity_target_outlet_total;
+            $type_total['quantity_target_outlet_total']+=$info['quantity_target_outlet_total'];
+            $crop_total['quantity_target_outlet_total']+=$info['quantity_target_outlet_total'];
+            $grand_total['quantity_target_outlet_total']+=$info['quantity_target_outlet_total'];
+            $items[]=$info;
+        }
+        $items[]=$type_total;
+        $items[]=$crop_total;
+        $items[]=$grand_total;
+        $this->json_return($items);
+    }
+    private function initialize_row_forward_assign_target_outlet($outlet_ids,$crop_name,$crop_type_name,$variety_name)
+    {
+        $row=array();
+        $row['crop_name']=$crop_name;
+        $row['crop_type_name']=$crop_type_name;
+        $row['variety_name']=$variety_name;
+        $row['quantity_target_zi']=0;
+        foreach($outlet_ids as $outlet_id)
+        {
+            $row['quantity_target_outlet_'.$outlet_id]= 0;
+        }
+        $row['quantity_target_outlet_total']=0;
+        return $row;
+    }
+    private function system_save_target_outlet_forward()
+    {
+        $user = User_helper::get_user();
+        $time=time();
+        $item_head=$this->input->post('item');
+
+        if(!(isset($this->permissions['action7']) && ($this->permissions['action7']==1)))
+        {
+            $ajax['status']=false;
+            $ajax['system_message']=$this->lang->line("YOU_DONT_HAVE_ACCESS");
+            $this->json_return($ajax);
+        }
+        if($item_head['status_target_forward']!=$this->config->item('system_status_forwarded'))
+        {
+            $ajax['status']=false;
+            $ajax['system_message']='Select Forward Option.';
+            $this->json_return($ajax);
+        }
+        //validation fiscal year
+        if(!Budget_helper::check_validation_fiscal_year($item_head['fiscal_year_id']))
+        {
+            System_helper::invalid_try(__FUNCTION__,$item_head['fiscal_year_id'],'Invalid Fiscal year');
+            $ajax['status']=false;
+            $ajax['system_message']='Invalid Fiscal Year';
+            $this->json_return($ajax);
+        }
+        // validation assign zone
+        if(!in_array($item_head['zone_id'], $this->user_zone_ids))
+        {
+            System_helper::invalid_try(__FUNCTION__,$item_head['zone_id'],'Zone Not Assigned');
+            $ajax['status']=false;
+            $ajax['system_message']='Invalid Zone.';
+            $this->json_return($ajax);
+        }
+        //validation DI Budget & ZI Target forward status
+        $info_budget_target=$this->get_info_budget_target($item_head['fiscal_year_id'],$item_head['zone_id']);
+        if(($info_budget_target['status_budget_forward']!=$this->config->item('system_status_forwarded')))
+        {
+            $ajax['status']=false;
+            $ajax['system_message']='ZI Budget Not Forwarded.';
+            $this->json_return($ajax);
+        }
+        // outlet target forward
+        if(($info_budget_target['status_target_forward']==$this->config->item('system_status_forwarded')))
+        {
+            $ajax['status']=false;
+            $ajax['system_message']='Outlet Target Already Assigned.';
+            $this->json_return($ajax);
+        }
+        // validation DI assign target to zi forward status
+        $info_target_di=$this->get_info_target_di($item_head['fiscal_year_id'], $info_budget_target['division_id']);
+        if(($info_target_di['status_target_forward']!=$this->config->item('system_status_forwarded')))
+        {
+            $ajax['status']=false;
+            $ajax['system_message']='DI Assign ZI Target Not Forwarded.';
+            $this->json_return($ajax);
+        }
+
+        $this->db->trans_start();  //DB Transaction Handle START
+
+        $data=array();
+        $data['status_target_forward']=$item_head['status_target_forward'];
+        $data['date_target_forwarded']=$time;
+        $data['user_target_forwarded']=$user->user_id;
+        Query_helper::update($this->config->item('table_bms_zi_budget_target'),$data,array('id='.$info_budget_target['id']));
+
+        $this->db->trans_complete();   //DB Transaction Handle END
+        if ($this->db->trans_status() === TRUE)
+        {
+            $this->message=$this->lang->line("MSG_SAVED_SUCCESS");
+            $this->system_list();
+
+        }
+        else
+        {
+            $ajax['status']=false;
+            $ajax['system_message']=$this->lang->line("MSG_SAVED_FAIL");
+            $this->json_return($ajax);
+        }
+    }
+    /*Assign Outlet Next 3 Target Edit*/
+    private function system_list_target_outlet_next_year($fiscal_year_id=0,$zone_id=0)
+    {
+        $method='list_target_outlet_next_year';
+        if((isset($this->permissions['action1']) && ($this->permissions['action1']==1))||(isset($this->permissions['action2']) && ($this->permissions['action2']==1)))
+        {
+            if(!($fiscal_year_id>0))
+            {
+                $fiscal_year_id=$this->input->post('fiscal_year_id');
+            }
+            if(!($zone_id>0))
+            {
+                $zone_id=$this->input->post('zone_id');
+            }
+            //validation fiscal year
+            if(!Budget_helper::check_validation_fiscal_year($fiscal_year_id))
+            {
+                System_helper::invalid_try(__FUNCTION__,$fiscal_year_id,'Invalid Fiscal year');
+                $ajax['status']=false;
+                $ajax['system_message']='Invalid Fiscal Year';
+                $this->json_return($ajax);
+            }
+            // validation assign division
+            if(!in_array($zone_id, $this->user_zone_ids))
+            {
+                System_helper::invalid_try(__FUNCTION__,$zone_id,'Zone Not Assigned');
+                $ajax['status']=false;
+                $ajax['system_message']='Invalid Zone.';
+                $this->json_return($ajax);
+            }
+            //validation forward status
+            $info_budget_target=$this->get_info_budget_target($fiscal_year_id,$zone_id);
+            if(($info_budget_target['status_budget_forward']!=$this->config->item('system_status_forwarded')))
+            {
+                $ajax['status']=false;
+                $ajax['system_message']='ZI Budget Not Forwarded.';
+                $this->json_return($ajax);
+            }
+            if(($info_budget_target['status_target_forward']==$this->config->item('system_status_forwarded')))
+            {
+                if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
+                {
+                    $ajax['status']=false;
+                    $ajax['system_message']='Outlet Target Already Assigned.';
+                    $this->json_return($ajax);
+                }
+            }
+
+            // validation di assign target to zi forward status
+            $info_target_di=$this->get_info_target_di($fiscal_year_id, $info_budget_target['division_id']);
+            if(($info_target_di['status_target_forward']!=$this->config->item('system_status_forwarded')))
+            {
+                $ajax['status']=false;
+                $ajax['system_message']='DI Assign ZI Target Not Forwarded.';
+                $this->json_return($ajax);
+            }
+
+            $data['system_preference_items']= $this->get_preference_headers($method);
+            $data['fiscal_year']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id ='.$fiscal_year_id),1);
+            $data['division']=Query_helper::get_info($this->config->item('table_login_setup_location_divisions'),'*',array('id ='.$info_budget_target['division_id'],'status ="'.$this->config->item('system_status_active').'"'),1);
+            $data['zone']=Query_helper::get_info($this->config->item('table_login_setup_location_zones'),'*',array('id ='.$zone_id,'status ="'.$this->config->item('system_status_active').'"'),1);
+            $data['title']="Assign Outlet Target :: Crop list";
+            $data['options']['fiscal_year_id']=$fiscal_year_id;
+            $data['options']['zone_id']=$zone_id;
+            $ajax['status']=true;
+            $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/list_target_outlet",$data,true));
+            if($this->message)
+            {
+                $ajax['system_message']=$this->message;
+            }
+            $ajax['system_page_url']=site_url($this->controller_url.'/index/list_target_outlet/'.$fiscal_year_id.'/'.$zone_id);
+            $this->json_return($ajax);
+        }
+        else
+        {
+            $ajax['status']=false;
+            $ajax['system_message']=$this->lang->line("YOU_DONT_HAVE_ACCESS");
+            $this->json_return($ajax);
+        }
+    }
+    private function system_get_items_target_outlet_next_year()
+    {
+        $items=array();
+        $fiscal_year_id=$this->input->post('fiscal_year_id');
+        $zone_id=$this->input->post('zone_id');
+
+        //get Target Revision
+        $this->db->from($this->config->item('table_pos_si_budget_target_outlet').' budget_target_outlet');
+        $this->db->select('MAX(budget_target_outlet.revision_count_target) revision_count_target');
+
+        $this->db->join($this->config->item('table_login_csetup_cus_info').' customer_info','customer_info.customer_id = budget_target_outlet.outlet_id AND customer_info.revision = 1','INNER');
+        $this->db->select('customer_info.customer_id,customer_info.name,customer_info.type,customer_info.name_short,customer_info.customer_code');
+
+        $this->db->join($this->config->item('table_login_setup_location_districts').' district','district.id = customer_info.district_id','INNER');
+        $this->db->select('district.id district_id,district.name district_name');
+
+        $this->db->join($this->config->item('table_login_setup_location_territories').' territory','territory.id = district.territory_id','INNER');
+        $this->db->select('territory.id territory_id,territory.name territory_name');
+
+        $this->db->join($this->config->item('table_login_setup_classification_varieties').' v','v.id = budget_target_outlet.variety_id','INNER');
+        $this->db->join($this->config->item('table_login_setup_classification_crop_types').' crop_type','crop_type.id = v.crop_type_id','INNER');
+        $this->db->select('crop_type.crop_id');
+
+        $this->db->where('budget_target_outlet.fiscal_year_id',$fiscal_year_id);
+        $this->db->where('territory.zone_id',$zone_id);
+        $this->db->group_by('crop_type.crop_id');
+        $results=$this->db->get()->result_array();
+        $targeted=array();
+        foreach($results as $result)
+        {
+            $targeted[$result['crop_id']]=$result['revision_count_target'];
+        }
+        //crop list
+        $results=Query_helper::get_info($this->config->item('table_login_setup_classification_crops'),array('id crop_id','name crop_name'),array('status ="'.$this->config->item('system_status_active').'"'),0,0,array('ordering ASC','id ASC'));
+        foreach($results as $crop)
+        {
+            $item=$crop;
+            $item['revision_count_target']=0;
+            if(isset($targeted[$crop['crop_id']]))
+            {
+                $item['revision_count_target']=$targeted[$crop['crop_id']];
+            }
+            $items[]=$item;
+        }
+        $this->json_return($items);
+    }
+    private function system_assign_target_outlet_next_year($fiscal_year_id=0,$zone_id,$crop_id=0)
+    {
+        //$user = User_helper::get_user();
+        $method='assign_target_outlet';
+        if((isset($this->permissions['action1']) && ($this->permissions['action1']==1))||(isset($this->permissions['action2']) && ($this->permissions['action2']==1)))
+        {
+            if(!($fiscal_year_id>0))
+            {
+                $fiscal_year_id=$this->input->post('fiscal_year_id');
+            }
+            if(!($zone_id>0))
+            {
+                $zone_id=$this->input->post('zone_id');
+            }
+            if(!($crop_id>0))
+            {
+                $crop_id=$this->input->post('crop_id');
+            }
+            //validation fiscal year
+            if(!Budget_helper::check_validation_fiscal_year($fiscal_year_id))
+            {
+                System_helper::invalid_try(__FUNCTION__,$fiscal_year_id,'Invalid Fiscal year');
+                $ajax['status']=false;
+                $ajax['system_message']='Invalid Fiscal Year';
+                $this->json_return($ajax);
+            }
+            // validation assign division
+            if(!in_array($zone_id, $this->user_zone_ids))
+            {
+                System_helper::invalid_try(__FUNCTION__,$zone_id,'Zone Not Assigned');
+                $ajax['status']=false;
+                $ajax['system_message']='Invalid Zone.';
+                $this->json_return($ajax);
+            }
+            //validation ZI Budget & Outlet Target forward status
+            $info_budget_target=$this->get_info_budget_target($fiscal_year_id,$zone_id);
+            if(($info_budget_target['status_budget_forward']!=$this->config->item('system_status_forwarded')))
+            {
+                $ajax['status']=false;
+                $ajax['system_message']='ZI Budget Not Forwarded.';
+                $this->json_return($ajax);
+            }
+            if(($info_budget_target['status_target_forward']==$this->config->item('system_status_forwarded')))
+            {
+                if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
+                {
+                    $ajax['status']=false;
+                    $ajax['system_message']='Outlet Target Already Assigned.';
+                    $this->json_return($ajax);
+                }
+            }
+            // validation DI assign target to ZI forward status
+            $info_target_id=$this->get_info_target_di($fiscal_year_id, $info_budget_target['division_id']);
+            if(($info_target_id['status_target_forward']!=$this->config->item('system_status_forwarded')))
+            {
+                $ajax['status']=false;
+                $ajax['system_message']='DI Assign ZI Target Not Forwarded.';
+                $this->json_return($ajax);
+            }
+
+            $data['fiscal_year']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id ='.$fiscal_year_id),1);
+            $data['division']=Query_helper::get_info($this->config->item('table_login_setup_location_divisions'),'*',array('id ='.$info_budget_target['division_id'],'status ="'.$this->config->item('system_status_active').'"'),1);
+            $data['zone']=Query_helper::get_info($this->config->item('table_login_setup_location_zones'),'*',array('id ='.$zone_id,'status ="'.$this->config->item('system_status_active').'"'),1);
+            $data['crop']=Query_helper::get_info($this->config->item('table_login_setup_classification_crops'),'*',array('id ='.$crop_id),1);
+            $data['outlets']=$this->get_outlets($zone_id);
+            $data['acres']=$this->get_acres($zone_id,$crop_id);
+
+            $data['system_preference_items']= $this->get_preference_headers($method);
+            $data['title']="ZI Yearly Target Assign To Outlet for (".$data['crop']['name'].')';
+            $data['options']['fiscal_year_id']=$fiscal_year_id;
+            $data['options']['zone_id']=$zone_id;
+            $data['options']['crop_id']=$crop_id;
+            $ajax['status']=true;
+            $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/assign_target_outlet",$data,true));
+            if($this->message)
+            {
+                $ajax['system_message']=$this->message;
+            }
+            $ajax['system_page_url']=site_url($this->controller_url.'/index/assign_target_outlet/'.$fiscal_year_id.'/'.$zone_id.'/'.$crop_id);
+            $this->json_return($ajax);
+        }
+        else
+        {
+            $ajax['status']=false;
+            $ajax['system_message']=$this->lang->line("YOU_DONT_HAVE_ACCESS");
+            $this->json_return($ajax);
+        }
+    }
+    private function system_get_items_assign_target_outlet_next_year()
+    {
+        $items=array();
+        //$this->json_return($items);
+        $fiscal_year_id=$this->input->post('fiscal_year_id');
+        $zone_id=$this->input->post('zone_id');
+        $crop_id=$this->input->post('crop_id');
+
+        //get zone target
+        $this->db->from($this->config->item('table_bms_zi_budget_target_zone').' budget_target_zone');
+        $this->db->select('budget_target_zone.*');
+
+        $this->db->join($this->config->item('table_login_setup_classification_varieties').' v','v.id=budget_target_zone.variety_id','INNER');
+        $this->db->join($this->config->item('table_login_setup_classification_crop_types').' crop_type','crop_type.id = v.crop_type_id','INNER');
+
+        $this->db->where('crop_type.crop_id',$crop_id);
+        $this->db->where('v.status',$this->config->item('system_status_active'));
+        $this->db->where('v.whose','ARM');
+        $this->db->where('budget_target_zone.fiscal_year_id',$fiscal_year_id);
+        $this->db->where('budget_target_zone.zone_id',$zone_id);
+        $results=$this->db->get()->result_array();
+        $target_zones=array();
+        foreach($results as $result)
+        {
+            $target_zones[$result['variety_id']]=$result;
+        }
+
+        $outlet_ids[0]=0;
+        $outlets=$this->get_outlets($zone_id);
+        foreach ($outlets as $outlet)
+        {
+            $outlet_ids[$outlet['outlet_id']]=$outlet['outlet_id'];
+        }
+
+        // get old items
+
+        $this->db->from($this->config->item('table_pos_si_budget_target_outlet').' budget_target_outlet');
+        $this->db->select('budget_target_outlet.*');
+        $this->db->where('budget_target_outlet.fiscal_year_id',$fiscal_year_id);
+        $this->db->where_in('budget_target_outlet.outlet_id',$outlet_ids);
+        $results=$this->db->get()->result_array();
+        $items_old=array();
+        foreach($results as $result)
+        {
+            $items_old[$result['outlet_id']][$result['variety_id']]=$result;
+        }
+
+        //variety lists
+        $this->db->from($this->config->item('table_login_setup_classification_varieties').' v');
+        $this->db->select('v.id variety_id,v.name variety_name');
+        $this->db->join($this->config->item('table_login_setup_classification_crop_types').' crop_type','crop_type.id = v.crop_type_id','INNER');
+        $this->db->select('crop_type.name crop_type_name');
+        $this->db->where('crop_type.crop_id',$crop_id);
+        $this->db->where('v.status',$this->config->item('system_status_active'));
+        $this->db->where('v.whose','ARM');
+
+        $this->db->order_by('crop_type.ordering','ASC');
+        $this->db->order_by('crop_type.id','ASC');
+        $this->db->order_by('v.ordering','ASC');
+        $this->db->order_by('v.id','ASC');
+        $results=$this->db->get()->result_array();
+        foreach($results as $result)
+        {
+            $info=$this->initialize_row_assign_target_outlet($outlet_ids,$result);
+            if(isset($target_zones[$result['variety_id']]))
+            {
+                $info['quantity_target_zi']=$target_zones[$result['variety_id']]['quantity_target'];
+            }
+            $quantity_target_outlet_total=0;
+            foreach($outlet_ids as $outlet_id)
+            {
+                if(isset($items_old[$outlet_id][$result['variety_id']]))
+                {
+                    $info['quantity_target_outlet_'.$outlet_id]=$items_old[$outlet_id][$result['variety_id']]['quantity_target'];
+                    $quantity_target_outlet_total+=$info['quantity_target_outlet_'.$outlet_id];
+                }
+            }
+            $info['quantity_target_outlet_total']= $quantity_target_outlet_total;
+            $items[]=$info;
+        }
+        $this->json_return($items);
+    }
+    private function initialize_row_assign_target_outlet_next_year($outlet_ids,$info)
+    {
+        $row=array();
+        $row['crop_type_name']=$info['crop_type_name'];
+        $row['variety_name']=$info['variety_name'];
+        $row['variety_id']=$info['variety_id'];
+        $row['quantity_target_zi']=0;
+        foreach($outlet_ids as $outlet_id)
+        {
+            $row['quantity_target_outlet_'.$outlet_id]= 0;
+        }
+        $row['quantity_target_outlet_total']=0;
+        return $row;
+    }
+    private function system_save_target_outlet_next_year()
+    {
+        $user = User_helper::get_user();
+        $time=time();
+        $item_head=$this->input->post('item');
+        $items=$this->input->post('items');
+
+        if(!((isset($this->permissions['action1']) && ($this->permissions['action1']==1))||(isset($this->permissions['action2']) && ($this->permissions['action2']==1))))
+        {
+            $ajax['status']=false;
+            $ajax['system_message']=$this->lang->line("YOU_DONT_HAVE_ACCESS");
+            $this->json_return($ajax);
+        }
+        //validation fiscal year
+        if(!Budget_helper::check_validation_fiscal_year($item_head['fiscal_year_id']))
+        {
+            System_helper::invalid_try(__FUNCTION__,$item_head['fiscal_year_id'],'Invalid Fiscal year');
+            $ajax['status']=false;
+            $ajax['system_message']='Invalid Fiscal Year';
+            $this->json_return($ajax);
+        }
+        // validation assign zone
+        if(!in_array($item_head['zone_id'], $this->user_zone_ids))
+        {
+            System_helper::invalid_try(__FUNCTION__,$item_head['zone_id'],'Zone Not Assigned');
+            $ajax['status']=false;
+            $ajax['system_message']='Invalid Zone.';
+            $this->json_return($ajax);
+        }
+        //validation DI Budget & ZI Target forward status
+        $info_budget_target=$this->get_info_budget_target($item_head['fiscal_year_id'],$item_head['zone_id']);
+        if(($info_budget_target['status_budget_forward']!=$this->config->item('system_status_forwarded')))
+        {
+            $ajax['status']=false;
+            $ajax['system_message']='ZI Budget Not Forwarded.';
+            $this->json_return($ajax);
+        }
+        // outlet target forward
+        if(($info_budget_target['status_target_forward']==$this->config->item('system_status_forwarded')))
+        {
+            if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
+            {
+                $ajax['status']=false;
+                $ajax['system_message']='Outlet Target Already Assigned.';
+                $this->json_return($ajax);
+            }
+        }
+        // validation DI assign target to zi forward status
+        $info_target_di=$this->get_info_target_di($item_head['fiscal_year_id'], $info_budget_target['division_id']);
+        if(($info_target_di['status_target_forward']!=$this->config->item('system_status_forwarded')))
+        {
+            $ajax['status']=false;
+            $ajax['system_message']='DI Assign ZI Target Not Forwarded.';
+            $this->json_return($ajax);
+        }
+
+        // get outlet ids
+        $outlet_ids[0]=0;
+        $outlets=$this->get_outlets($item_head['zone_id']);
+        foreach ($outlets as $outlet)
+        {
+            $outlet_ids[$outlet['outlet_id']]=$outlet['outlet_id'];
+        }
+
+        //old items
+        $this->db->from($this->config->item('table_pos_si_budget_target_outlet').' budget_target_outlet');
+        $this->db->select('budget_target_outlet.*');
+
+        $this->db->where('budget_target_outlet.fiscal_year_id',$item_head['fiscal_year_id']);
+        $this->db->where_in('budget_target_outlet.outlet_id',$outlet_ids);
+
+        $results=$this->db->get()->result_array();
+        $items_old=array();
+        foreach($results as $result)
+        {
+            $items_old[$result['outlet_id']][$result['variety_id']]=$result;
+        }
+
+        $this->db->trans_start();  //DB Transaction Handle START
+
+        foreach($items as $variety_id=>$variety_info)
+        {
+            foreach($variety_info as $outlet_id=>$quantity_info)
+            {
+                if(isset($items_old[$outlet_id][$variety_id]))
+                {
+                    if($items_old[$outlet_id][$variety_id]['quantity_target']!=$quantity_info['quantity_target'])
+                    {
+                        $data=array();
+                        $data['quantity_target']=$quantity_info['quantity_target'];
+                        $data['date_updated_target']=$time;
+                        $data['user_updated_target']=$user->user_id;
+                        $this->db->set('revision_count_target','revision_count_target+1',false);
+                        Query_helper::update($this->config->item('table_pos_si_budget_target_outlet'),$data,array('id='.$items_old[$outlet_id][$variety_id]['id']),false);
+                    }
+                }
+                else
+                {
+                    $data=array();
+                    $data['fiscal_year_id']=$item_head['fiscal_year_id'];
+                    $data['outlet_id']=$outlet_id;
+                    $data['variety_id']=$variety_id;
+                    if($quantity_info['quantity_target']>0)
+                    {
+                        $data['quantity_target']=$quantity_info['quantity_target'];
+                        $data['revision_count_target']=1;
+                    }
+                    else
+                    {
+                        $data['quantity_target']=0;
+                    }
+                    $data['date_updated_target']=$time;
+                    $data['user_updated_target']=$user->user_id;
+                    Query_helper::add($this->config->item('table_pos_si_budget_target_outlet'),$data,false);
+                }
+            }
+        }
+        $this->db->trans_complete();   //DB Transaction Handle END
+        if ($this->db->trans_status() === TRUE)
+        {
+            $this->message=$this->lang->line("MSG_SAVED_SUCCESS");
+            $this->system_list_target_outlet($item_head['fiscal_year_id'],$item_head['zone_id']);
+
+        }
+        else
+        {
+            $ajax['status']=false;
+            $ajax['system_message']=$this->lang->line("MSG_SAVED_FAIL");
+            $this->json_return($ajax);
+        }
+    }
+
+    private function reset_row($info)
+    {
+        foreach($info as $key=>$r)
+        {
+            if(!(($key=='crop_name')||($key=='crop_type_name')||($key=='variety_name')))
+            {
+                $info[$key]=0;
+            }
+        }
+        return $info;
+    }
     private function get_info_budget_target($fiscal_year_id,$zone_id)
     {
-
-        $info=Query_helper::get_info($this->config->item('table_bms_zi_budget_target'),'*',array('fiscal_year_id ='.$fiscal_year_id,'zone_id ='.$zone_id),1);
+        //$info=Query_helper::get_info($this->config->item('table_bms_zi_budget_target'),'*',array('fiscal_year_id ='.$fiscal_year_id,'zone_id ='.$zone_id),1);
+        $this->db->from($this->config->item('table_bms_zi_budget_target').' item');
+        $this->db->select('item.*');
+        $this->db->join($this->config->item('table_login_setup_location_zones').' zone','zone.id = item.zone_id','INNER');
+        $this->db->select('zone.division_id');
+        $this->db->where('item.fiscal_year_id',$fiscal_year_id);
+        $this->db->where('item.zone_id',$zone_id);
+        $info=$this->db->get()->row_array();
         if(!$info)
         {
             $user = User_helper::get_user();
@@ -917,8 +2189,19 @@ class Budget_zi_budget_target extends Root_Controller
             $data['date_created'] = time();
             $data['user_created'] = $user->user_id;
             $id=Query_helper::add($this->config->item('table_bms_zi_budget_target'),$data);
-            $info=Query_helper::get_info($this->config->item('table_bms_zi_budget_target'),'*',array('id ='.$id),1);
+            //$info=Query_helper::get_info($this->config->item('table_bms_zi_budget_target'),'*',array('id ='.$id),1);\
+            $this->db->from($this->config->item('table_bms_zi_budget_target').' item');
+            $this->db->select('item.*');
+            $this->db->join($this->config->item('table_login_setup_location_zones').' zone','zone.id = item.zone_id','INNER');
+            $this->db->select('zone.division_id');
+            $this->db->where('item.id',$id);
+            $info=$this->db->get()->row_array();
         }
+        return $info;
+    }
+    private function get_info_target_di($fiscal_year_id, $division_id)
+    {
+        $info=Query_helper::get_info($this->config->item('table_bms_di_budget_target'),'*',array('fiscal_year_id ='.$fiscal_year_id,'division_id ='.$division_id),1);
         return $info;
     }
     private function get_outlets($zone_id)
@@ -1017,6 +2300,4 @@ class Budget_zi_budget_target extends Root_Controller
         $results=$this->db->get()->result_array();
         return $results;
     }
-
-
 }

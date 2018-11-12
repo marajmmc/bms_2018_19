@@ -1447,7 +1447,7 @@ class Budget_di_budget_target extends Root_Controller
     }
 
     // for ZI assign target forward
-    private function system_assign_target_zi_forward($fiscal_year_id=0,$division_id,$crop_id=0)
+    private function system_assign_target_zi_forward($fiscal_year_id=0,$division_id)
     {
         //$user = User_helper::get_user();
         $method='assign_target_zi_forward';
@@ -1503,15 +1503,13 @@ class Budget_di_budget_target extends Root_Controller
 
             $data['fiscal_year']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id ='.$fiscal_year_id),1);
             $data['division']=Query_helper::get_info($this->config->item('table_login_setup_location_divisions'),'*',array('id ='.$division_id,'status ="'.$this->config->item('system_status_active').'"'),1);
-            $data['crop']=Query_helper::get_info($this->config->item('table_login_setup_classification_crops'),'*',array('id ='.$crop_id),1);
             $data['zones']=User_helper::get_assigned_zones($division_id);
-            $data['acres']=$this->get_acres($division_id,$crop_id);
+            $data['acres']=$this->get_acres($division_id);
 
             $data['system_preference_items']= $this->get_preference_headers($method);
             $data['title']='DI Yearly Assign Target Forward To ZI';
             $data['options']['fiscal_year_id']=$fiscal_year_id;
             $data['options']['division_id']=$division_id;
-            $data['options']['crop_id']=$crop_id;
             $ajax['status']=true;
             $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/assign_target_zi_forward",$data,true));
             if($this->message)
