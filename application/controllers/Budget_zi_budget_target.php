@@ -415,19 +415,14 @@ class Budget_zi_budget_target extends Root_Controller
         $results=$this->db->get()->result_array();
         foreach($results as $result)
         {
-            $item=$result;
+            $info=$this->initialize_row_edit_budget_zone($fiscal_years_previous_sales,$outlet_ids,$result);
             foreach($fiscal_years_previous_sales as $fy)
             {
                 if(isset($sales_previous[$fy['id']][$result['variety_id']]))
                 {
-                    $item['quantity_sale_'.$fy['id']]=$sales_previous[$fy['id']][$result['variety_id']]/1000;
-                }
-                else
-                {
-                    $item['quantity_sale_'.$fy['id']]=0;
+                    $info['quantity_sale_'.$fy['id']]=$sales_previous[$fy['id']][$result['variety_id']]/1000;
                 }
             }
-
             $quantity_budget_dealer_total=0;
             foreach($outlets as $outlet)
             {
@@ -435,40 +430,46 @@ class Budget_zi_budget_target extends Root_Controller
                 {
                     if($budget_outlets[$outlet['outlet_id']][$result['variety_id']]['status_budget_forward']==$this->config->item('system_status_pending'))
                     {
-                        $item['quantity_budget_outlet_'.$outlet['outlet_id']]= 'N/F';
+                        $info['quantity_budget_outlet_'.$outlet['outlet_id']]= 'N/F';
                     }
                     else
                     {
-                        $item['quantity_budget_outlet_'.$outlet['outlet_id']]= $budget_outlets[$outlet['outlet_id']][$result['variety_id']]['quantity_budget'];
+                        $info['quantity_budget_outlet_'.$outlet['outlet_id']]= $budget_outlets[$outlet['outlet_id']][$result['variety_id']]['quantity_budget'];
                         $quantity_budget_dealer_total+=$budget_outlets[$outlet['outlet_id']][$result['variety_id']]['quantity_budget'];
                     }
                 }
-                else
-                {
-                    $item['quantity_budget_outlet_'.$outlet['outlet_id']]= 'N/D';
-                }
             }
-            $item['quantity_budget_outlet_total']= $quantity_budget_dealer_total;
+            $info['quantity_budget_outlet_total']= $quantity_budget_dealer_total;
 
             if(isset($items_old[$result['variety_id']]))
             {
                 if($items_old[$result['variety_id']]['quantity_budget']>0)
                 {
-                    $item['quantity_budget']=$items_old[$result['variety_id']]['quantity_budget'];
-                }
-                else
-                {
-                    $item['quantity_budget']='';
+                    $info['quantity_budget']=$items_old[$result['variety_id']]['quantity_budget'];
                 }
             }
-            else
-            {
-                $item['quantity_budget']='';
-            }
-            $items[]=$item;
+            $items[]=$info;
         }
 
         $this->json_return($items);
+    }
+    private function initialize_row_edit_budget_zone($fiscal_years,$outlet_ids,$info)
+    {
+        $row=array();
+        $row['crop_type_name']=$info['crop_type_name'];
+        $row['variety_name']=$info['variety_name'];
+        $row['variety_id']=$info['variety_id'];
+        $row['quantity_budget']=0;
+        $row['quantity_budget_outlet_total']=0;
+        foreach($fiscal_years as $fy)
+        {
+            $row['quantity_sale_'.$fy['id']]=0;
+        }
+        foreach($outlet_ids as $outlet_id)
+        {
+            $row['quantity_budget_outlet_'.$outlet_id]= 'N/D';
+        }
+        return $row;
     }
     private function system_save_budget_zone()
     {
@@ -602,14 +603,7 @@ class Budget_zi_budget_target extends Root_Controller
                 $ajax['system_message']='Budget Already Forwarded.';
                 $this->json_return($ajax);
             }
-
-            /*$results=Query_helper::get_info($this->config->item('table_bms_zi_budget_target_zone'),'*',array('fiscal_year_id ='.$fiscal_year_id,'zone_id ='.$zone_id));
-            $budgeted_zones[0]=0;
-            foreach($results as $result)
-            {
-                $budgeted_zones[$result['zone_id']]=$result['zone_id'];
-            }*/
-
+            
             $data['system_preference_items']= $this->get_preference_headers($method);
             $data['fiscal_years_previous_sales']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id <'.$fiscal_year_id),Budget_helper::$NUM_FISCAL_YEAR_PREVIOUS_SALE,0,array('id DESC'));
 

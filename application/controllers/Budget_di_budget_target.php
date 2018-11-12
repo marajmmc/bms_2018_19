@@ -558,7 +558,6 @@ class Budget_di_budget_target extends Root_Controller
             $quantity_budget_zone_total=0;
             foreach($zones as $zone)
             {
-                $info['quantity_budget_zone_'.$zone['zone_id']]= 'N/D';
                 if(isset($budget_zones[$zone['zone_id']][$result['variety_id']]))
                 {
                     if($budget_zones[$zone['zone_id']][$result['variety_id']]['status_budget_forward']==$this->config->item('system_status_pending'))
@@ -601,7 +600,7 @@ class Budget_di_budget_target extends Root_Controller
         }
         foreach($zone_ids as $zone_id)
         {
-            $row['quantity_budget_zone_'.$zone_id]= 0;
+            $row['quantity_budget_zone_'.$zone_id]= 'N/D';
         }
 
         return $row;
