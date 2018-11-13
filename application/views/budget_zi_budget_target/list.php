@@ -44,14 +44,25 @@ if((isset($CI->permissions['action7']) && ($CI->permissions['action7']==1)))
         'data-action-link'=>site_url($CI->controller_url.'/index/assign_target_outlet_forward')
     );
 }
-if(isset($CI->permissions['action0']) && ($CI->permissions['action0']==1))
+if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(isset($CI->permissions['action2']) && ($CI->permissions['action2']==1)))
 {
     $action_buttons[]=array
     (
         'type'=>'button',
-        'label'=>$CI->lang->line('ACTION_DETAILS'),
+        'label'=>' Next 3Y Outlet Target',
         'class'=>'button_jqx_action',
-        'data-action-link'=>site_url($CI->controller_url.'/index/details')
+        'data-action-link'=>site_url($CI->controller_url.'/index/list_target_outlet_next_year')
+
+    );
+}
+if((isset($CI->permissions['action7']) && ($CI->permissions['action7']==1)))
+{
+    $action_buttons[]=array
+    (
+        'type'=>'button',
+        'label'=>'Forward Next 3Y Outlet Target',
+        'class'=>'button_jqx_action',
+        'data-action-link'=>site_url($CI->controller_url.'/index/assign_target_outlet_forward_next_year')
     );
 }
 $action_buttons[]=array
