@@ -165,14 +165,6 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             {
                 //$('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+']" value="'+data[i]['quantity_budget']+'">');
                 <?php
-                foreach($outlets as $outlet)
-                {
-                    ?>
-                    $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+'][<?php echo $outlet['outlet_id']?>][quantity_target]" value="'+data[i]['quantity_target_outlet_<?php echo $outlet['outlet_id']; ?>']+'">');
-                    <?php
-                }
-                ?>
-                <?php
                 $serial=0;
                 foreach($fiscal_years_next_budgets as $budget)
                 {

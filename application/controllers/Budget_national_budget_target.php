@@ -417,13 +417,13 @@ class Budget_national_budget_target extends Root_Controller
             }
             //validation forward
             $info_budget_target=$this->get_info_budget_target($fiscal_year_id);
-            // Checking HOM budget forward.
+            /*// Checking HOM budget forward.
             if(($info_budget_target['status_budget_forward']!=$this->config->item('system_status_forwarded')))
             {
                 $ajax['status']=false;
                 $ajax['system_message']='HOM Budget Not Forwarded.';
                 $this->json_return($ajax);
-            }
+            }*/
             // Checking Target forward.
             if(($info_budget_target['status_target_forward']==$this->config->item('system_status_forwarded')))
             {

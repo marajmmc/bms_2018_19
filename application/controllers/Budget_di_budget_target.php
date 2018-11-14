@@ -1052,12 +1052,6 @@ class Budget_di_budget_target extends Root_Controller
             }
             //validation forward status
             $info_budget_target=$this->get_info_budget_target($fiscal_year_id,$division_id);
-            if(($info_budget_target['status_budget_forward']!=$this->config->item('system_status_forwarded')))
-            {
-                $ajax['status']=false;
-                $ajax['system_message']='DI Budget Not Forwarded.';
-                $this->json_return($ajax);
-            }
             if(($info_budget_target['status_target_forward']==$this->config->item('system_status_forwarded')))
             {
                 if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
@@ -1173,12 +1167,6 @@ class Budget_di_budget_target extends Root_Controller
             }
             //validation DI Budget & ZI Target forward status
             $info_budget_target=$this->get_info_budget_target($fiscal_year_id,$division_id);
-            if(($info_budget_target['status_budget_forward']!=$this->config->item('system_status_forwarded')))
-            {
-                $ajax['status']=false;
-                $ajax['system_message']='DI Budget Not Forwarded.';
-                $this->json_return($ajax);
-            }
             if(($info_budget_target['status_target_forward']==$this->config->item('system_status_forwarded')))
             {
                 if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
@@ -1349,12 +1337,6 @@ class Budget_di_budget_target extends Root_Controller
         }
         //validation DI Budget & ZI Target forward status
         $info_budget_target=$this->get_info_budget_target($item_head['fiscal_year_id'],$item_head['division_id']);
-        if(($info_budget_target['status_budget_forward']!=$this->config->item('system_status_forwarded')))
-        {
-            $ajax['status']=false;
-            $ajax['system_message']='DI Budget Not Forwarded.';
-            $this->json_return($ajax);
-        }
         if(($info_budget_target['status_target_forward']==$this->config->item('system_status_forwarded')))
         {
             if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
@@ -1480,12 +1462,6 @@ class Budget_di_budget_target extends Root_Controller
             }
             //validation DI Budget & ZI Target forward status
             $info_budget_target=$this->get_info_budget_target($fiscal_year_id,$division_id);
-            if(($info_budget_target['status_budget_forward']!=$this->config->item('system_status_forwarded')))
-            {
-                $ajax['status']=false;
-                $ajax['system_message']='DI Budget Not Forwarded.';
-                $this->json_return($ajax);
-            }
             if(($info_budget_target['status_target_forward']==$this->config->item('system_status_forwarded')))
             {
                 $ajax['status']=false;
@@ -1707,12 +1683,6 @@ class Budget_di_budget_target extends Root_Controller
         }
         //validation DI Budget & ZI Target forward status
         $info_budget_target=$this->get_info_budget_target($item_head['fiscal_year_id'],$item_head['division_id']);
-        if(($info_budget_target['status_budget_forward']!=$this->config->item('system_status_forwarded')))
-        {
-            $ajax['status']=false;
-            $ajax['system_message']='DI Budget Not Forwarded.';
-            $this->json_return($ajax);
-        }
         if(($info_budget_target['status_target_forward']==$this->config->item('system_status_forwarded')))
         {
             $ajax['status']=false;
@@ -1784,12 +1754,6 @@ class Budget_di_budget_target extends Root_Controller
             }
             //validation forward status
             $info_budget_target=$this->get_info_budget_target($fiscal_year_id,$division_id);
-            if(($info_budget_target['status_budget_forward']!=$this->config->item('system_status_forwarded')))
-            {
-                $ajax['status']=false;
-                $ajax['system_message']='DI Budget Not Forwarded.';
-                $this->json_return($ajax);
-            }
             if(($info_budget_target['status_target_next_year_forward']==$this->config->item('system_status_forwarded')))
             {
                 if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
@@ -1905,12 +1869,6 @@ class Budget_di_budget_target extends Root_Controller
             }
             //validation DI Budget & ZI Target forward status
             $info_budget_target=$this->get_info_budget_target($fiscal_year_id,$division_id);
-            if(($info_budget_target['status_budget_forward']!=$this->config->item('system_status_forwarded')))
-            {
-                $ajax['status']=false;
-                $ajax['system_message']='DI Budget Not Forwarded.';
-                $this->json_return($ajax);
-            }
             if(($info_budget_target['status_target_next_year_forward']==$this->config->item('system_status_forwarded')))
             {
                 if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
@@ -2118,12 +2076,6 @@ class Budget_di_budget_target extends Root_Controller
         }
         //validation DI Budget & ZI Target forward status
         $info_budget_target=$this->get_info_budget_target($item_head['fiscal_year_id'],$item_head['division_id']);
-        if(($info_budget_target['status_budget_forward']!=$this->config->item('system_status_forwarded')))
-        {
-            $ajax['status']=false;
-            $ajax['system_message']='DI Budget Not Forwarded.';
-            $this->json_return($ajax);
-        }
         if(($info_budget_target['status_target_next_year_forward']==$this->config->item('system_status_forwarded')))
         {
             if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
@@ -2260,12 +2212,6 @@ class Budget_di_budget_target extends Root_Controller
             }
             //validation DI Budget & ZI Target forward status
             $info_budget_target=$this->get_info_budget_target($fiscal_year_id,$division_id);
-            if(($info_budget_target['status_budget_forward']!=$this->config->item('system_status_forwarded')))
-            {
-                $ajax['status']=false;
-                $ajax['system_message']='DI Budget Not Forwarded.';
-                $this->json_return($ajax);
-            }
             if(($info_budget_target['status_target_next_year_forward']==$this->config->item('system_status_forwarded')))
             {
                 $ajax['status']=false;
@@ -2545,12 +2491,6 @@ class Budget_di_budget_target extends Root_Controller
         }
         //validation DI Budget & ZI Target forward status
         $info_budget_target=$this->get_info_budget_target($item_head['fiscal_year_id'],$item_head['division_id']);
-        if(($info_budget_target['status_budget_forward']!=$this->config->item('system_status_forwarded')))
-        {
-            $ajax['status']=false;
-            $ajax['system_message']='DI Budget Not Forwarded.';
-            $this->json_return($ajax);
-        }
         if(($info_budget_target['status_target_next_year_forward']==$this->config->item('system_status_forwarded')))
         {
             $ajax['status']=false;
