@@ -1,6 +1,6 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
-class Report_budget_target_variety extends Root_Controller
+class Report_budget_target extends Root_Controller
 {
     public $message;
     public $permissions;
@@ -37,9 +37,9 @@ class Report_budget_target_variety extends Root_Controller
         {
             $this->system_get_items_list();
         }
-        elseif($action=="set_preference_list")
+        elseif($action=="set_preference_search_list")
         {
-            $this->system_set_preference('list');
+            $this->system_set_preference('search_list');
         }
         elseif($action=="save_preference")
         {
@@ -52,26 +52,29 @@ class Report_budget_target_variety extends Root_Controller
     }
     private function get_preference_headers($method)
     {
-        $data['id']= 1;
-        $data['crop_name']= 1;
-        $data['crop_type_name']= 1;
-        $data['variety_name']= 1;
-        $data['price_unit_kg']= 1;
-        $data['area_budget_kg']= 1;
-        $data['area_budget_amount']= 1;
-        $data['area_target_kg']= 1;
-        $data['area_target_amount']= 1;
-        $data['prediction_kg']= 1;
-        $data['prediction_amount']= 1;
-        $data['sub_area_budget_kg']= 1;
-        $data['sub_area_budget_amount']= 1;
-        $data['sub_area_target_kg']= 1;
-        $data['sub_area_target_amount']= 1;
-        if($method=='list')
+        $data=array();
+        if($method=='search_list')
         {
+            $data['crop_name']= 1;
+            $data['crop_type_name']= 1;
+            $data['variety_name']= 1;
+            $data['price_unit_kg_amount']= 1;
+            $data['budget_kg']= 1;
+            $data['budget_amount']= 1;
+            $data['target_kg']= 1;
+            $data['target_amount']= 1;
+
+            $data['budget_sub_kg']= 1;
+            $data['budget_sub_amount']= 1;
+            $data['target_sub_kg']= 1;
+            $data['target_sub_amount']= 1;
+
+            $data['prediction_kg']= 1;
+            $data['prediction_amount']= 1;
 
         }
         return $data;
+
     }
     private function system_set_preference($method)
     {
@@ -96,42 +99,21 @@ class Report_budget_target_variety extends Root_Controller
     {
         if(isset($this->permissions['action0'])&&($this->permissions['action0']==1))
         {
-            $data['fiscal_years']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),array('id value','name text'),array());
-            /*$data['fiscal_years']=array();
+            $fiscal_years=Budget_helper::get_fiscal_years();
+            //$data['fiscal_years']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),array('id value','name text'),array());
+            $data['fiscal_years']=array();
             foreach($fiscal_years as $year)
             {
-                $data['fiscal_years'][]=array('text'=>$year['name'],'value'=>System_helper::display_date($year['date_start']).'/'.System_helper::display_date($year['date_end']));
-            }*/
+                $data['fiscal_years'][]=array('text'=>$year['text'],'value'=>$year['id']);
+            }
             $data['divisions']=Query_helper::get_info($this->config->item('table_login_setup_location_divisions'),array('id value','name text'),array('status ="'.$this->config->item('system_status_active').'"'));
             $data['zones']=array();
-            $data['territories']=array();
-            $data['districts']=array();
-            $data['outlets']=array();
             if($this->locations['division_id']>0)
             {
                 $data['zones']=Query_helper::get_info($this->config->item('table_login_setup_location_zones'),array('id value','name text'),array('division_id ='.$this->locations['division_id'],'status ="'.$this->config->item('system_status_active').'"'));
-                if($this->locations['zone_id']>0)
-                {
-                    $data['territories']=Query_helper::get_info($this->config->item('table_login_setup_location_territories'),array('id value','name text'),array('zone_id ='.$this->locations['zone_id'],'status ="'.$this->config->item('system_status_active').'"'));
-                    if($this->locations['territory_id']>0)
-                    {
-                        $data['districts']=Query_helper::get_info($this->config->item('table_login_setup_location_districts'),array('id value','name text'),array('territory_id ='.$this->locations['territory_id'],'status ="'.$this->config->item('system_status_active').'"'));
-                        if($this->locations['district_id']>0)
-                        {
-                            $this->db->from($this->config->item('table_login_csetup_customer').' customer');
-                            $this->db->join($this->config->item('table_login_csetup_cus_info').' cus_info','cus_info.customer_id=customer.id','INNER');
-                            $this->db->select('customer.id value, cus_info.name text');
-                            $this->db->where('customer.status',$this->config->item('system_status_active'));
-                            $this->db->where('cus_info.district_id',$this->locations['district_id']);
-                            $this->db->where('cus_info.type',$this->config->item('system_customer_type_outlet_id'));
-                            $this->db->where('cus_info.revision',1);
-                            $data['outlets']=$this->db->get()->result_array();
-                        }
-                    }
-                }
             }
 
-            $data['title']="Budget Target Variety Wise Report Search";
+            $data['title']="Budget and Target Report Search";
             $ajax['status']=true;
             $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/search",$data,true));
             if($this->message)
@@ -151,7 +133,7 @@ class Report_budget_target_variety extends Root_Controller
     private function system_list()
     {
         $user = User_helper::get_user();
-        $method='list';
+        $method='search_list';
         if(isset($this->permissions['action0'])&&($this->permissions['action0']==1))
         {
             $reports=$this->input->post('report');
@@ -162,38 +144,26 @@ class Report_budget_target_variety extends Root_Controller
                 $ajax['system_message']='Fiscal Year Is Required';
                 $this->json_return($ajax);
             }
-
-            $data['divisions']=Query_helper::get_info($this->config->item('table_login_setup_location_divisions'),array('id value','name text'),array('status ="'.$this->config->item('system_status_active').'"'));
-            $data['zones']=array();
-            $data['territories']=array();
-            $data['districts']=array();
-            $data['outlets']=array();
-            if($reports['division_id']>0)
+            if($reports['zone_id']>0)
             {
-                $data['zones']=Query_helper::get_info($this->config->item('table_login_setup_location_zones'),array('id value','name text'),array('division_id ='.$this->locations['division_id'],'status ="'.$this->config->item('system_status_active').'"'));
-                /*if($this->locations['zone_id']>0)
-                {
-                    $data['territories']=Query_helper::get_info($this->config->item('table_login_setup_location_territories'),array('id value','name text'),array('zone_id ='.$this->locations['zone_id'],'status ="'.$this->config->item('system_status_active').'"'));
-                    if($this->locations['territory_id']>0)
-                    {
-                        $data['districts']=Query_helper::get_info($this->config->item('table_login_setup_location_districts'),array('id value','name text'),array('territory_id ='.$this->locations['territory_id'],'status ="'.$this->config->item('system_status_active').'"'));
-                        if($this->locations['district_id']>0)
-                        {
-                            $this->db->from($this->config->item('table_login_csetup_customer').' customer');
-                            $this->db->join($this->config->item('table_login_csetup_cus_info').' cus_info','cus_info.customer_id=customer.id','INNER');
-                            $this->db->select('customer.id value, cus_info.name text');
-                            $this->db->where('customer.status',$this->config->item('system_status_active'));
-                            $this->db->where('cus_info.district_id',$this->locations['district_id']);
-                            $this->db->where('cus_info.type',$this->config->item('system_customer_type_outlet_id'));
-                            $this->db->where('cus_info.revision',1);
-                            $data['outlets']=$this->db->get()->result_array();
-                        }
-                    }
-                }*/
+                $data['areas']=$this->get_outlets($reports['zone_id']);
+                $data['title']='Zone Budget and Target Report';
+                $data['sub_column_group_name']='Outlets';
             }
-            $data['fiscal_years_next_budgets']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id >'.$reports['fiscal_year_id']),Budget_helper::$NUM_FISCAL_YEAR_NEXT_BUDGET_TARGET,0);
+            elseif($reports['division_id']>0)
+            {
+                $data['areas']=Query_helper::get_info($this->config->item('table_login_setup_location_zones'),array('id value','name text'),array('division_id ='.$reports['division_id'],'status ="'.$this->config->item('system_status_active').'"'));
+                $data['title']='Division Budget and Target Report';
+                $data['sub_column_group_name']='Zones';
+            }
+            else
+            {
+                $data['areas']=Query_helper::get_info($this->config->item('table_login_setup_location_divisions'),array('id value','name text'),array('status ="'.$this->config->item('system_status_active').'"'));
+                $data['title']='National Budget and Target Report';
+                $data['sub_column_group_name']='Divisions';
+            }
+            $data['fiscal_years_next_predictions']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id >'.$reports['fiscal_year_id']),Budget_helper::$NUM_FISCAL_YEAR_NEXT_BUDGET_TARGET,0);
             $data['system_preference_items']= System_helper::get_preference($user->user_id,$this->controller_url,$method,$this->get_preference_headers($method));
-            $data['title']="Variety Wise Report";
             $ajax['system_content'][]=array("id"=>"#system_report_container","html"=>$this->load->view($this->controller_url."/list",$data,true));
 
             $ajax['status']=true;
@@ -215,7 +185,6 @@ class Report_budget_target_variety extends Root_Controller
     private function system_get_items_list()
     {
         $items=array();
-        //$this->json_return($items);
         $crop_id=$this->input->post('crop_id');
         $crop_type_id=$this->input->post('crop_type_id');
         $variety_id=$this->input->post('variety_id');
@@ -224,7 +193,9 @@ class Report_budget_target_variety extends Root_Controller
         $division_id=$this->input->post('division_id');
         $zone_id=$this->input->post('zone_id');
 
-        $fiscal_years_next_budgets=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id >'.$fiscal_year_id),Budget_helper::$NUM_FISCAL_YEAR_NEXT_BUDGET_TARGET,0);
+
+
+        /*$fiscal_years_next_budgets=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id >'.$fiscal_year_id),Budget_helper::$NUM_FISCAL_YEAR_NEXT_BUDGET_TARGET,0);
 
         $divisions=Query_helper::get_info($this->config->item('table_login_setup_location_divisions'),array('id value','name text'),array('status ="'.$this->config->item('system_status_active').'"'));
         $zones=array();
@@ -373,7 +344,7 @@ class Report_budget_target_variety extends Root_Controller
         }
         $items[]=$type_total;
         $items[]=$crop_total;
-        $items[]=$grand_total;
+        $items[]=$grand_total;*/
         $this->json_return($items);
     }
 
@@ -467,6 +438,33 @@ class Report_budget_target_variety extends Root_Controller
 
         }
         return $row;
+    }
+
+    //query need to change according to fiscal year and budget
+    private function get_outlets($zone_id)
+    {
+        $this->db->from($this->config->item('table_login_csetup_customer').' customer');
+        $this->db->join($this->config->item('table_login_csetup_cus_info').' cus_info','cus_info.customer_id = customer.id','INNER');
+        $this->db->select('cus_info.customer_id value, cus_info.name text');
+
+        $this->db->join($this->config->item('table_login_setup_location_districts').' districts','districts.id = cus_info.district_id','INNER');
+
+        $this->db->join($this->config->item('table_login_setup_location_territories').' territories','territories.id = districts.territory_id','INNER');
+
+        /*$this->db->join($this->config->item('table_login_setup_location_zones').' zones','zones.id = territories.zone_id','INNER');
+        $this->db->join($this->config->item('table_login_setup_location_divisions').' divisions','divisions.id = zones.division_id','INNER');*/
+
+        if(!(isset($this->permissions['action3'])&&($this->permissions['action3']==1)))
+        {
+            $this->db->where('customer.status',$this->config->item('system_status_active'));
+        }
+
+        $this->db->where('territories.zone_id',$zone_id);
+        $this->db->where('cus_info.type',$this->config->item('system_customer_type_outlet_id'));
+        $this->db->where('cus_info.revision',1);
+        $this->db->order_by('cus_info.ordering, cus_info.id');
+        return $this->db->get()->result_array();
+
     }
 
 }

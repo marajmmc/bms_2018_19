@@ -8,7 +8,7 @@ $action_buttons[]=array
 );
 $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
 ?>
-<form class="form_valid" id="save_form" action="<?php echo site_url($CI->controller_url.'/index/list');?>" method="post">
+<form id="save_form" action="<?php echo site_url($CI->controller_url.'/index/list');?>" method="post">
     <div class="row widget">
         <div class="widget-header">
             <div class="title">
@@ -56,7 +56,6 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 <div class="row show-grid">
                     <div class="col-xs-6">
                         <select id="fiscal_year_id" name="report[fiscal_year_id]" class="form-control">
-                            <option value=""><?php echo $CI->lang->line('SELECT');?></option>
                             <?php
                             foreach($fiscal_years as $year)
                             {?>
@@ -160,15 +159,6 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
     {
         system_off_events();
         system_preset({controller:'<?php echo $CI->router->class; ?>'});
-        $(".date_large").datepicker({dateFormat : display_date_format,changeMonth: true,changeYear: true,yearRange: "c-2:c+2"});
-
-        /*$(document).off('change','#warehouse_id');
-        $(document).off('change','#crop_id');
-        $(document).off('change','#crop_type_id');
-        $(document).off('change','#variety_id');
-        $(document).off('change','#pack_size_id');
-        $(document).off("change","#fiscal_year_id");*/
-
         $('#crop_id').html(get_dropdown_with_select(system_crops));
 
         $(document).on("change","#crop_id",function()
@@ -189,7 +179,6 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 }
             }
         });
-
         $(document).on("change","#crop_type_id",function()
         {
             $('#system_report_container').html('');
@@ -205,32 +194,13 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 }
             }
         });
-        $(document).on("change","#fiscal_year_id",function()
-        {
-
-            var fiscal_year_ranges=$('#fiscal_year_id').val();
-            if(fiscal_year_ranges!='')
-            {
-                var dates = fiscal_year_ranges.split("/");
-                $("#date_start").val(dates[0]);
-                $("#date_end").val(dates[1]);
-
-            }
-        });
-
         /* Location Section */
         $(document).off('change', '#division_id');
         $(document).on('change','#division_id',function()
         {
             $('#zone_id').val('');
-            $('#territory_id').val('');
-            $('#district_id').val('');
-            $('#outlet_id').val('');
             var division_id=$('#division_id').val();
             $('#zone_id_container').hide();
-            $('#territory_id_container').hide();
-            $('#district_id_container').hide();
-            $('#outlet_id_container').hide();
             $("#items_container").html('');
             if(division_id>0)
             {
@@ -241,87 +211,6 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 }
             }
 
-        });
-        $(document).off('change', '#zone_id');
-        $(document).on('change','#zone_id',function()
-        {
-            $('#territory_id').val('');
-            $('#district_id').val('');
-            $('#outlet_id').val('');
-            $('#upazilla_id').val('');
-            var zone_id=$('#zone_id').val();
-            $('#territory_id_container').hide();
-            $('#district_id_container').hide();
-            $('#outlet_id_container').hide();
-            $("#items_container").html('');
-            if(zone_id>0)
-            {
-                if(system_territories[zone_id]!==undefined)
-                {
-                    $('#territory_id_container').show();
-                    $('#territory_id').html(get_dropdown_with_select(system_territories[zone_id]));
-                }
-            }
-        });
-        $(document).off('change', '#territory_id');
-        $(document).on('change','#territory_id',function()
-        {
-            $('#district_id').val('');
-            $('#outlet_id').val('');
-            $('#upazilla_id').val('');
-            $('#outlet_id_container').hide();
-            $('#district_id_container').hide();
-            $("#items_container").html('');
-            var territory_id=$('#territory_id').val();
-            if(territory_id>0)
-            {
-                if(system_districts[territory_id]!==undefined)
-                {
-                    $('#district_id_container').show();
-                    $('#district_id').html(get_dropdown_with_select(system_districts[territory_id]));
-                }
-
-            }
-        });
-        $(document).off('change', '#district_id');
-        $(document).on('change','#district_id',function()
-        {
-            $('#outlet_id').val('');
-            $('#upazilla_id').val('');
-            $("#items_container").html('');
-            var district_id=$('#district_id').val();
-            $('#outlet_id_container').hide();
-            if(district_id>0)
-            {
-                if(system_outlets[district_id]!==undefined)
-                {
-                    $('#outlet_id_container').show();
-                    $('#outlet_id').html(get_dropdown_with_select(system_outlets[district_id]));
-                }
-            }
-        });
-
-        $(document).off("click", ".pop_up");
-        $(document).on("click", ".pop_up", function(event)
-        {
-            $('#popup_content').html('');
-            var left=((($(window).width() - 550) / 2) +$(window).scrollLeft());
-            var top=((($(window).height() - 550) / 2) +$(window).scrollTop());
-            $("#popup_window").jqxWindow({position: { x: left, y: top  }});
-            $.ajax(
-                {
-                    url: $(this).attr('data-action-link'),
-                    type: 'POST',
-                    datatype: "JSON",
-                    success: function (data, status)
-                    {
-                    },
-                    error: function (xhr, desc, err)
-                    {
-                        console.log("error");
-                    }
-                });
-            $("#popup_window").jqxWindow('open');
         });
 
     });
