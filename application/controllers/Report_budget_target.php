@@ -192,20 +192,37 @@ class Report_budget_target extends Root_Controller
         $fiscal_year_id=$this->input->post('fiscal_year_id');
         $division_id=$this->input->post('division_id');
         $zone_id=$this->input->post('zone_id');
-
-
-
-        /*$fiscal_years_next_budgets=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id >'.$fiscal_year_id),Budget_helper::$NUM_FISCAL_YEAR_NEXT_BUDGET_TARGET,0);
-
-        $divisions=Query_helper::get_info($this->config->item('table_login_setup_location_divisions'),array('id value','name text'),array('status ="'.$this->config->item('system_status_active').'"'));
-        $zones=array();
-        if($division_id>0)
+        if($zone_id>0)
         {
-            $zones=Query_helper::get_info($this->config->item('table_login_setup_location_zones'),array('id value','name text'),array('division_id ='.$division_id,'status ="'.$this->config->item('system_status_active').'"'));
+            $areas=$this->get_outlets($zone_id);
+        }
+        elseif($division_id>0)
+        {
+            $areas=Query_helper::get_info($this->config->item('table_login_setup_location_zones'),array('id value','name text'),array('division_id ='.$division_id,'status ="'.$this->config->item('system_status_active').'"'));
+        }
+        else
+        {
+            $areas=Query_helper::get_info($this->config->item('table_login_setup_location_divisions'),array('id value','name text'),array('status ="'.$this->config->item('system_status_active').'"'));
         }
 
-        $this->db->from($this->config->item('table_login_setup_classification_varieties').' v');
-        $this->db->select('v.id variety_id,v.name variety_name, v.price_kg price_unit_kg');
+        if($zone_id>0)
+        {
+            $this->db->from($this->config->item('table_bms_zi_budget_target_zone').' bt');
+            $this->db->where('bt.zone_id',$zone_id);
+        }
+        elseif($division_id>0)
+        {
+            $this->db->from($this->config->item('table_bms_di_budget_target_division').' bt');
+            $this->db->where('bt.division_id',$division_id);
+        }
+        else
+        {
+            $this->db->from($this->config->item('table_bms_hom_budget_target_hom').' bt');
+        }
+        $this->db->select('bt.*');
+        $this->db->where('bt.fiscal_year_id',$fiscal_year_id);
+        $this->db->join($this->config->item('table_login_setup_classification_varieties').' v','v.id=bt.variety_id','INNER');
+        $this->db->select('v.name variety_name, v.price_kg price_unit_kg_amount');
         $this->db->join($this->config->item('table_login_setup_classification_crop_types').' crop_type','crop_type.id=v.crop_type_id','INNER');
         $this->db->select('crop_type.id crop_type_id, crop_type.name crop_type_name');
         $this->db->join($this->config->item('table_login_setup_classification_crops').' crop','crop.id=crop_type.crop_id','INNER');
@@ -216,8 +233,6 @@ class Report_budget_target extends Root_Controller
         $this->db->order_by('crop_type.id','ASC');
         $this->db->order_by('v.ordering','ASC');
         $this->db->order_by('v.id','ASC');
-        $this->db->where('v.status',$this->config->item('system_status_active'));
-        $this->db->where('v.whose','ARM');
         if($crop_id>0)
         {
             $this->db->where('crop.id',$crop_id);
@@ -235,152 +250,91 @@ class Report_budget_target extends Root_Controller
         $prev_type_name='';
         $first_row=true;
 
-        $type_total=$this->initialize_row($fiscal_years_next_budgets,$divisions, $zones,'','','Total Type','list');
-        $crop_total=$this->initialize_row($fiscal_years_next_budgets,$divisions, $zones,'','Total Crop','','list');
-        $grand_total=$this->initialize_row($fiscal_years_next_budgets,$divisions, $zones,'Grand Total','','','list');
+        $type_total=$this->initialize_row(array('variety_name'=>'Total Type'),$areas);
+        $crop_total=$this->initialize_row(array('crop_type_name'=>'Total Crop'),$areas);
+        $grand_total=$this->initialize_row(array('crop_name'=>'Grand Total'),$areas);
 
         foreach($results as $result)
         {
-            $info=$this->initialize_row($fiscal_years_next_budgets,$divisions, $zones, $result['crop_name'],$result['crop_type_name'],$result['variety_name'],'list');
-
+            $info=$this->initialize_row($result,$areas);
             if(!$first_row)
             {
-                if($prev_crop_name!=$result['crop_name'])
+                if($prev_crop_name!=$info['crop_name'])
                 {
-                    $type_total['crop_name']=$prev_crop_name;
-                    $type_total['crop_type_name']=$prev_type_name;
-                    $crop_total['crop_name']=$prev_crop_name;
                     $items[]=$type_total;
                     $items[]=$crop_total;
-
                     $type_total=$this->reset_row($type_total);
                     $crop_total=$this->reset_row($crop_total);
-
-                    $prev_crop_name=$result['crop_name'];
-                    $prev_type_name=$result['crop_type_name'];
+                    $prev_crop_name=$info['crop_name'];
+                    $prev_type_name=$info['crop_type_name'];
 
                 }
-                elseif($prev_type_name!=$result['crop_type_name'])
+                elseif($prev_type_name!=$info['crop_type_name'])
                 {
-                    $type_total['crop_name']=$prev_crop_name;
-                    $type_total['crop_type_name']=$prev_type_name;
                     $items[]=$type_total;
                     $type_total=$this->reset_row($type_total);
-                    //$info['crop_name']='';
-                    $prev_type_name=$result['crop_type_name'];
+                    $info['crop_name']='';
+                    $prev_type_name=$info['crop_type_name'];
                 }
                 else
                 {
-                    //$info['crop_name']='';
-                    //$info['crop_type_name']='';
+                    $info['crop_name']='';
+                    $info['crop_type_name']='';
                 }
             }
             else
             {
-                $prev_crop_name=$result['crop_name'];
-                $prev_type_name=$result['crop_type_name'];
+                $prev_crop_name=$info['crop_name'];
+                $prev_type_name=$info['crop_type_name'];
                 $first_row=false;
             }
-            $info['price_unit_kg']=$result['price_unit_kg'];
-            $type_total['price_unit_kg']+=$info['price_unit_kg'];
-            $crop_total['price_unit_kg']+=$info['price_unit_kg'];
-            $grand_total['price_unit_kg']+=$info['price_unit_kg'];
+            $items[]=$info;
 
-            $info['area_budget_kg']=0;//$result['budget_area_kg'];
-            $type_total['area_budget_kg']+=$info['area_budget_kg'];
-            $crop_total['area_budget_kg']+=$info['area_budget_kg'];
-            $grand_total['area_budget_kg']+=$info['area_budget_kg'];
-
-            $info['area_budget_amount']=0;//$result['area_budget_amount'];
-            $type_total['area_budget_amount']+=$info['area_budget_amount'];
-            $crop_total['area_budget_amount']+=$info['area_budget_amount'];
-            $grand_total['area_budget_amount']+=$info['area_budget_amount'];
-
-            $info['area_target_kg']=0;//$result['area_target_kg'];
-            $type_total['area_target_kg']+=$info['area_target_kg'];
-            $crop_total['area_target_kg']+=$info['area_target_kg'];
-            $grand_total['area_target_kg']+=$info['area_target_kg'];
-
-            $info['area_target_amount']=0;//$result['area_target_amount'];
-            $type_total['area_target_amount']+=$info['area_target_amount'];
-            $crop_total['area_target_amount']+=$info['area_target_amount'];
-            $grand_total['area_target_amount']+=$info['area_target_amount'];
-
-            $serial=0;
-            foreach($fiscal_years_next_budgets as $budget)
+            foreach($info  as $key=>$r)
             {
-                ++$serial;
-                $info['prediction_'.$serial.'_kg']=0;//$result['area_target_amount'];
-                $type_total['prediction_'.$serial.'_kg']+=$info['prediction_'.$serial.'_kg'];
-                $crop_total['prediction_'.$serial.'_kg']+=$info['prediction_'.$serial.'_kg'];
-                $grand_total['prediction_'.$serial.'_kg']+=$info['prediction_'.$serial.'_kg'];
-
-                $info['prediction_'.$serial.'_amount']=0;//$result['area_target_amount'];
-                $type_total['prediction_'.$serial.'_amount']+=$info['prediction_'.$serial.'_amount'];
-                $crop_total['prediction_'.$serial.'_amount']+=$info['prediction_'.$serial.'_amount'];
-                $grand_total['prediction_'.$serial.'_amount']+=$info['prediction_'.$serial.'_amount'];
-
-                $info['prediction_'.$serial.'_amount']=0;//$result['area_target_amount'];
-            }
-
-            if(!$division_id && !$zone_id)
-            {
-                foreach($divisions as $division)
+                if(!(($key=='crop_name')||($key=='crop_type_name')||($key=='variety_name')||($key=='price_unit_kg_amount')))
                 {
-                    $info['sub_area_'.$division['value'].'_budget_kg']=0;
-                    $info['sub_area_'.$division['value'].'_budget_amount']=0;
-
-                    $info['sub_area_'.$division['value'].'_target_kg']=0;
-                    $info['sub_area_'.$division['value'].'_target_amount']=0;
+                    $type_total[$key]+=$info[$key];
+                    $crop_total[$key]+=$info[$key];
+                    $grand_total[$key]+=$info[$key];
                 }
             }
-            elseif($division_id && !$zone_id)
-            {
 
-            }
-
-            //$grand_total['price_unit_kg']+=$info['price_unit_kg'];
-            $items[]=$info;
         }
         $items[]=$type_total;
         $items[]=$crop_total;
-        $items[]=$grand_total;*/
+        $items[]=$grand_total;
         $this->json_return($items);
     }
-
-    private function initialize_row($fiscal_years_next_budgets,$divisions, $zones,$crop_name,$crop_type_name,$variety_name,$method)
+    private function initialize_row($info,$areas)
     {
-        $row=$this->get_preference_headers($method);
-        foreach($row  as $key=>$r)
-        {
-            $row[$key]=0;
-        }
-        $row['crop_name']=$crop_name;
-        $row['crop_type_name']=$crop_type_name;
-        $row['variety_name']=$variety_name;
-        $serial=0;
-        foreach($fiscal_years_next_budgets as $fy)
-        {
-            ++$serial;
-            $row['prediction_'.$serial.'_kg']=0;
-            $row['prediction_'.$serial.'_amount']=0;
-        }
-        if((sizeof($divisions)>0) && !(sizeof($zones)>0))
-        {
-            foreach($divisions as $division)
-            {
-                $row['sub_area_'.$division['value'].'_budget_kg']=0;
-                $row['sub_area_'.$division['value'].'_budget_amount']=0;
+        $row=array();
+        $row['crop_name']=isset($info['crop_name'])?$info['crop_name']:'';
+        $row['crop_type_name']=isset($info['crop_type_name'])?$info['crop_type_name']:'';
+        $row['variety_name']=isset($info['variety_name'])?$info['variety_name']:'';
+        $row['price_unit_kg_amount']=isset($info['price_unit_kg_amount'])?$info['price_unit_kg_amount']:0;
+        $row['budget_kg']=isset($info['quantity_budget'])?$info['quantity_budget']:0;
+        $row['budget_amount']=$row['budget_kg']*$row['price_unit_kg_amount'];
 
-                $row['sub_area_'.$division['value'].'_target_kg']=0;
-                $row['sub_area_'.$division['value'].'_target_amount']=0;
-            }
-        }
-        else if($divisions && $zones)
+        $row['target_kg']=isset($info['quantity_target'])?$info['quantity_target']:0;
+        $row['target_amount']=$row['target_kg']*$row['price_unit_kg_amount'];
+        foreach($areas as $area)
         {
-
+            $row['budget_sub_'.$area['value'].'_kg']=0;
+            $row['budget_sub_'.$area['value'].'_amount']=0;
+            $row['target_sub_'.$area['value'].'_kg']=0;
+            $row['target_sub_'.$area['value'].'_amount']=0;
         }
+
+        $row['prediction_1_kg']=isset($info['quantity_prediction_1'])?$info['quantity_prediction_1']:0;
+        $row['prediction_2_kg']=isset($info['quantity_prediction_2'])?$info['quantity_prediction_2']:0;
+        $row['prediction_3_kg']=isset($info['quantity_prediction_3'])?$info['quantity_prediction_3']:0;
+
+        $row['prediction_1_amount']=$row['prediction_1_kg']*$row['price_unit_kg_amount'];
+        $row['prediction_2_amount']=$row['prediction_2_kg']*$row['price_unit_kg_amount'];
+        $row['prediction_3_amount']=$row['prediction_3_kg']*$row['price_unit_kg_amount'];
         return $row;
+
     }
     private function reset_row($info)
     {
@@ -392,52 +346,6 @@ class Report_budget_target extends Root_Controller
             }
         }
         return $info;
-    }
-    private function get_row($info)
-    {
-        $row=array();
-        foreach($info  as $key=>$r)
-        {
-            if(substr($key,-3)=='pkt')
-            {
-                if($info[$key]==0)
-                {
-                    $row[$key]='';
-                }
-                else
-                {
-                    $row[$key]=$info[$key];
-                }
-            }
-            elseif(substr($key,-2)=='kg')
-            {
-                if($info[$key]==0)
-                {
-                    $row[$key]='';
-                }
-                else
-                {
-                    $row[$key]=number_format($info[$key],3,'.','');
-                }
-            }
-            elseif(substr($key,0,6)=='amount')
-            {
-                if($info[$key]==0)
-                {
-                    $row[$key]='';
-                }
-                else
-                {
-                    $row[$key]=number_format($info[$key],2);
-                }
-            }
-            else
-            {
-                $row[$key]=$info[$key];
-            }
-
-        }
-        return $row;
     }
 
     //query need to change according to fiscal year and budget

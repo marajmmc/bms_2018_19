@@ -160,7 +160,10 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         system_off_events();
         system_preset({controller:'<?php echo $CI->router->class; ?>'});
         $('#crop_id').html(get_dropdown_with_select(system_crops));
-
+        $(document).on('change','#fiscal_year_id',function()
+        {
+            $("#system_report_container").html('');
+        });
         $(document).on("change","#crop_id",function()
         {
             $('#system_report_container').html('');
@@ -194,14 +197,17 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 }
             }
         });
+        $(document).on('change','#variety_id',function()
+        {
+            $("#system_report_container").html('');
+        });
         /* Location Section */
-        $(document).off('change', '#division_id');
         $(document).on('change','#division_id',function()
         {
             $('#zone_id').val('');
             var division_id=$('#division_id').val();
             $('#zone_id_container').hide();
-            $("#items_container").html('');
+            $("#system_report_container").html('');
             if(division_id>0)
             {
                 if(system_zones[division_id]!==undefined)
@@ -211,6 +217,10 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 }
             }
 
+        });
+        $(document).on('change','#zone_id',function()
+        {
+            $("#system_report_container").html('');
         });
 
     });
