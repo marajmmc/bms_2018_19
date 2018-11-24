@@ -3,7 +3,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Budget_helper
 {
-    public static $BUDGET_ID_FISCAL_YEAR_START=5;
+    public static $BUDGET_ID_FISCAL_YEAR_START=4;
     public static $NUM_FISCAL_YEAR_PREVIOUS_SALE=3;
     public static $NUM_FISCAL_YEAR_NEXT_BUDGET_TARGET=3;
     public static function get_fiscal_years($ordering='DESC')
