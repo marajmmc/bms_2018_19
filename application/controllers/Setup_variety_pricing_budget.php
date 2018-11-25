@@ -89,6 +89,7 @@ class Setup_variety_pricing_budget extends Root_Controller
 
         $this->db->from($this->config->item('table_bms_setup_variety_pricing_budget').' item');
         $this->db->select('MAX(item.revision_count) revision_count, item.fiscal_year_id');
+        $this->db->group_by('item.fiscal_year_id');
         $results=$this->db->get()->result_array();
         $varieties=array();
         foreach($results as $result)
