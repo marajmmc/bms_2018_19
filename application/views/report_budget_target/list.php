@@ -406,22 +406,22 @@ $zone_id=$report['zone_id'];
                     { text: '<?php echo $CI->lang->line('LABEL_VARIETY_NAME'); ?>', dataField: 'variety_name',pinned:true,width:'100',cellsrenderer: cellsrenderer,hidden: <?php echo $system_preference_items['variety_name']?0:1;?>,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer},
                     { text: '<?php echo $CI->lang->line('LABEL_PRICE_UNIT_KG_AMOUNT'); ?>', dataField: 'price_unit_kg_amount',width:'100',cellsAlign:'right',hidden: <?php echo $system_preference_items['price_unit_kg_amount']?0:1;?>,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_amount},
                     { text: '<?php echo $CI->lang->line('LABEL_BUDGET_KG'); ?>', dataField: 'budget_kg',width:'100',cellsAlign:'right',hidden: <?php echo $system_preference_items['budget_kg']?0:1;?>,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
-                    { text: '<?php echo $CI->lang->line('LABEL_BUDGET_AMOUNT'); ?>', dataField: 'budget_amount',width:'100',cellsAlign:'right',hidden: <?php echo $system_preference_items['budget_amount']?0:1;?>,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_amount},
+                    { text: '<?php echo $CI->lang->line('LABEL_BUDGET_AMOUNT'); ?>', dataField: 'budget_amount',width:'120',cellsAlign:'right',hidden: <?php echo $system_preference_items['budget_amount']?0:1;?>,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_amount},
                     { text: '<?php echo $CI->lang->line('LABEL_TARGET_KG'); ?>', dataField: 'target_kg',width:'100',cellsAlign:'right',hidden: <?php echo $system_preference_items['target_kg']?0:1;?>,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
-                    { text: '<?php echo $CI->lang->line('LABEL_TARGET_AMOUNT'); ?>', dataField: 'target_amount',width:'100',cellsAlign:'right',hidden: <?php echo $system_preference_items['target_amount']?0:1;?>,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_amount},
+                    { text: '<?php echo $CI->lang->line('LABEL_TARGET_AMOUNT'); ?>', dataField: 'target_amount',width:'120',cellsAlign:'right',hidden: <?php echo $system_preference_items['target_amount']?0:1;?>,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_amount},
                     <?php
                     foreach ($areas as $area)
                     {
                         ?>
                             {  columngroup: 'sub_area_budget',text: '<?php echo $area['text'].'(kg)'; ?> ', dataField: '<?php echo 'budget_sub_'.$area['value'].'_kg'; ?>',width:'100',cellsAlign:'right',hidden: <?php echo $system_preference_items['budget_sub_kg']?0:1;?>,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
-                            {  columngroup: 'sub_area_budget',text: '<?php echo $area['text'].'(amount)'; ?> ', dataField: '<?php echo 'budget_sub_'.$area['value'].'_amount'; ?>',width:'100',cellsAlign:'right',hidden: <?php echo $system_preference_items['budget_sub_amount']?0:1;?>,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_amount},
+                            {  columngroup: 'sub_area_budget',text: '<?php echo $area['text'].'(amount)'; ?> ', dataField: '<?php echo 'budget_sub_'.$area['value'].'_amount'; ?>',width:'120',cellsAlign:'right',hidden: <?php echo $system_preference_items['budget_sub_amount']?0:1;?>,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_amount},
                         <?php
                     }
                     foreach ($areas as $area)
                     {
                         ?>
                         {  columngroup: 'sub_area_target',text: '<?php echo $area['text'].'(kg)'; ?> ', dataField: '<?php echo 'target_sub_'.$area['value'].'_kg'; ?>',width:'100',cellsAlign:'right',hidden: <?php echo $system_preference_items['target_sub_kg']?0:1;?>,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
-                        {  columngroup: 'sub_area_target',text: '<?php echo $area['text'].'(amount)'; ?> ', dataField: '<?php echo 'target_sub_'.$area['value'].'_amount'; ?>',width:'100',cellsAlign:'right',hidden: <?php echo $system_preference_items['target_sub_amount']?0:1;?>,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_amount},
+                        {  columngroup: 'sub_area_target',text: '<?php echo $area['text'].'(amount)'; ?> ', dataField: '<?php echo 'target_sub_'.$area['value'].'_amount'; ?>',width:'120',cellsAlign:'right',hidden: <?php echo $system_preference_items['target_sub_amount']?0:1;?>,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_amount},
                         <?php
                     }
                     $serial=0;
@@ -430,7 +430,7 @@ $zone_id=$report['zone_id'];
                         ++$serial;
                         ?>
                         {  columngroup: 'next_years_prediction',text: '<?php echo $fy['name'].'(kg)'; ?> ', dataField: '<?php echo 'prediction_'.$serial.'_kg'; ?>',width:'100',cellsAlign:'right',hidden: <?php echo $system_preference_items['prediction_kg']?0:1;?>,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
-                        {  columngroup: 'next_years_prediction',text: '<?php echo $fy['name'].'(amount)'; ?> ', dataField: '<?php echo 'prediction_'.$serial.'_amount'; ?>',width:'100',cellsAlign:'right',hidden: <?php echo $system_preference_items['prediction_amount']?0:1;?>,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_amount},
+                        {  columngroup: 'next_years_prediction',text: '<?php echo $fy['name'].'(amount)'; ?> ', dataField: '<?php echo 'prediction_'.$serial.'_amount'; ?>',width:'120',cellsAlign:'right',hidden: <?php echo $system_preference_items['prediction_amount']?0:1;?>,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_amount},
                     <?php
                     }
                 ?>

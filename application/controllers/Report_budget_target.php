@@ -273,13 +273,13 @@ class Report_budget_target extends Root_Controller
                 {
                     $items[]=$type_total;
                     $type_total=$this->reset_row($type_total);
-                    $info['crop_name']='';
+                    //$info['crop_name']='';
                     $prev_type_name=$info['crop_type_name'];
                 }
                 else
                 {
-                    $info['crop_name']='';
-                    $info['crop_type_name']='';
+                    //$info['crop_name']='';
+                    //info['crop_type_name']='';
                 }
             }
             else
