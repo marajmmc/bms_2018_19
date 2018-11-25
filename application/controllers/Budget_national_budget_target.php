@@ -231,7 +231,7 @@ class Budget_national_budget_target extends Root_Controller
         $results=$this->db->get()->result_array();
         foreach($results as $result)
         {
-            $info=$this->initialize_row_edit_target_hom($fiscal_years_previous_sales,$result['crop_name'],$result['crop_type_name'],$result['variety_name']);
+            $info=$this->initialize_row_edit_target_hom($fiscal_years_previous_sales,$result);
             foreach($fiscal_years_previous_sales as $fy)
             {
                 if(isset($sales_previous[$fy['id']][$result['variety_id']]))
@@ -262,12 +262,13 @@ class Budget_national_budget_target extends Root_Controller
 
         $this->json_return($items);
     }
-    private function initialize_row_edit_target_hom($fiscal_years,$crop_name,$crop_type_name,$variety_name)
+    private function initialize_row_edit_target_hom($fiscal_years,$info)
     {
         $row=array();
-        $row['crop_name']=$crop_name;
-        $row['crop_type_name']=$crop_type_name;
-        $row['variety_name']=$variety_name;
+        $row['crop_name']=$info['crop_name'];
+        $row['crop_type_name']=$info['crop_type_name'];
+        $row['variety_name']=$info['variety_name'];
+        $row['variety_id']=$info['variety_id'];
         foreach($fiscal_years as $fy)
         {
             $row['quantity_sale_'.$fy['id']]=0;
