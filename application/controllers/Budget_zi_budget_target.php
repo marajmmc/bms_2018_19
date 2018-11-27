@@ -161,8 +161,8 @@ class Budget_zi_budget_target extends Root_Controller
             $data['zone_id']= 1;
             $data['zone_name']= 1;
             $data['status_budget_forward']= 1;
-            $data['status_target_forward']= 1;
-            $data['status_target_next_year_forward']= 1;
+            $data['status_target_outlet_forward']= 1;
+            $data['status_target_outlet_next_year_forward']= 1;
         }
         else if($method=='list_budget_zone')
         {
@@ -265,7 +265,7 @@ class Budget_zi_budget_target extends Root_Controller
     {
         $fiscal_years=Budget_helper::get_fiscal_years();
         $this->db->from($this->config->item('table_bms_zi_budget_target').' budget_target');
-        $this->db->select('budget_target.status_budget_forward, budget_target.status_target_forward, budget_target.status_target_next_year_forward');
+        $this->db->select('budget_target.status_budget_forward, budget_target.status_target_outlet_forward, budget_target.status_target_outlet_next_year_forward');
         $this->db->select('budget_target.fiscal_year_id');
         $this->db->select('budget_target.zone_id');
         $this->db->where_in('budget_target.zone_id',$this->user_zone_ids);
@@ -286,13 +286,13 @@ class Budget_zi_budget_target extends Root_Controller
                 $data['zone_id']=$zone['zone_id'];
                 $data['zone_name']=$zone['zone_name'];
                 $data['status_budget_forward']=$this->config->item('system_status_pending');
-                $data['status_target_forward']=$this->config->item('system_status_pending');
-                $data['status_target_next_year_forward']=$this->config->item('system_status_pending');
+                $data['status_target_outlet_forward']=$this->config->item('system_status_pending');
+                $data['status_target_outlet_next_year_forward']=$this->config->item('system_status_pending');
                 if(isset($budget_target[$fy['id']][$zone['zone_id']]))
                 {
                     $data['status_budget_forward']=$budget_target[$fy['id']][$zone['zone_id']]['status_budget_forward'];
-                    $data['status_target_forward']=$budget_target[$fy['id']][$zone['zone_id']]['status_target_forward'];
-                    $data['status_target_next_year_forward']=$budget_target[$fy['id']][$zone['zone_id']]['status_target_next_year_forward'];
+                    $data['status_target_outlet_forward']=$budget_target[$fy['id']][$zone['zone_id']]['status_target_outlet_forward'];
+                    $data['status_target_outlet_next_year_forward']=$budget_target[$fy['id']][$zone['zone_id']]['status_target_outlet_next_year_forward'];
                 }
                 $items[]=$data;
             }
@@ -1050,7 +1050,7 @@ class Budget_zi_budget_target extends Root_Controller
                 $ajax['system_message']='ZI Budget Not Forwarded.';
                 $this->json_return($ajax);
             }
-            if(($info_budget_target['status_target_forward']==$this->config->item('system_status_forwarded')))
+            if(($info_budget_target['status_target_outlet_forward']==$this->config->item('system_status_forwarded')))
             {
                 if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
                 {
@@ -1062,7 +1062,7 @@ class Budget_zi_budget_target extends Root_Controller
 
             // validation di assign target to zi forward status
             $info_target_di=$this->get_info_target_di($fiscal_year_id, $info_budget_target['division_id']);
-            if(($info_target_di['status_target_forward']!=$this->config->item('system_status_forwarded')))
+            if(($info_target_di['status_target_zi_forward']!=$this->config->item('system_status_forwarded')))
             {
                 $ajax['status']=false;
                 $ajax['system_message']='DI Assign ZI Target Not Forwarded.';
@@ -1180,7 +1180,7 @@ class Budget_zi_budget_target extends Root_Controller
                 $ajax['system_message']='ZI Budget Not Forwarded.';
                 $this->json_return($ajax);
             }*/
-            if(($info_budget_target['status_target_forward']==$this->config->item('system_status_forwarded')))
+            if(($info_budget_target['status_target_outlet_forward']==$this->config->item('system_status_forwarded')))
             {
                 if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
                 {
@@ -1191,7 +1191,7 @@ class Budget_zi_budget_target extends Root_Controller
             }
             // validation DI assign target to ZI forward status
             $info_target_id=$this->get_info_target_di($fiscal_year_id, $info_budget_target['division_id']);
-            if(($info_target_id['status_target_forward']!=$this->config->item('system_status_forwarded')))
+            if(($info_target_id['status_target_zi_forward']!=$this->config->item('system_status_forwarded')))
             {
                 $ajax['status']=false;
                 $ajax['system_message']='DI Assign ZI Target Not Forwarded.';
@@ -1354,7 +1354,7 @@ class Budget_zi_budget_target extends Root_Controller
         //validation DI Budget & ZI Target forward status
         $info_budget_target=$this->get_info_budget_target($item_head['fiscal_year_id'],$item_head['zone_id']);
         // outlet target forward
-        if(($info_budget_target['status_target_forward']==$this->config->item('system_status_forwarded')))
+        if(($info_budget_target['status_target_outlet_forward']==$this->config->item('system_status_forwarded')))
         {
             if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
             {
@@ -1365,7 +1365,7 @@ class Budget_zi_budget_target extends Root_Controller
         }
         // validation DI assign target to zi forward status
         $info_target_di=$this->get_info_target_di($item_head['fiscal_year_id'], $info_budget_target['division_id']);
-        if(($info_target_di['status_target_forward']!=$this->config->item('system_status_forwarded')))
+        if(($info_target_di['status_target_zi_forward']!=$this->config->item('system_status_forwarded')))
         {
             $ajax['status']=false;
             $ajax['system_message']='DI Assign ZI Target Not Forwarded.';
@@ -1479,7 +1479,7 @@ class Budget_zi_budget_target extends Root_Controller
             }
             //validation ZI Budget & Outlet Target forward status
             $info_budget_target=$this->get_info_budget_target($fiscal_year_id,$zone_id);
-            if(($info_budget_target['status_target_forward']==$this->config->item('system_status_forwarded')))
+            if(($info_budget_target['status_target_outlet_forward']==$this->config->item('system_status_forwarded')))
             {
                 $ajax['status']=false;
                 $ajax['system_message']='Outlet Target Already Assigned.';
@@ -1487,7 +1487,7 @@ class Budget_zi_budget_target extends Root_Controller
             }
             // validation DI assign target to ZI forward status
             $info_target_id=$this->get_info_target_di($fiscal_year_id, $info_budget_target['division_id']);
-            if(($info_target_id['status_target_forward']!=$this->config->item('system_status_forwarded')))
+            if(($info_target_id['status_target_zi_forward']!=$this->config->item('system_status_forwarded')))
             {
                 $ajax['status']=false;
                 $ajax['system_message']='DI Assign ZI Target Not Forwarded.';
@@ -1688,7 +1688,7 @@ class Budget_zi_budget_target extends Root_Controller
             $ajax['system_message']=$this->lang->line("YOU_DONT_HAVE_ACCESS");
             $this->json_return($ajax);
         }
-        if($item_head['status_target_forward']!=$this->config->item('system_status_forwarded'))
+        if($item_head['status_target_outlet_forward']!=$this->config->item('system_status_forwarded'))
         {
             $ajax['status']=false;
             $ajax['system_message']='Select Forward Option.';
@@ -1713,7 +1713,7 @@ class Budget_zi_budget_target extends Root_Controller
         //validation DI Budget & ZI Target forward status
         $info_budget_target=$this->get_info_budget_target($item_head['fiscal_year_id'],$item_head['zone_id']);
         // outlet target forward
-        if(($info_budget_target['status_target_forward']==$this->config->item('system_status_forwarded')))
+        if(($info_budget_target['status_target_outlet_forward']==$this->config->item('system_status_forwarded')))
         {
             $ajax['status']=false;
             $ajax['system_message']='Outlet Target Already Assigned.';
@@ -1721,7 +1721,7 @@ class Budget_zi_budget_target extends Root_Controller
         }
         // validation DI assign target to zi forward status
         $info_target_di=$this->get_info_target_di($item_head['fiscal_year_id'], $info_budget_target['division_id']);
-        if(($info_target_di['status_target_forward']!=$this->config->item('system_status_forwarded')))
+        if(($info_target_di['status_target_zi_forward']!=$this->config->item('system_status_forwarded')))
         {
             $ajax['status']=false;
             $ajax['system_message']='DI Assign ZI Target Not Forwarded.';
@@ -1731,9 +1731,9 @@ class Budget_zi_budget_target extends Root_Controller
         $this->db->trans_start();  //DB Transaction Handle START
 
         $data=array();
-        $data['status_target_forward']=$item_head['status_target_forward'];
-        $data['date_target_forwarded']=$time;
-        $data['user_target_forwarded']=$user->user_id;
+        $data['status_target_outlet_forward']=$item_head['status_target_outlet_forward'];
+        $data['date_target_outlet_forwarded']=$time;
+        $data['user_target_outlet_forwarded']=$user->user_id;
         Query_helper::update($this->config->item('table_bms_zi_budget_target'),$data,array('id='.$info_budget_target['id']));
 
         $this->db->trans_complete();   //DB Transaction Handle END
@@ -1782,7 +1782,7 @@ class Budget_zi_budget_target extends Root_Controller
             }
             //validation forward status
             $info_budget_target=$this->get_info_budget_target($fiscal_year_id,$zone_id);
-            if(($info_budget_target['status_target_next_year_forward']==$this->config->item('system_status_forwarded')))
+            if(($info_budget_target['status_target_outlet_next_year_forward']==$this->config->item('system_status_forwarded')))
             {
                 if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
                 {
@@ -1794,7 +1794,7 @@ class Budget_zi_budget_target extends Root_Controller
 
             // validation di assign target to zi forward status
             $info_target_di=$this->get_info_target_di($fiscal_year_id, $info_budget_target['division_id']);
-            if(($info_target_di['status_target_next_year_forward']!=$this->config->item('system_status_forwarded')))
+            if(($info_target_di['status_target_zi_next_year_forward']!=$this->config->item('system_status_forwarded')))
             {
                 $ajax['status']=false;
                 $ajax['system_message']='DI Assign To ZI Next 3 Years Target Not Forwarded.';
@@ -1906,7 +1906,7 @@ class Budget_zi_budget_target extends Root_Controller
             }
             //validation ZI Budget & Outlet Target forward status
             $info_budget_target=$this->get_info_budget_target($fiscal_year_id,$zone_id);
-            if(($info_budget_target['status_target_next_year_forward']==$this->config->item('system_status_forwarded')))
+            if(($info_budget_target['status_target_outlet_next_year_forward']==$this->config->item('system_status_forwarded')))
             {
                 if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
                 {
@@ -1917,7 +1917,7 @@ class Budget_zi_budget_target extends Root_Controller
             }
             // validation DI assign target to ZI forward status
             $info_target_id=$this->get_info_target_di($fiscal_year_id, $info_budget_target['division_id']);
-            if(($info_target_id['status_target_next_year_forward']!=$this->config->item('system_status_forwarded')))
+            if(($info_target_id['status_target_zi_next_year_forward']!=$this->config->item('system_status_forwarded')))
             {
                 $ajax['status']=false;
                 $ajax['system_message']='DI Assign To ZI Next 3 Years Target Not Forwarded.';
@@ -2070,11 +2070,14 @@ class Budget_zi_budget_target extends Root_Controller
         {
             $row['quantity_sale_'.$fy['id']]=0;
         }
+        $serial=0;
         foreach($fiscal_years_next_budgets as $fy)
         {
+            ++$serial;
+            $row['quantity_prediction_'.$serial]=0;
             foreach($outlet_ids as $outlet_id)
             {
-                $row['quantity_target_outlet_'.$fy['id'].'_'.$outlet_id]= 0;
+                $row['quantity_prediction_outlet_'.$fy['id'].'_'.$outlet_id]= 0;
             }
             $row['quantity_prediction_sub_total_outlet_'.$fy['id']]=0;
         }
@@ -2111,7 +2114,7 @@ class Budget_zi_budget_target extends Root_Controller
             $this->json_return($ajax);
         }
         $info_budget_target=$this->get_info_budget_target($item_head['fiscal_year_id'],$item_head['zone_id']);
-        if(($info_budget_target['status_target_next_year_forward']==$this->config->item('system_status_forwarded')))
+        if(($info_budget_target['status_target_outlet_next_year_forward']==$this->config->item('system_status_forwarded')))
         {
             if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
             {
@@ -2122,7 +2125,7 @@ class Budget_zi_budget_target extends Root_Controller
         }
         // validation DI assign target to ZI forward status
         $info_target_id=$this->get_info_target_di($item_head['fiscal_year_id'], $info_budget_target['division_id']);
-        if(($info_target_id['status_target_next_year_forward']!=$this->config->item('system_status_forwarded')))
+        if(($info_target_id['status_target_zi_next_year_forward']!=$this->config->item('system_status_forwarded')))
         {
             $ajax['status']=false;
             $ajax['system_message']='DI Assign To ZI Next 3 Years Target Not Forwarded.';
@@ -2249,7 +2252,7 @@ class Budget_zi_budget_target extends Root_Controller
             }
             //validation ZI Budget & Outlet Target forward status
             $info_budget_target=$this->get_info_budget_target($fiscal_year_id,$zone_id);
-            if(($info_budget_target['status_target_next_year_forward']==$this->config->item('system_status_forwarded')))
+            if(($info_budget_target['status_target_outlet_next_year_forward']==$this->config->item('system_status_forwarded')))
             {
                 $ajax['status']=false;
                 $ajax['system_message']='Outlet Next 3 Years Target Already Assigned.';
@@ -2257,7 +2260,7 @@ class Budget_zi_budget_target extends Root_Controller
             }
             // validation DI assign target to ZI forward status
             $info_target_id=$this->get_info_target_di($fiscal_year_id, $info_budget_target['division_id']);
-            if(($info_target_id['status_target_next_year_forward']!=$this->config->item('system_status_forwarded')))
+            if(($info_target_id['status_target_zi_next_year_forward']!=$this->config->item('system_status_forwarded')))
             {
                 $ajax['status']=false;
                 $ajax['system_message']='DI Assign To ZI Next 3 Years Target Not Forwarded.';
@@ -2504,7 +2507,7 @@ class Budget_zi_budget_target extends Root_Controller
             $ajax['system_message']=$this->lang->line("YOU_DONT_HAVE_ACCESS");
             $this->json_return($ajax);
         }
-        if($item_head['status_target_next_year_forward']!=$this->config->item('system_status_forwarded'))
+        if($item_head['status_target_outlet_next_year_forward']!=$this->config->item('system_status_forwarded'))
         {
             $ajax['status']=false;
             $ajax['system_message']='Select Forward Option.';
@@ -2527,7 +2530,7 @@ class Budget_zi_budget_target extends Root_Controller
             $this->json_return($ajax);
         }
         $info_budget_target=$this->get_info_budget_target($item_head['fiscal_year_id'],$item_head['zone_id']);
-        if(($info_budget_target['status_target_next_year_forward']==$this->config->item('system_status_forwarded')))
+        if(($info_budget_target['status_target_outlet_next_year_forward']==$this->config->item('system_status_forwarded')))
         {
             $ajax['status']=false;
             $ajax['system_message']='Outlet Next 3 Years Target Already Assigned.';
@@ -2535,7 +2538,7 @@ class Budget_zi_budget_target extends Root_Controller
         }
         // validation DI assign target to ZI forward status
         $info_target_id=$this->get_info_target_di($item_head['fiscal_year_id'], $info_budget_target['division_id']);
-        if(($info_target_id['status_target_next_year_forward']!=$this->config->item('system_status_forwarded')))
+        if(($info_target_id['status_target_zi_next_year_forward']!=$this->config->item('system_status_forwarded')))
         {
             $ajax['status']=false;
             $ajax['system_message']='DI Assign To ZI Next 3 Years Target Not Forwarded.';
@@ -2545,9 +2548,9 @@ class Budget_zi_budget_target extends Root_Controller
         $this->db->trans_start();  //DB Transaction Handle START
 
         $data=array();
-        $data['status_target_next_year_forward']=$item_head['status_target_next_year_forward'];
-        $data['date_target_next_year_forwarded']=$time;
-        $data['user_target_next_year_forwarded']=$user->user_id;
+        $data['status_target_outlet_next_year_forward']=$item_head['status_target_outlet_next_year_forward'];
+        $data['date_target_outlet_next_year_forwarded']=$time;
+        $data['user_target_outlet_next_year_forwarded']=$user->user_id;
         Query_helper::update($this->config->item('table_bms_zi_budget_target'),$data,array('id='.$info_budget_target['id']));
 
         $this->db->trans_complete();   //DB Transaction Handle END

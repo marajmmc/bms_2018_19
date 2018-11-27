@@ -145,7 +145,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 <label class="control-label pull-right">Forward Target<span style="color:#FF0000">*</span></label>
             </div>
             <div class="col-sm-4 col-xs-8">
-                <select class="form-control" name="item[status_target_next_year_forward]">
+                <select class="form-control" name="item[status_target_outlet_next_year_forward]">
                     <option value=""><?php echo $CI->lang->line('SELECT');?></option>
                     <option value="<?php echo $this->config->item('system_status_forwarded')?>">Forward</option>
                 </select>
@@ -198,7 +198,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 foreach($fiscal_years_previous_sales as $fy)
                 {
                     ?>
-                    { name: 'quantity_sale_<?php echo $fy['id']; ?>', type: 'string' },
+                    { name: 'quantity_sale_<?php echo $fy['id']; ?>', type: 'number' },
                     <?php
                 }
                 $serial=0;
@@ -206,16 +206,16 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 {
                     ++$serial;
                     ?>
-                    { name: 'quantity_prediction_<?php echo $serial; ?>', type: 'string' },
+                    { name: 'quantity_prediction_<?php echo $serial; ?>', type: 'number' },
                     <?php
                     foreach($outlets as $outlet)
                     {
                         ?>
-                        { name: 'quantity_prediction_outlet_<?php echo $budget['id']; ?>_<?php echo $outlet['outlet_id']?>', type: 'string' },
+                        { name: 'quantity_prediction_outlet_<?php echo $budget['id']; ?>_<?php echo $outlet['outlet_id']?>', type: 'number' },
                         <?php
                     }
                     ?>
-                    { name: 'quantity_prediction_sub_total_outlet_<?php echo $budget['id']; ?>', type: 'string' },
+                    { name: 'quantity_prediction_sub_total_outlet_<?php echo $budget['id']; ?>', type: 'number' },
                     <?php
                 }
                 ?>

@@ -197,7 +197,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             foreach($outlets as $outlet)
             {
                     ?>
-                { name: 'quantity_target_outlet_<?php echo $outlet['outlet_id']?>', type: 'string' },
+                { name: 'quantity_target_outlet_<?php echo $outlet['outlet_id']?>', type: 'number' },
                 <?php
             }
             ?>

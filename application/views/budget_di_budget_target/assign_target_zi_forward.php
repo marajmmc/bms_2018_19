@@ -140,7 +140,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 <label class="control-label pull-right">Forward Target<span style="color:#FF0000">*</span></label>
             </div>
             <div class="col-sm-4 col-xs-8">
-                <select class="form-control" name="item[status_target_forward]">
+                <select class="form-control" name="item[status_target_zi_forward]">
                     <option value=""><?php echo $CI->lang->line('SELECT');?></option>
                     <option value="<?php echo $this->config->item('system_status_forwarded')?>">Forward</option>
                 </select>
