@@ -69,69 +69,9 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             <label class="control-label"><?php echo $crop['name'];?></label>
         </div>
     </div>
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <h4 class="panel-title">
-                <label class=""><a class="external text-danger" data-toggle="collapse" data-target="#collapse3" href="#">+ Acres Information ( <?php echo sizeof($acres)?> number of record)</a></label>
-            </h4>
-        </div>
-        <div id="collapse3" class="panel-collapse <?php if($acres){ echo 'collapse';}?>">
-            <?php
-            if(!$acres)
-            {
-                ?>
-                <div class="alert alert-danger text-center"><strong>Acres not setup</strong></div>
-                <?php
-            }
-            else
-            {
-            ?>
-                <table class="table table-bordered table-responsive system_table_details_view">
-                    <thead>
-                    <tr>
-                        <th><label class="control-label"><?php echo $CI->lang->line('LABEL_CROP_NAME');?></label></th>
-                        <th><label class="control-label"><?php echo $CI->lang->line('LABEL_CROP_TYPE_NAME');?></label></th>
-                        <th class="text-right"><label class="control-label">Acres</label></th>
-                        <th class="text-right"><label class="control-label">Seeds per Acre(kg)</label></th>
-                        <th class="text-right"><label class="control-label">Total Seeds(kg)</label></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <?php
-                    $quantity_acres_total=0;
-                    $quantity_acres_kg_total=0;
-                    $quantity_acres_seed_total=0;
-                    foreach($acres as $result)
-                    {
-                        $quantity_acres_total+=$result['quantity'];
-                        $quantity_acres_kg_total+=$result['quantity_kg_acre'];
-                        $quantity_acres_seed_total+=($result['quantity']*$result['quantity_kg_acre']);
-                        ?>
-                        <tr>
-                            <td><?php echo $result['crop_name']; ?></td>
-                            <td><?php echo $result['crop_type_name']; ?></td>
-                            <td class="text-right"><?php echo System_helper::get_string_kg($result['quantity']); ?></td>
-                            <td class="text-right"><?php echo System_helper::get_string_kg($result['quantity_kg_acre']); ?></td>
-                            <td class="text-right"><?php echo System_helper::get_string_kg(($result['quantity']*$result['quantity_kg_acre'])); ?></td>
-                        </tr>
-                    <?php
-                    }
-                    ?>
-                    </tbody>
-                    <tfoot>
-                    <tr>
-                        <th colspan="2" class="text-right"><?php echo $CI->lang->line('LABEL_TOTAL');?></th>
-                        <th class="text-right"><?php echo System_helper::get_string_kg($quantity_acres_total);?></th>
-                        <th class="text-right"><?php echo System_helper::get_string_kg($quantity_acres_kg_total);?></th>
-                        <th class="text-right"><?php echo System_helper::get_string_kg($quantity_acres_seed_total);?></th>
-                    </tr>
-                    </tfoot>
-                </table>
-            <?php
-            }
-            ?>
-        </div>
-    </div>
+    <?php
+    echo $CI->load->view($this->controller_url."/acres_info",$acres,true);
+    ?>
     <form id="save_form_jqx" action="<?php echo site_url($CI->controller_url.'/index/save_budget_zone');?>" method="post">
         <input type="hidden" name="item[fiscal_year_id]" value="<?php echo $options['fiscal_year_id']; ?>" />
         <input type="hidden" name="item[zone_id]" value="<?php echo $options['zone_id']; ?>" />

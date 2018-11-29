@@ -499,6 +499,7 @@ class Budget_zi_budget_target extends Root_Controller
         $this->db->join($this->config->item('table_pos_si_budget_target').' budget_target','budget_target.fiscal_year_id=budget_target_outlet.fiscal_year_id AND budget_target.outlet_id=budget_target_outlet.outlet_id','INNER');
         $this->db->select('budget_target.status_budget_forward');
         $results=$this->db->get()->result_array();
+        //echo $this->db->last_query();
         $budget_outlets=array();
         foreach($results as $result)
         {
@@ -772,7 +773,7 @@ class Budget_zi_budget_target extends Root_Controller
     public function budget_forward_items()
     {
         $items=array();
-
+        //$this->json_return($items);
         $fiscal_year_id=$this->input->post('fiscal_year_id');
         $zone_id=$this->input->post('zone_id');
         $fiscal_years_previous_sales=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id <'.$fiscal_year_id),Budget_helper::$NUM_FISCAL_YEAR_PREVIOUS_SALE,0,array('id DESC'));
@@ -798,7 +799,7 @@ class Budget_zi_budget_target extends Root_Controller
         $this->db->where('territories.zone_id',$zone_id);
         $this->db->order_by('cus_info.ordering, cus_info.id');
         $this->db->where('budget_target_outlet.fiscal_year_id',$fiscal_year_id);
-        $this->db->group_by('budget_target_outlet.outlet_id');
+        //$this->db->group_by('budget_target_outlet.outlet_id');
         $results=$this->db->get()->result_array();
         $budget_outlets=array();
         $outlet_ids[0]=0;
@@ -807,7 +808,6 @@ class Budget_zi_budget_target extends Root_Controller
             $outlet_ids[$result['outlet_id']]=$result['outlet_id'];
             $budget_outlets[$result['outlet_id']][$result['variety_id']]=$result;
         }
-
         //old items
         $results=Query_helper::get_info($this->config->item('table_bms_zi_budget_target_zone'),'*',array('fiscal_year_id ='.$fiscal_year_id,'zone_id ='.$zone_id));
         $budget_zones=array();
@@ -915,6 +915,7 @@ class Budget_zi_budget_target extends Root_Controller
 
                 }
             }
+
             $info['quantity_budget_outlet_total']=$quantity_budget_outlet_total;
             $type_total['quantity_budget_outlet_total']+=$quantity_budget_outlet_total;
             $crop_total['quantity_budget_outlet_total']+=$quantity_budget_outlet_total;
@@ -2707,6 +2708,14 @@ class Budget_zi_budget_target extends Root_Controller
         $this->db->where_in('acres.upazilla_id',$upazilla_ids);
         $this->db->group_by('crop_type.id');
         $results=$this->db->get()->result_array();
-        return $results;
+        $items=array();
+        foreach($results as $result)
+        {
+            $items[$result['crop_id']][$result['crop_type_id']]['crop_name']=$result['crop_name'];
+            $items[$result['crop_id']][$result['crop_type_id']]['crop_type_name']=$result['crop_type_name'];
+            $items[$result['crop_id']][$result['crop_type_id']]['quantity']=$result['quantity'];
+            $items[$result['crop_id']][$result['crop_type_id']]['quantity_kg_acre']=$result['quantity_kg_acre'];
+        }
+        return $items;
     }
 }

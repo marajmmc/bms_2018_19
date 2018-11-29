@@ -2391,6 +2391,14 @@ class Budget_hom_budget_target extends Root_Controller
         /*$this->db->where_in('acres.upazilla_id',$upazilla_ids);*/
         $this->db->group_by('crop_type.id');
         $results=$this->db->get()->result_array();
-        return $results;
+        $items=array();
+        foreach($results as $result)
+        {
+            $items[$result['crop_id']][$result['crop_type_id']]['crop_name']=$result['crop_name'];
+            $items[$result['crop_id']][$result['crop_type_id']]['crop_type_name']=$result['crop_type_name'];
+            $items[$result['crop_id']][$result['crop_type_id']]['quantity']=$result['quantity'];
+            $items[$result['crop_id']][$result['crop_type_id']]['quantity_kg_acre']=$result['quantity_kg_acre'];
+        }
+        return $items;
     }
 }

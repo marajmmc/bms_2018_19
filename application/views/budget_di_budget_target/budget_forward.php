@@ -54,75 +54,15 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         </div>
     </div>
 
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <h4 class="panel-title">
-                <label class=""><a class="external text-danger" data-toggle="collapse" data-target="#collapse3" href="#">+ Acres Information ( <?php echo sizeof($acres)?> number of record)</a></label>
-            </h4>
-        </div>
-        <div id="collapse3" class="panel-collapse  <?php if($acres){ echo 'collapse';}?>">
-            <?php
-            if(!$acres)
-            {
-                ?>
-                <div class="alert alert-danger text-center"><strong>Acres not setup</strong></div>
-            <?php
-            }
-            else
-            {
-            ?>
-                <table class="table table-bordered table-responsive system_table_details_view">
-                    <thead>
-                    <tr>
-                        <th><label class="control-label"><?php echo $CI->lang->line('LABEL_CROP_NAME');?></label></th>
-                        <th><label class="control-label"><?php echo $CI->lang->line('LABEL_CROP_TYPE_NAME');?></label></th>
-                        <th class="text-right"><label class="control-label">Acres</label></th>
-                        <th class="text-right"><label class="control-label">Seeds per Acre(kg)</label></th>
-                        <th class="text-right"><label class="control-label">Total Seeds(kg)</label></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <?php
-                    $quantity_acres_total=0;
-                    $quantity_acres_kg_total=0;
-                    $quantity_acres_seed_total=0;
-                    foreach($acres as $result)
-                    {
-                        $quantity_acres_total+=$result['quantity'];
-                        $quantity_acres_kg_total+=$result['quantity_kg_acre'];
-                        $quantity_acres_seed_total+=($result['quantity']*$result['quantity_kg_acre']);
-                        ?>
-                        <tr>
-                            <td><?php echo $result['crop_name']; ?></td>
-                            <td><?php echo $result['crop_type_name']; ?></td>
-                            <td class="text-right"><?php echo number_format($result['quantity'],3,'.',''); ?></td>
-                            <td class="text-right"><?php echo number_format($result['quantity_kg_acre'],3,'.',''); ?></td>
-                            <td class="text-right"><?php echo number_format($result['quantity']*$result['quantity_kg_acre'],3,'.',''); ?></td>
-                        </tr>
-                    <?php
-                    }
-                    ?>
-                    </tbody>
-                    <tfoot>
-                    <tr>
-                        <th colspan="2" class="text-right"><?php echo $CI->lang->line('LABEL_TOTAL');?></th>
-                        <th class="text-right"><?php echo System_helper::get_string_kg($quantity_acres_total);?></th>
-                        <th class="text-right"><?php echo System_helper::get_string_kg($quantity_acres_kg_total);?></th>
-                        <th class="text-right"><?php echo System_helper::get_string_kg($quantity_acres_seed_total);?></th>
-                    </tr>
-                    </tfoot>
-                </table>
-            <?php
-            }
-            ?>
-        </div>
-    </div>
-    <div style="font-size: 12px;margin-top: -10px;font-style: italic; color: red;" class="row show-grid">
+    <?php
+    echo $CI->load->view("budget_zi_budget_target/acres_info",$acres,true);
+    ?>
+    <!--<div style="font-size: 12px;margin-top: -10px;font-style: italic; color: red;" class="row show-grid">
         <div class="col-xs-4"></div>
         <div class="col-sm-4 col-xs-8 text-center">
             <strong>Note:</strong> All item amount showing to kg.
         </div>
-    </div>
+    </div>-->
     <div class="col-xs-12" id="system_jqx_container">
 
     </div>
