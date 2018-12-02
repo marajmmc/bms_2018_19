@@ -1003,7 +1003,7 @@ class Budget_di_budget_target extends Root_Controller
         $data['status_budget_forward']=$item_head['status_budget_forward'];
         $data['date_budget_forwarded']=$time;
         $data['user_budget_forwarded']=$user->user_id;
-        Query_helper::update($this->config->item('table_bms_di_budget_target'),$data,array('id='.$info_budget_target['id']));
+        Query_helper::update($this->config->item('table_bms_di_budget_target'),$data,array('id='.$info_budget_target['id']),false);
 
         $this->db->trans_complete();   //DB Transaction Handle END
         if ($this->db->trans_status() === TRUE)
@@ -1704,7 +1704,7 @@ class Budget_di_budget_target extends Root_Controller
         $data['status_target_zi_forward']=$item_head['status_target_zi_forward'];
         $data['date_target_zi_forwarded']=$time;
         $data['user_target_zi_forwarded']=$user->user_id;
-        Query_helper::update($this->config->item('table_bms_di_budget_target'),$data,array('id='.$info_budget_target['id']));
+        Query_helper::update($this->config->item('table_bms_di_budget_target'),$data,array('id='.$info_budget_target['id']),false);
 
         $this->db->trans_complete();   //DB Transaction Handle END
         if ($this->db->trans_status() === TRUE)
@@ -2145,7 +2145,7 @@ class Budget_di_budget_target extends Root_Controller
                         $data['date_updated_prediction_target']=$time;
                         $data['user_updated_prediction_target']=$user->user_id;
                         $this->db->set('revision_count_target_prediction','revision_count_target_prediction+1',false);
-                        Query_helper::update($this->config->item('table_bms_zi_budget_target_zone'),$data,array('id='.$items_old[$variety_id][$zone_id]['id']));
+                        Query_helper::update($this->config->item('table_bms_zi_budget_target_zone'),$data,array('id='.$items_old[$variety_id][$zone_id]['id']),false);
                     }
                 }
                 else
@@ -2512,7 +2512,7 @@ class Budget_di_budget_target extends Root_Controller
         $data['status_target_zi_next_year_forward']=$item_head['status_target_zi_next_year_forward'];
         $data['date_target_zi_next_year_forwarded']=$time;
         $data['user_target_zi_next_year_forwarded']=$user->user_id;
-        Query_helper::update($this->config->item('table_bms_di_budget_target'),$data,array('id='.$info_budget_target['id']));
+        Query_helper::update($this->config->item('table_bms_di_budget_target'),$data,array('id='.$info_budget_target['id']),false);
 
         $this->db->trans_complete();   //DB Transaction Handle END
         if ($this->db->trans_status() === TRUE)
@@ -2541,7 +2541,7 @@ class Budget_di_budget_target extends Root_Controller
             $data['division_id'] = $division_id;
             $data['date_created'] = time();
             $data['user_created'] = $user->user_id;
-            $id=Query_helper::add($this->config->item('table_bms_di_budget_target'),$data);
+            $id=Query_helper::add($this->config->item('table_bms_di_budget_target'),$data,false);
             $info=Query_helper::get_info($this->config->item('table_bms_di_budget_target'),'*',array('id ='.$id),1);
         }
         return $info;

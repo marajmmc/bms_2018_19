@@ -9,10 +9,28 @@ if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(is
         'type'=>'button',
         'label'=>$CI->lang->line('ACTION_EDIT'),
         'class'=>'button_jqx_action',
-        'data-action-link'=>site_url($CI->controller_url.'/index/add_edit')
+        'data-action-link'=>site_url($CI->controller_url.'/index/add_edit_pricing')
 
     );
+    $action_buttons[]=array
+    (
+        'type'=>'button',
+        'label'=>'Currency Setup',
+        'class'=>'button_jqx_action',
+        'data-action-link'=>site_url($CI->controller_url.'/index/add_edit_currency_rate')
+
+    );
+    $action_buttons[]=array
+    (
+        'type'=>'button',
+        'label'=>'Direct Cost Percentage Setup',
+        'class'=>'button_jqx_action',
+        'data-action-link'=>site_url($CI->controller_url.'/index/add_edit_direct_cost')
+
+    );
+
 }
+
 $action_buttons[]=array
 (
     'label'=>$CI->lang->line("ACTION_REFRESH"),
@@ -47,11 +65,20 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 <?php
                  foreach($system_preference_items as $key=>$item)
                  {
-                    ?>
-                { name: '<?php echo $key ?>', type: 'string' },
-                <?php
-             }
-            ?>
+                    if(($key=='fiscal_year'))
+                    {
+                        ?>
+                        { name: '<?php echo $key ?>', type: 'string' },
+                        <?php
+                    }
+                    else
+                    {
+                        ?>
+                        { name: '<?php echo $key ?>', type: 'number' },
+                        <?php
+                    }
+                 }
+                ?>
             ],
             id: 'id',
             type: 'POST',
@@ -76,7 +103,9 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 columns:
                 [
                     { text: '<?php echo $CI->lang->line('LABEL_FISCAL_YEAR'); ?>', dataField: 'fiscal_year',width:'80',filtertype: 'list'},
-                    { text: 'Pricing time(s)', dataField: 'revision_count', width:'100',filtertype: 'list',cellsAlign:'right'}
+                    { text: 'Variety Pricing Time(s)', dataField: 'revision_pricing_count', width:'150',cellsAlign:'right'},
+                    { text: 'Currency Rate Time(s)', dataField: 'revision_currency_rate_count', width:'150',cellsAlign:'right'},
+                    { text: 'Direct Cost Percentage Time(s)', dataField: 'revision_direct_cost_percentage_count', width:'150',cellsAlign:'right'}
                 ]
             });
     });

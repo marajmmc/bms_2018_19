@@ -168,7 +168,9 @@ class Budget_zi_budget_target extends Root_Controller
         {
             $data['crop_id']= 1;
             $data['crop_name']= 1;
-            $data['revision_count_budget']= 1;
+            $data['number_of_variety_active']= 1;
+            $data['number_of_variety_budgeted']= 1;
+            $data['number_of_variety_budget_due']= 1;
         }
         else if($method=='edit_budget_zone')
         {
@@ -373,7 +375,8 @@ class Budget_zi_budget_target extends Root_Controller
 
         //get budget revision
         $this->db->from($this->config->item('table_bms_zi_budget_target_zone').' budget_target_zone');
-        $this->db->select('MAX(budget_target_zone.revision_count_budget) revision_count_budget');
+        //$this->db->select('MAX(budget_target_zone.revision_count_budget) revision_count_budget');
+        $this->db->select('SUM(CASE WHEN budget_target_zone.quantity_budget>0 then 1 ELSE 0 END) number_of_variety_budgeted',false);
 
         $this->db->join($this->config->item('table_login_setup_classification_varieties').' v','v.id = budget_target_zone.variety_id','INNER');
         $this->db->join($this->config->item('table_login_setup_classification_crop_types').' crop_type','crop_type.id = v.crop_type_id','INNER');
@@ -385,20 +388,20 @@ class Budget_zi_budget_target extends Root_Controller
         $budgeted=array();
         foreach($results as $result)
         {
-            $budgeted[$result['crop_id']]=$result['revision_count_budget'];
+            $budgeted[$result['crop_id']]=$result['number_of_variety_budgeted'];
         }
+        // number of variety
+        $varieties=Budget_helper::get_crop_type_varieties();
         //crop list
         $results=Query_helper::get_info($this->config->item('table_login_setup_classification_crops'),array('id crop_id','name crop_name'),array('status ="'.$this->config->item('system_status_active').'"'),0,0,array('ordering ASC','id ASC'));
         foreach($results as $crop)
         {
             $item=$crop;
+            $item['number_of_variety_active']=sizeof($varieties);
+            $item['number_of_variety_budgeted']=0;
             if(isset($budgeted[$crop['crop_id']]))
             {
-                $item['revision_count_budget']=$budgeted[$crop['crop_id']];
-            }
-            else
-            {
-                $item['revision_count_budget']=0;
+                $item['number_of_variety_budgeted']=$budgeted[$crop['crop_id']];
             }
             $items[]=$item;
         }
@@ -647,7 +650,7 @@ class Budget_zi_budget_target extends Root_Controller
                     $data['date_updated_budget']=$time;
                     $data['user_updated_budget']=$user->user_id;
                     $this->db->set('revision_count_budget','revision_count_budget+1',false);
-                    Query_helper::update($this->config->item('table_bms_zi_budget_target_zone'),$data,array('id='.$items_old[$variety_id]['id']));
+                    Query_helper::update($this->config->item('table_bms_zi_budget_target_zone'),$data,array('id='.$items_old[$variety_id]['id']),false);
                 }
             }
             else
@@ -998,7 +1001,7 @@ class Budget_zi_budget_target extends Root_Controller
         $data['status_budget_forward']=$item_head['status_budget_forward'];
         $data['date_budget_forwarded']=$time;
         $data['user_budget_forwarded']=$user->user_id;
-        Query_helper::update($this->config->item('table_bms_zi_budget_target'),$data,array('id='.$info_budget_target['id']));
+        Query_helper::update($this->config->item('table_bms_zi_budget_target'),$data,array('id='.$info_budget_target['id']),false);
 
         $this->db->trans_complete();   //DB Transaction Handle END
         if ($this->db->trans_status() === TRUE)
@@ -1735,7 +1738,7 @@ class Budget_zi_budget_target extends Root_Controller
         $data['status_target_outlet_forward']=$item_head['status_target_outlet_forward'];
         $data['date_target_outlet_forwarded']=$time;
         $data['user_target_outlet_forwarded']=$user->user_id;
-        Query_helper::update($this->config->item('table_bms_zi_budget_target'),$data,array('id='.$info_budget_target['id']));
+        Query_helper::update($this->config->item('table_bms_zi_budget_target'),$data,array('id='.$info_budget_target['id']),false);
 
         $this->db->trans_complete();   //DB Transaction Handle END
         if ($this->db->trans_status() === TRUE)
@@ -2187,7 +2190,7 @@ class Budget_zi_budget_target extends Root_Controller
                         $data['date_updated_prediction_target']=$time;
                         $data['user_updated_prediction_target']=$user->user_id;
                         $this->db->set('revision_count_target_prediction','revision_count_target_prediction+1',false);
-                        Query_helper::update($this->config->item('table_pos_si_budget_target_outlet'),$data,array('id='.$items_old[$variety_id][$outlet_id]['id']));
+                        Query_helper::update($this->config->item('table_pos_si_budget_target_outlet'),$data,array('id='.$items_old[$variety_id][$outlet_id]['id']),false);
                     }
                 }
                 else
@@ -2552,7 +2555,7 @@ class Budget_zi_budget_target extends Root_Controller
         $data['status_target_outlet_next_year_forward']=$item_head['status_target_outlet_next_year_forward'];
         $data['date_target_outlet_next_year_forwarded']=$time;
         $data['user_target_outlet_next_year_forwarded']=$user->user_id;
-        Query_helper::update($this->config->item('table_bms_zi_budget_target'),$data,array('id='.$info_budget_target['id']));
+        Query_helper::update($this->config->item('table_bms_zi_budget_target'),$data,array('id='.$info_budget_target['id']),false);
 
         $this->db->trans_complete();   //DB Transaction Handle END
         if ($this->db->trans_status() === TRUE)
@@ -2598,7 +2601,7 @@ class Budget_zi_budget_target extends Root_Controller
             $data['zone_id'] = $zone_id;
             $data['date_created'] = time();
             $data['user_created'] = $user->user_id;
-            $id=Query_helper::add($this->config->item('table_bms_zi_budget_target'),$data);
+            $id=Query_helper::add($this->config->item('table_bms_zi_budget_target'),$data,false);
             //$info=Query_helper::get_info($this->config->item('table_bms_zi_budget_target'),'*',array('id ='.$id),1);\
             $this->db->from($this->config->item('table_bms_zi_budget_target').' item');
             $this->db->select('item.*');

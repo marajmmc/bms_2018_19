@@ -42,4 +42,35 @@ class Budget_helper
         }
         return true;
     }
+    public static function get_crop_type_varieties($crop_ids=array(), $crop_type_ids=array(), $variety_ids=array())
+    {
+        $CI =& get_instance();
+        $CI->db->from($CI->config->item('table_login_setup_classification_varieties').' v');
+        $CI->db->select('v.id variety_id,v.name variety_name');
+        $CI->db->join($CI->config->item('table_login_setup_classification_crop_types').' crop_type','crop_type.id = v.crop_type_id','INNER');
+        $CI->db->select('crop_type.id crop_type_id, crop_type.name crop_type_name');
+        $CI->db->join($CI->config->item('table_login_setup_classification_crops').' crop','crop.id = crop_type.crop_id','INNER');
+        $CI->db->select('crop.id crop_id,crop.name crop_name');
+        if($crop_ids)
+        {
+            $CI->db->where_in('crop.id',$crop_ids);
+        }
+        if($crop_type_ids)
+        {
+            $CI->db->where_in('crop_type.id',$crop_type_ids);
+        }
+        if($variety_ids)
+        {
+            $CI->db->where_in('v.id',$variety_ids);
+        }
+        $CI->db->where('v.status',$CI->config->item('system_status_active'));
+        $CI->db->where('v.whose','ARM');
+        $CI->db->order_by('crop.ordering','ASC');
+        $CI->db->order_by('crop.id','ASC');
+        $CI->db->order_by('crop_type.ordering','ASC');
+        $CI->db->order_by('crop_type.id','ASC');
+        $CI->db->order_by('v.ordering','ASC');
+        $CI->db->order_by('v.id','ASC');
+        return $CI->db->get()->result_array();
+    }
 }

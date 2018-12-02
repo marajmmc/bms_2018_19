@@ -352,7 +352,7 @@ class Budget_national_budget_target extends Root_Controller
                         $this->db->set('revision_count_target','revision_count_target+1',false);
                         
                     }
-                    Query_helper::update($this->config->item('table_bms_hom_budget_target_hom'),$data,array('id='.$items_old[$variety_id]['id']));
+                    Query_helper::update($this->config->item('table_bms_hom_budget_target_hom'),$data,array('id='.$items_old[$variety_id]['id']),false);
                 }
             }
             else
@@ -698,7 +698,7 @@ class Budget_national_budget_target extends Root_Controller
         $data['status_target_forward']=$item_head['status_target_forward'];
         $data['date_target_forwarded']=$time;
         $data['user_target_forwarded']=$user->user_id;
-        Query_helper::update($this->config->item('table_bms_hom_budget_target'),$data,array('id='.$get_info_budget_target['id']));
+        Query_helper::update($this->config->item('table_bms_hom_budget_target'),$data,array('id='.$get_info_budget_target['id']),false);
 
         $this->db->trans_complete();   //DB Transaction Handle END
         if ($this->db->trans_status() === TRUE)
