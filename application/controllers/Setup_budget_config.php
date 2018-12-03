@@ -13,6 +13,10 @@ class Setup_budget_config extends Root_Controller
         $this->permissions=User_helper::get_permission(get_class());
         $this->controller_url=strtolower(get_class());
         $this->load->helper('budget');
+        $this->language_config();
+    }
+    private function language_config()
+    {
         $this->lang->language['LABEL_PRICE']='Price';
     }
     public function index($action="list", $id=0)
@@ -25,17 +29,17 @@ class Setup_budget_config extends Root_Controller
         {
             $this->system_get_items();
         }
-        elseif($action=="add_edit_pricing")
+        elseif($action=="add_edit_pricing_packing")
         {
-            $this->system_add_edit_pricing($id);
+            $this->system_add_edit_pricing_packing($id);
         }
-        elseif($action=="get_items_add_edit_pricing")
+        elseif($action=="get_items_add_edit_pricing_packing")
         {
-            $this->system_get_items_add_edit_pricing();
+            $this->system_get_items_add_edit_pricing_packing();
         }
-        elseif($action=="save")
+        elseif($action=="save_pricing_packing")
         {
-            $this->system_save();
+            $this->system_save_pricing_packing();
         }
         elseif($action=="add_edit_currency_rate")
         {
@@ -61,12 +65,15 @@ class Setup_budget_config extends Root_Controller
     private function get_preference_headers($method)
     {
         $data=array();
-        $data['fiscal_year_id']= 1;
-        $data['fiscal_year']= 1;
-        $data['revision_pricing_count']= 1;
-        $data['revision_currency_rate_count']= 1;
-        $data['revision_direct_cost_percentage_count']= 1;
-        if($method=='add_edit_pricing')
+        if($method=='list')
+        {
+            $data['fiscal_year_id']= 1;
+            $data['fiscal_year']= 1;
+            $data['revision_pricing_count']= 1;
+            $data['revision_currency_rate_count']= 1;
+            $data['revision_direct_cost_percentage_count']= 1;
+        }
+        else if($method=='add_edit_pricing_packing')
         {
             $data['crop_name']= 1;
             $data['crop_type_name']= 1;
@@ -86,7 +93,7 @@ class Setup_budget_config extends Root_Controller
         if(isset($this->permissions['action0'])&&($this->permissions['action0']==1))
         {
             $data['system_preference_items']= $this->get_preference_headers($method);
-            $data['title']="Budget Price Configuration";
+            $data['title']="Budget Configurations";
             $ajax['status']=true;
             $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/list",$data,true));
             if($this->message)
@@ -105,13 +112,11 @@ class Setup_budget_config extends Root_Controller
     }
     private function system_get_items()
     {
-        $this->db->from($this->config->item('table_bms_setup_budget_config').' item');
-        $this->db->select('item.fiscal_year_id, item.revision_pricing_count, item.revision_currency_rate_count, item.revision_direct_cost_percentage_count');
-        $results=$this->db->get()->result_array();
-        $varieties=array();
+        $results=Query_helper::get_info($this->config->item('table_bms_setup_budget_config'),'*',array());
+        $budget_configs=array();
         foreach($results as $result)
         {
-            $varieties[$result['fiscal_year_id']]=$result;
+            $budget_configs[$result['fiscal_year_id']]=$result;
         }
 
         $items=array();
@@ -124,19 +129,19 @@ class Setup_budget_config extends Root_Controller
             $data['revision_pricing_count']=0;
             $data['revision_currency_rate_count']=0;
             $data['revision_direct_cost_percentage_count']=0;
-            if(isset($varieties[$fy['id']]))
+            if(isset($budget_configs[$fy['id']]))
             {
-                $data['revision_pricing_count']=$varieties[$fy['id']]['revision_pricing_count'];
-                $data['revision_currency_rate_count']=$varieties[$fy['id']]['revision_currency_rate_count'];
-                $data['revision_direct_cost_percentage_count']=$varieties[$fy['id']]['revision_direct_cost_percentage_count'];
+                $data['revision_pricing_count']=$budget_configs[$fy['id']]['revision_pricing_count'];
+                $data['revision_currency_rate_count']=$budget_configs[$fy['id']]['revision_currency_rate_count'];
+                $data['revision_direct_cost_percentage_count']=$budget_configs[$fy['id']]['revision_direct_cost_percentage_count'];
             }
             $items[]=$data;
         }
         $this->json_return($items);
     }
-    private function system_add_edit_pricing($fiscal_year_id=0)
+    private function system_add_edit_pricing_packing($fiscal_year_id=0)
     {
-        $method='add_edit_pricing';
+        $method='add_edit_pricing_packing';
         if((isset($this->permissions['action1']) && ($this->permissions['action1']==1))||(isset($this->permissions['action2']) && ($this->permissions['action2']==1)))
         {
             if(!($fiscal_year_id>0))
@@ -153,15 +158,15 @@ class Setup_budget_config extends Root_Controller
             $info_budget_config=$this->get_info_budget_config($fiscal_year_id);
             $data['fiscal_year']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id ='.$fiscal_year_id),1);
             $data['system_preference_items']= $this->get_preference_headers($method);
-            $data['title']="Variety Pricing Setup for (".$data['fiscal_year']['name'].') Fiscal Year';
+            $data['title']="Variety Pricing and Packing cost Setup for (".$data['fiscal_year']['name'].') Fiscal Year';
             $data['options']['fiscal_year_id']=$fiscal_year_id;
             $ajax['status']=true;
-            $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/add_edit_pricing",$data,true));
+            $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/add_edit_pricing_packing",$data,true));
             if($this->message)
             {
                 $ajax['system_message']=$this->message;
             }
-            $ajax['system_page_url']=site_url($this->controller_url.'/index/add_edit_pricing/'.$fiscal_year_id);
+            $ajax['system_page_url']=site_url($this->controller_url.'/index/add_edit_pricing_packing/'.$fiscal_year_id);
             $this->json_return($ajax);
         }
         else
@@ -171,7 +176,7 @@ class Setup_budget_config extends Root_Controller
             $this->json_return($ajax);
         }
     }
-    private function system_get_items_add_edit_pricing()
+    private function system_get_items_add_edit_pricing_packing()
     {
         $items=array();
         $fiscal_year_id=$this->input->post('fiscal_year_id');
@@ -185,40 +190,20 @@ class Setup_budget_config extends Root_Controller
         // main data checking
         $info_budget_config=$this->get_info_budget_config($fiscal_year_id);
         //old items
-        $results=Query_helper::get_info($this->config->item('table_bms_setup_budget_config_details'),'*',array('fiscal_year_id ='.$fiscal_year_id));
+        $results=Query_helper::get_info($this->config->item('table_bms_setup_budget_config_variety_pricing_packing'),'*',array('fiscal_year_id ='.$fiscal_year_id));
         if(!$results)
         {
-            $results=Query_helper::get_info($this->config->item('table_bms_setup_budget_config_details'),'*',array('fiscal_year_id ='.($fiscal_year_id-1)),0,1,array('fiscal_year_id DESC'));
+            $results=Query_helper::get_info($this->config->item('table_bms_setup_budget_config_variety_pricing_packing'),'*',array('fiscal_year_id ='.($fiscal_year_id-1)),0,1,array('fiscal_year_id DESC'));
         }
         $items_old=array();
         foreach($results as $result)
         {
             $items_old[$result['variety_id']]=$result;
         }
-
-        //variety lists
-        /*$this->db->from($this->config->item('table_login_setup_classification_varieties').' v');
-        $this->db->select('v.id variety_id,v.name variety_name');
-
-        $this->db->join($this->config->item('table_login_setup_classification_crop_types').' crop_type','crop_type.id = v.crop_type_id','INNER');
-        $this->db->select('crop_type.name crop_type_name');
-
-        $this->db->join($this->config->item('table_login_setup_classification_crops').' crop','crop.id = crop_type.crop_id','INNER');
-        $this->db->select('crop.name crop_name');
-
-        $this->db->where('v.status',$this->config->item('system_status_active'));
-        $this->db->where('v.whose','ARM');
-        $this->db->order_by('crop.ordering','ASC');
-        $this->db->order_by('crop.id','ASC');
-        $this->db->order_by('crop_type.ordering','ASC');
-        $this->db->order_by('crop_type.id','ASC');
-        $this->db->order_by('v.ordering','ASC');
-        $this->db->order_by('v.id','ASC');
-        $results=$this->db->get()->result_array();*/
         $results = Budget_helper::get_crop_type_varieties();
         foreach($results as $result)
         {
-            $info=$this->initialize_row_add_edit($result);
+            $info=$this->initialize_row_add_edit_pricing_packing($result);
             if(isset($items_old[$result['variety_id']]))
             {
                 $info['amount_price']=$items_old[$result['variety_id']]['amount_price'];
@@ -230,19 +215,21 @@ class Setup_budget_config extends Root_Controller
 
         $this->json_return($items);
     }
-    private function initialize_row_add_edit($info)
+    private function initialize_row_add_edit_pricing_packing($info)
     {
-        $row=array();
+        $method='add_edit_pricing_packing';
+        $row=$this->get_preference_headers($method);
+        foreach($row  as $key=>$r)
+        {
+            $row[$key]=0;
+        }
         $row['crop_name']=$info['crop_name'];
         $row['crop_type_name']=$info['crop_type_name'];
         $row['variety_name']=$info['variety_name'];
         $row['variety_id']=$info['variety_id'];
-        $row['amount_price']=0;
-        $row['amount_packing_cost']=0;
-        $row['amount_sticker_cost']=0;
         return $row;
     }
-    private function system_save()
+    private function system_save_pricing_packing()
     {
         $user = User_helper::get_user();
         $time=time();
@@ -263,7 +250,7 @@ class Setup_budget_config extends Root_Controller
         }
         $info_budget_config=$this->get_info_budget_config($item_head['fiscal_year_id']);
         //old items
-        $results=Query_helper::get_info($this->config->item('table_bms_setup_budget_config_details'),'*',array('fiscal_year_id ='.$item_head['fiscal_year_id']));
+        $results=Query_helper::get_info($this->config->item('table_bms_setup_budget_config_variety_pricing_packing'),'*',array('fiscal_year_id ='.$item_head['fiscal_year_id']));
         $items_old=array();
         foreach($results as $result)
         {
@@ -280,7 +267,7 @@ class Setup_budget_config extends Root_Controller
                     $data['amount_price']=$price['amount_price'];
                     $data['amount_packing_cost']=$price['amount_packing_cost'];
                     $data['amount_sticker_cost']=$price['amount_sticker_cost'];
-                    Query_helper::update($this->config->item('table_bms_setup_budget_config_details'),$data,array('id='.$items_old[$variety_id]['id']),false);
+                    Query_helper::update($this->config->item('table_bms_setup_budget_config_variety_pricing_packing'),$data,array('id='.$items_old[$variety_id]['id']),false);
                 }
             }
             else
@@ -291,7 +278,7 @@ class Setup_budget_config extends Root_Controller
                 $data['amount_price']=$price['amount_price'];
                 $data['amount_packing_cost']=$price['amount_packing_cost'];
                 $data['amount_sticker_cost']=$price['amount_sticker_cost'];
-                Query_helper::add($this->config->item('table_bms_setup_budget_config_details'),$data,false);
+                Query_helper::add($this->config->item('table_bms_setup_budget_config_variety_pricing_packing'),$data,false);
             }
         }
         $data=array();
@@ -325,12 +312,16 @@ class Setup_budget_config extends Root_Controller
             $data['item']=$this->get_info_budget_config($fiscal_year_id);
             if(!$data['item']['amount_currency_rate'])
             {
-                $before_year_info=$this->get_info_budget_config(($fiscal_year_id-1));
-                $data['item']['amount_currency_rate']=$before_year_info['amount_currency_rate'];
+                $before_year_info=Query_helper::get_info($this->config->item('table_bms_setup_budget_config'),'*',array('fiscal_year_id ='.($fiscal_year_id-1)),1);
+
+                if($before_year_info)
+                {
+                    $data['item']['amount_currency_rate']=$before_year_info['amount_currency_rate'];
+                }
             }
             $data['currencies']=Query_helper::get_info($this->config->item('table_login_setup_currency'),'*',array('status !="'.$this->config->item('system_status_delete').'"'));
             $data['fiscal_year']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id ='.$fiscal_year_id),1);
-            $data['title']="Currency Price Setup For (".$data['fiscal_year']['name'].') Fiscal Year';
+            $data['title']="Currency Rate Setup For (".$data['fiscal_year']['name'].') Fiscal Year';
             //$data['item']['fiscal_year_id']=$fiscal_year_id;
             $ajax['status']=true;
             $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/add_edit_currency_rate",$data,true));
@@ -403,12 +394,17 @@ class Setup_budget_config extends Root_Controller
             $data['item']=$this->get_info_budget_config($fiscal_year_id);
             if(!$data['item']['amount_direct_cost_percentage'])
             {
-                $before_year_info=$this->get_info_budget_config(($fiscal_year_id-1));
-                $data['item']['amount_direct_cost_percentage']=$before_year_info['amount_direct_cost_percentage'];
+                $before_year_info=Query_helper::get_info($this->config->item('table_bms_setup_budget_config'),'*',array('fiscal_year_id ='.($fiscal_year_id-1)),1);
+
+                if($before_year_info)
+                {
+                    $data['item']['amount_direct_cost_percentage']=$before_year_info['amount_direct_cost_percentage'];
+                }
+
             }
             $data['direct_cost_items']=Query_helper::get_info($this->config->item('table_login_setup_direct_cost_items'),'*',array('status !="'.$this->config->item('system_status_delete').'"'));
             $data['fiscal_year']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id ='.$fiscal_year_id),1);
-            $data['title']="Direct Cost Setup For (".$data['fiscal_year']['name'].') Fiscal Year';
+            $data['title']="Direct Cost Percentage Setup For (".$data['fiscal_year']['name'].') Fiscal Year';
             //$data['item']['fiscal_year_id']=$fiscal_year_id;
             $ajax['status']=true;
             $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/add_edit_direct_cost",$data,true));

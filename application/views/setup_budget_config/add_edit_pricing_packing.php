@@ -53,7 +53,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             <label class="control-label"><?php echo $fiscal_year['name'];?></label>
         </div>
     </div>
-    <form id="save_form_jqx" action="<?php echo site_url($CI->controller_url.'/index/save');?>" method="post">
+    <form id="save_form_jqx" action="<?php echo site_url($CI->controller_url.'/index/save_pricing_packing');?>" method="post">
         <input type="hidden" name="item[fiscal_year_id]" value="<?php echo $options['fiscal_year_id']; ?>" />
         <div id="jqx_inputs">
         </div>
@@ -86,7 +86,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             }
         });
 
-        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_add_edit_pricing');?>";
+        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_add_edit_pricing_packing');?>";
 
         // prepare the data
         var source =
@@ -159,7 +159,6 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 selectionmode: 'singlerow',
                 altrows: true,
                 rowsheight: 35,
-                columnsheight: 40,
                 editable:true,
                 columns:
                 [
@@ -179,7 +178,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                             return editor.find('input').val();
                         }
                     },
-                    { text: 'Packing Price',datafield: 'amount_packing_cost', width: 100,filterable: false,cellsrenderer: cellsrenderer,cellsalign: 'right',columntype: 'custom',
+                    { text: 'Packing Cost',datafield: 'amount_packing_cost', width: 100,filterable: false,cellsrenderer: cellsrenderer,cellsalign: 'right',columntype: 'custom',
                         initeditor: function (row, cellvalue, editor, celltext, pressedkey)
                         {
                             editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');
@@ -192,7 +191,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                             return editor.find('input').val();
                         }
                     },
-                    { text: 'Sticker Price',datafield: 'amount_sticker_cost', width: 100,filterable: false,cellsrenderer: cellsrenderer,cellsalign: 'right',columntype: 'custom',
+                    { text: 'Sticker Cost',datafield: 'amount_sticker_cost', width: 100,filterable: false,cellsrenderer: cellsrenderer,cellsalign: 'right',columntype: 'custom',
                         initeditor: function (row, cellvalue, editor, celltext, pressedkey)
                         {
                             editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');
