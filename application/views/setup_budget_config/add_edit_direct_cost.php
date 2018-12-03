@@ -63,7 +63,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                                 }
                                 ?>
                             </td>
-                            <td><input type="text" name="items[<?php echo $items['id']?>][amount_direct_cost_percentage]" id="row_per_page" class="form-control float_type_positive" value="<?php echo isset($amount_direct_cost_percentage[$items['id']])?$amount_direct_cost_percentage[$items['id']]['amount_direct_cost_percentage']:'';?>" /></td>
+                            <td><input type="text" name="items[<?php echo $items['id']?>]" id="row_per_page" class="form-control float_type_positive" value="<?php echo isset($amount_direct_cost_percentage[$items['id']])?$amount_direct_cost_percentage[$items['id']]:'';?>" /></td>
                         </tr>
                     <?php
                     }

@@ -4,8 +4,73 @@ class Transfer extends CI_Controller
 {
     public function index()
     {
+        //$this->configs();
         //$this->hom();
         //$this->di();
+    }
+    private function configs()
+    {
+        $source_tables=array(
+            'dc_percentage'=>'arm_ems.bms_mgt_direct_cost_percentage',
+            'variety_price'=>'arm_login_2018_19.login_setup_classification_varieties'
+        );
+        $destination_tables=array(
+            'budget_config'=>'arm_bms_2018_19.bms_setup_budget_config',
+            'variety_pricing_packing'=>'arm_bms_2018_19.bms_setup_budget_config_variety_pricing_packing'
+        );
+        $currency_rates=array();
+        $currency_rates[1]=83;
+        $currency_rates[2]=95;
+        $results=Query_helper::get_info($source_tables['dc_percentage'],'*',array('fiscal_year_id = 2'),0,0,array('item_id ASC'));
+        $dc_percentage=array();
+        foreach($results as $result)
+        {
+            $dc_percentage[$result['item_id']]=$result['percentage'];
+        }
+        $results=Query_helper::get_info($source_tables['variety_price'],'*',array('whose = "ARM"','price_kg >0','status ="Active"'),0,0,array('id ASC'));
+        $variety_prices=array();
+        foreach($results as $result)
+        {
+            $variety_prices[$result['id']]=$result;
+        }
+        $time=time();
+        $this->db->trans_start();  //DB Transaction Handle START
+        //main table data
+        $data=array();
+        $data['fiscal_year_id'] = 4;
+        $data['date_created'] = $time;
+        $data['user_created'] = 1;
+        $data['revision_pricing_count'] =1;
+        $data['date_pricing_updated'] = $time;
+        $data['user_pricing_updated'] = 2;
+        $data['amount_currency_rate'] = json_encode($currency_rates);
+        $data['revision_currency_rate_count'] =1;
+        $data['date_currency_rate'] = $time;
+        $data['user_currency_rate'] = 2;
+        $data['amount_direct_cost_percentage'] = json_encode($dc_percentage);
+        $data['revision_direct_cost_percentage_count'] =1;
+        $data['date_direct_cost_percentage'] = $time;
+        $data['user_direct_cost_percentage'] = 2;
+        Query_helper::add($destination_tables['budget_config'],$data,false);
+        foreach($variety_prices as $result)
+        {
+            $data=array();
+            $data['fiscal_year_id'] = 4;
+            $data['variety_id'] = $result['id'];
+            $data['amount_price'] = $result['price_kg'];
+            Query_helper::add($destination_tables['variety_pricing_packing'],$data,false);
+        }
+        $this->db->trans_complete();   //DB Transaction Handle END
+        if ($this->db->trans_status() === TRUE)
+        {
+            echo 'Success Transfer Configs';
+        }
+        else
+        {
+            echo 'Failed Transfer Configs';
+        }
+
+
     }
     private function hom()
     {

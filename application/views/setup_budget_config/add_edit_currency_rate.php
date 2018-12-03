@@ -63,7 +63,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                                 }
                                 ?>
                             </td>
-                            <td><input type="text" name="items[<?php echo $currency['id']?>][amount_currency_rate]" id="row_per_page" class="form-control float_type_positive" value="<?php echo isset($amount_currency_rate[$currency['id']])?$amount_currency_rate[$currency['id']]['amount_currency_rate']:'';?>" /></td>
+                            <td><input type="text" name="items[<?php echo $currency['id']?>]" id="row_per_page" class="form-control float_type_positive" value="<?php echo isset($amount_currency_rate[$currency['id']])?$amount_currency_rate[$currency['id']]:'';?>" /></td>
                         </tr>
                     <?php
                     }

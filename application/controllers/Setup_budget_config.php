@@ -475,8 +475,8 @@ class Setup_budget_config extends Root_Controller
             $user = User_helper::get_user();
             $data=array();
             $data['fiscal_year_id'] = $fiscal_year_id;
-            $data['date_pricing_created'] = time();
-            $data['user_pricing_created'] = $user->user_id;
+            $data['date_created'] = time();
+            $data['user_created'] = $user->user_id;
             $id=Query_helper::add($this->config->item('table_bms_setup_budget_config'),$data,false);
             $info=Query_helper::get_info($this->config->item('table_bms_setup_budget_config'),'*',array('id ='.$id),1);
         }
