@@ -116,13 +116,22 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             dataType: "json",
             dataFields: [
                 <?php
-                 foreach($system_preference_items as $key=>$item)
-                 {
-                    ?>
-                { name: '<?php echo $key ?>', type: 'string' },
-                <?php
-             }
-            ?>
+                foreach($system_preference_items as $key=>$item)
+                {
+                    if(($key=='id'))
+                    {
+                        ?>
+                        { name: '<?php echo $key ?>', type: 'number' },
+                        <?php
+                    }
+                    else
+                    {
+                        ?>
+                        { name: '<?php echo $key ?>', type: 'string' },
+                        <?php
+                    }
+                }
+                ?>
             ],
             id: 'id',
             type: 'POST',
@@ -134,23 +143,27 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         $("#system_jqx_container").jqxGrid(
             {
                 width: '100%',
+                height: '350px',
                 source: dataAdapter,
                 filterable: true,
                 sortable: true,
                 showfilterrow: true,
                 columnsresize: true,
+                pageable: true,
+                pagesize:50,
+                pagesizeoptions: ['50', '100', '200','300','500','1000','5000'],
                 selectionmode: 'singlerow',
                 altrows: true,
-                height: '250px',
+                rowsheight: 35,
                 columnsreorder: true,
                 enablebrowserselection: true,
                 columns:
                 [
                     { text: '<?php echo $CI->lang->line('LABEL_FISCAL_YEAR'); ?>', dataField: 'fiscal_year',width:'80',filtertype: 'list'},
                     { text: '<?php echo $CI->lang->line('LABEL_ZONE_NAME'); ?>', dataField: 'zone_name',width:'200',filtertype: 'list'},
-                    { text: '<?php echo $CI->lang->line('LABEL_STATUS_BUDGET_FORWARD'); ?>', dataField: 'status_budget_forward', width:'100',filtertype: 'list'},
-                    { text: '(Outlet) <?php echo $CI->lang->line('LABEL_STATUS_TARGET_FORWARD'); ?>', dataField: 'status_target_outlet_forward', width:'150',filtertype: 'list'},
-                    { text: '(Outlet NXT 3Y) <?php echo $CI->lang->line('LABEL_STATUS_TARGET_FORWARD'); ?>', dataField: 'status_target_outlet_next_year_forward', width:'150',filtertype: 'list'}
+                    { text: '<?php echo $CI->lang->line('LABEL_STATUS_BUDGET_FORWARD'); ?>', dataField: 'status_budget_forward', width:'200',filtertype: 'list'},
+                    { text: '(Outlet) <?php echo $CI->lang->line('LABEL_STATUS_TARGET_FORWARD'); ?>', dataField: 'status_target_outlet_forward', width:'200',filtertype: 'list'},
+                    { text: '(Outlet NXT 3Y) <?php echo $CI->lang->line('LABEL_STATUS_TARGET_FORWARD'); ?>', dataField: 'status_target_outlet_next_year_forward', width:'200',filtertype: 'list'}
                 ]
             });
     });

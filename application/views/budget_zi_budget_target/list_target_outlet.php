@@ -19,6 +19,25 @@ if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(is
     );
 }
 
+if(isset($CI->permissions['action4']) && ($CI->permissions['action4']==1))
+{
+    $action_buttons[]=array(
+        'type'=>'button',
+        'label'=>$CI->lang->line("ACTION_PRINT"),
+        'class'=>'button_action_download',
+        'data-title'=>"Print",
+        'data-print'=>true
+    );
+}
+if(isset($CI->permissions['action5']) && ($CI->permissions['action5']==1))
+{
+    $action_buttons[]=array(
+        'type'=>'button',
+        'label'=>$CI->lang->line("ACTION_DOWNLOAD"),
+        'class'=>'button_action_download',
+        'data-title'=>"Download"
+    );
+}
 $action_buttons[]=array
 (
     'label'=>$CI->lang->line("ACTION_REFRESH"),
@@ -78,7 +97,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 <?php
                  foreach($system_preference_items as $key=>$item)
                  {
-                    if($key=='id')
+                    if(($key=='id') || ($key=='number_of_variety_active') || ($key=='number_of_variety_targeted') || ($key=='number_of_variety_target_due'))
                     {
                         ?>
                         { name: '<?php echo $key ?>', type: 'number' },
@@ -98,7 +117,36 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             url: url,
             data:JSON.parse('<?php echo json_encode($options);?>')
         };
-
+        var cellsrenderer = function(row, column, value, defaultHtml, columnSettings, record)
+        {
+            var element = $(defaultHtml);
+            var number_of_variety_target_due=0;
+            if(column=='number_of_variety_active' || column=='number_of_variety_targeted')
+            {
+                if(value==0)
+                {
+                    element.html('');
+                }
+                else if(value>0)
+                {
+                    element.html(get_string_quantity(value));
+                }
+            }
+            else if(column=='number_of_variety_target_due')
+            {
+                number_of_variety_target_due=(parseFloat(record['number_of_variety_active'])-parseFloat(record['number_of_variety_targeted']));
+                if(number_of_variety_target_due==0)
+                {
+                    element.html('');
+                }
+                else if(number_of_variety_target_due>0)
+                {
+                    element.html(get_string_quantity(number_of_variety_target_due));
+                }
+            }
+            element.css({'margin': '0px','width': '100%', 'height': '100%',padding:'5px','line-height':'25px'});
+            return element[0].outerHTML;
+        };
         var dataAdapter = new $.jqx.dataAdapter(source);
         // create jqxgrid.
         $("#system_jqx_container").jqxGrid(
@@ -121,7 +169,13 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 [
                     { text: '<?php echo $CI->lang->line('LABEL_ID'); ?>', dataField: 'crop_id',width:'50',cellsAlign:'right'},
                     { text: '<?php echo $CI->lang->line('LABEL_CROP_NAME'); ?>', dataField: 'crop_name', width:100},
-                    { text: 'Targeted Time(s)', dataField: 'revision_count_target', width:'100',filtertype: 'list',cellsAlign:'right'}
+                    { columngroup: 'number_of_variety',text: 'Active', dataField: 'number_of_variety_active',width:'100', cellsalign:'right', align:'right',cellsrenderer: cellsrenderer},
+                    { columngroup: 'number_of_variety',text: 'Targeted', dataField: 'number_of_variety_targeted',width:'100', cellsalign:'right', align:'right',cellsrenderer: cellsrenderer},
+                    { columngroup: 'number_of_variety',text: 'Due Target', dataField: 'number_of_variety_target_due',width:'100', cellsalign:'right', align:'right',cellsrenderer: cellsrenderer}
+                ],
+                columngroups:
+                [
+                    { text: 'Number of Variety', align: 'center', name: 'number_of_variety' }
                 ]
             });
     });

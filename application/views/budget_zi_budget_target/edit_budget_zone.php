@@ -114,23 +114,32 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 <?php
                  foreach($system_preference_items as $key=>$item)
                  {
+                    if(($key=='crop_type_name') || ($key=='variety_name'))
+                    {
                     ?>
-                { name: '<?php echo $key ?>', type: 'string' },
-                <?php
-            }
-            foreach($outlets as $outlet)
-            {
+                        { name: '<?php echo $key ?>', type: 'string' },
+                        <?php
+                    }
+                    else
+                    {
+                        ?>
+                        { name: '<?php echo $key ?>', type: 'number' },
+                        <?php
+                    }
+                }
+                foreach($outlets as $outlet)
+                {
                     ?>
-                { name: 'quantity_budget_outlet_<?php echo $outlet['outlet_id']?>', type: 'string' },
-                <?php
-            }
-            foreach($fiscal_years_previous_sales as $fy)
-            {
+                    { name: 'quantity_budget_outlet_<?php echo $outlet['outlet_id']?>', type: 'string' },
+                    <?php
+                }
+                foreach($fiscal_years_previous_sales as $fy)
+                {
                     ?>
-                { name: 'quantity_sale_<?php echo $fy['id']; ?>', type: 'string' },
-                <?php
-            }
-            ?>
+                    { name: 'quantity_sale_<?php echo $fy['id']; ?>', type: 'string' },
+                    <?php
+                }
+                ?>
             ],
             id: 'id',
             type: 'POST',
@@ -174,7 +183,10 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             }
             else if(column=='quantity_budget')
             {
-
+                if(value==0)
+                {
+                    value=''
+                }
                 element.html('<div class="jqxgrid_input">'+value+'</div>');
             }
             else if(column.substr(0,14)=='quantity_sale_')
@@ -190,6 +202,21 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             }
             element.css({'margin': '0px','width': '100%', 'height': '100%',padding:'5px','line-height':'25px'});
             return element[0].outerHTML;
+        };
+        var aggregatesrenderer=function (aggregates)
+        {
+            //console.log('here');
+            return '<div style="position: relative; margin: 0px;padding: 5px;width: 100%;height: 100%; overflow: hidden;background-color:'+system_report_color_grand+';">' +aggregates['sum']+'</div>';
+
+        };
+        var aggregatesrenderer_kg=function (aggregates)
+        {
+            var text='';
+            if(!((aggregates['sum']=='0.000')||(aggregates['sum']=='')))
+            {
+                text=get_string_kg(aggregates['sum']);
+            }
+            return '<div style="position: relative; margin: 0px;padding: 5px;width: 100%;height: 100%; overflow: hidden;background-color:'+system_report_color_grand+';">' +text+'</div>';
         };
 
         var dataAdapter = new $.jqx.dataAdapter(source);
@@ -207,8 +234,10 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 enablebrowserselection: true,
                 selectionmode: 'singlerow',
                 altrows: true,
+                showaggregates: true,
+                showstatusbar: true,
                 rowsheight: 35,
-                columnsheight: 40,
+                /*columnsheight: 40,*/
                 editable:true,
                 columns:
                 [
@@ -216,11 +245,11 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                     { text: '<?php echo $CI->lang->line('LABEL_VARIETY_NAME'); ?>', dataField: 'variety_name',width:'150',renderer: header_render,pinned:true,editable:false},
                     <?php
                         for($i=sizeof($fiscal_years_previous_sales)-1;$i>=0;$i--)
-                            {?>{columngroup: 'previous_years',text: '<?php echo $fiscal_years_previous_sales[$i]['name']; ?>', dataField: 'quantity_sale_<?php echo $fiscal_years_previous_sales[$i]['id']; ?>',width:'100',filterable: false,cellsrenderer: cellsrenderer,align:'center',cellsAlign:'right',editable:false},
+                            {?>{columngroup: 'previous_years',text: '<?php echo $fiscal_years_previous_sales[$i]['name']; ?>', dataField: 'quantity_sale_<?php echo $fiscal_years_previous_sales[$i]['id']; ?>',width:'100',filterable: false,cellsrenderer: cellsrenderer,align:'center',cellsAlign:'right',editable:false,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
                         <?php
                         }
                     ?>
-                    { text: '<?php echo $CI->lang->line('LABEL_QUANTITY_BUDGET_KG'); ?>',datafield: 'quantity_budget', width: 100,filterable: false,renderer: header_render,cellsrenderer: cellsrenderer,cellsalign: 'right',columntype: 'custom',
+                    { text: '<?php echo $CI->lang->line('LABEL_QUANTITY_BUDGET_KG'); ?>',datafield: 'quantity_budget', width: 100,filterable: false,renderer: header_render,cellsrenderer: cellsrenderer,cellsalign: 'right',aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg,columntype: 'custom',
                         initeditor: function (row, cellvalue, editor, celltext, pressedkey)
                         {
                             editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');
@@ -233,14 +262,14 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                             return editor.find('input').val();
                         }
                     },
-                    { text: 'Total</br>Budget', dataField: 'quantity_budget_outlet_total',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
+                    { text: 'Total</br>Budget', dataField: 'quantity_budget_outlet_total',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
                     <?php
                     $serial=0;
                     foreach($outlets as $outlet)
                     {
                     ++$serial;
                     ?>
-                    { text: '<?php echo $serial.'. '.$outlet['outlet_name']?>',renderer: header_render, dataField: 'quantity_budget_outlet_<?php echo $outlet['outlet_id']?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
+                    { text: '<?php echo $serial.'. '.$outlet['outlet_name']?>',renderer: header_render, dataField: 'quantity_budget_outlet_<?php echo $outlet['outlet_id']?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
                     <?php
                     }
                     ?>
@@ -248,7 +277,8 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 ],
                 columngroups:
                 [
-                    { text: '<?php echo $CI->lang->line('LABEL_PREVIOUS_YEARS'); ?> Achieved', align: 'center', name: 'previous_years' }
+                    { text: '<?php echo $CI->lang->line('LABEL_PREVIOUS_YEARS'); ?> Achieved', align: 'center', name: 'previous_years' },
+                    { text: 'Outlet Budget', align: 'center', name: 'budget_outlet_list' }
                 ]
             });
     });

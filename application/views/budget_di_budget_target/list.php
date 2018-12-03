@@ -75,6 +75,25 @@ if(isset($CI->permissions['action0']) && ($CI->permissions['action0']==1))
         'data-action-link'=>site_url($CI->controller_url.'/index/details')
     );
 }
+if(isset($CI->permissions['action4']) && ($CI->permissions['action4']==1))
+{
+    $action_buttons[]=array(
+        'type'=>'button',
+        'label'=>$CI->lang->line("ACTION_PRINT"),
+        'class'=>'button_action_download',
+        'data-title'=>"Print",
+        'data-print'=>true
+    );
+}
+if(isset($CI->permissions['action5']) && ($CI->permissions['action5']==1))
+{
+    $action_buttons[]=array(
+        'type'=>'button',
+        'label'=>$CI->lang->line("ACTION_DOWNLOAD"),
+        'class'=>'button_action_download',
+        'data-title'=>"Download"
+    );
+}
 $action_buttons[]=array
 (
     'label'=>$CI->lang->line("ACTION_REFRESH"),
@@ -109,11 +128,20 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 <?php
                  foreach($system_preference_items as $key=>$item)
                  {
-                    ?>
-                { name: '<?php echo $key ?>', type: 'string' },
-                <?php
-             }
-            ?>
+                    if(($key=='id'))
+                    {
+                        ?>
+                        { name: '<?php echo $key ?>', type: 'number' },
+                        <?php
+                    }
+                    else
+                    {
+                        ?>
+                        { name: '<?php echo $key ?>', type: 'string' },
+                        <?php
+                    }
+                 }
+                ?>
             ],
             id: 'id',
             type: 'POST',
@@ -125,21 +153,25 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         $("#system_jqx_container").jqxGrid(
         {
             width: '100%',
+            height: '350px',
             source: dataAdapter,
             filterable: true,
             sortable: true,
             showfilterrow: true,
             columnsresize: true,
+            pageable: true,
+            pagesize:50,
+            pagesizeoptions: ['50', '100', '200','300','500','1000','5000'],
             selectionmode: 'singlerow',
             altrows: true,
-            height: '250px',
+            rowsheight: 35,
             columnsreorder: true,
             enablebrowserselection: true,
             columns:
             [
                 { text: '<?php echo $CI->lang->line('LABEL_FISCAL_YEAR'); ?>', dataField: 'fiscal_year',width:'80',filtertype: 'list'},
                 { text: '<?php echo $CI->lang->line('LABEL_DIVISION_NAME'); ?>', dataField: 'division_name',width:'200',filtertype: 'list'},
-                { text: '<?php echo $CI->lang->line('LABEL_STATUS_BUDGET_FORWARD'); ?>', dataField: 'status_budget_forward', width:'100',filtertype: 'list'},
+                { text: '<?php echo $CI->lang->line('LABEL_STATUS_BUDGET_FORWARD'); ?>', dataField: 'status_budget_forward', width:'150',filtertype: 'list'},
                 { text: '(ZI) <?php echo $CI->lang->line('LABEL_STATUS_TARGET_FORWARD'); ?>', dataField: 'status_target_zi_forward', width:'150',filtertype: 'list'},
                 { text: '(ZI NXT 3Y) <?php echo $CI->lang->line('LABEL_STATUS_TARGET_FORWARD'); ?>', dataField: 'status_target_zi_next_year_forward', width:'150',filtertype: 'list'}
             ]

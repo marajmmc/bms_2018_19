@@ -169,7 +169,9 @@ class Budget_di_budget_target extends Root_Controller
         {
             $data['crop_id']= 1;
             $data['crop_name']= 1;
-            $data['revision_count_budget']= 1;
+            $data['number_of_variety_active']= 1;
+            $data['number_of_variety_budgeted']= 1;
+            $data['number_of_variety_budget_due']= 1;
         }
         else if($method=='edit_budget_division')
         {
@@ -345,8 +347,8 @@ class Budget_di_budget_target extends Root_Controller
                 $this->json_return($ajax);
             }
             //validation forward
-            $info_budget_target=$this->get_info_budget_target($fiscal_year_id,$division_id);
-            if(($info_budget_target['status_budget_forward']==$this->config->item('system_status_forwarded')))
+            $info_budget=$this->get_info_budget_target($fiscal_year_id,$division_id);
+            if(($info_budget['status_budget_forward']==$this->config->item('system_status_forwarded')))
             {
                 if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
                 {
@@ -386,7 +388,7 @@ class Budget_di_budget_target extends Root_Controller
 
         //get budget revision
         $this->db->from($this->config->item('table_bms_di_budget_target_division').' budget_target_division');
-        $this->db->select('MAX(budget_target_division.revision_count_budget) revision_count_budget');
+        $this->db->select('SUM(CASE WHEN budget_target_division.quantity_budget>0 then 1 ELSE 0 END) number_of_variety_budgeted',false);
 
         $this->db->join($this->config->item('table_login_setup_classification_varieties').' v','v.id = budget_target_division.variety_id','INNER');
         $this->db->join($this->config->item('table_login_setup_classification_crop_types').' crop_type','crop_type.id = v.crop_type_id','INNER');
@@ -398,20 +400,34 @@ class Budget_di_budget_target extends Root_Controller
         $budgeted=array();
         foreach($results as $result)
         {
-            $budgeted[$result['crop_id']]=$result['revision_count_budget'];
+            $budgeted[$result['crop_id']]=$result['number_of_variety_budgeted'];
         }
-        //crop list
-        $results=Query_helper::get_info($this->config->item('table_login_setup_classification_crops'),array('id crop_id','name crop_name'),array('status ="'.$this->config->item('system_status_active').'"'),0,0,array('ordering ASC','id ASC'));
-        foreach($results as $crop)
+
+        $varieties=Budget_helper::get_crop_type_varieties();
+        $crops=array();
+        foreach($varieties as $variety)
         {
-            $item=$crop;
-            if(isset($budgeted[$crop['crop_id']]))
+            $crops[$variety['crop_id']]['crop_id']=$variety['crop_id'];
+            $crops[$variety['crop_id']]['crop_name']=$variety['crop_name'];
+            if(isset($crops[$variety['crop_id']]['number_of_variety_active']))
             {
-                $item['revision_count_budget']=$budgeted[$crop['crop_id']];
+                $crops[$variety['crop_id']]['number_of_variety_active']+=1;
             }
             else
             {
-                $item['revision_count_budget']=0;
+                $crops[$variety['crop_id']]['number_of_variety_active']=1;
+            }
+        }
+        //crop list
+        //$results=Query_helper::get_info($this->config->item('table_login_setup_classification_crops'),array('id crop_id','name crop_name'),array('status ="'.$this->config->item('system_status_active').'"'),0,0,array('ordering ASC','id ASC'));
+        foreach($crops as $crop)
+        {
+            $item=$crop;
+            $item['number_of_variety_active']=$crop['number_of_variety_active'];
+            $item['number_of_variety_budgeted']=0;
+            if(isset($budgeted[$crop['crop_id']]))
+            {
+                $item['number_of_variety_budgeted']=$budgeted[$crop['crop_id']];
             }
             $items[]=$item;
         }

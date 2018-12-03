@@ -2,13 +2,13 @@
 // Dealer Monthly Budget
 $lang['LABEL_DEALER_NAME']='Dealer';
 $lang['LABEL_QUANTITY_BUDGET_KG'] = 'Budget Qtn(kg)';
-$lang['LABEL_STATUS_BUDGET_FORWARD'] = 'Budget Status';
+$lang['LABEL_STATUS_BUDGET_FORWARD'] = 'Budget Forward Status';
 $lang['LABEL_REVISION_COUNT_BUDGET'] = 'Budgeted time(s)';
 $lang['LABEL_STATUS_BUDGET_QUANTITY_CONFIRM'] = 'Budget Quantity Confirm Status';
 $lang['LABEL_ALL_ITEM_SHOWING_KG'] = 'All item amount showing to kg.';
 
 // FOR TARGET
-$lang['LABEL_STATUS_TARGET_FORWARD'] = 'Target Status';
+$lang['LABEL_STATUS_TARGET_FORWARD'] = 'Target Forward Status';
 
 // REPORT VARIETY WISE BUDGET TARGET
 $lang['LABEL_PRICE_UNIT_KG_AMOUNT'] = 'Unit Price(kg)';

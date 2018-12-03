@@ -137,6 +137,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             foreach($outlets as $outlet)
             {
                     ?>
+                { name: 'quantity_budget_outlet_<?php echo $outlet['outlet_id']?>', type: 'number' },
                 { name: 'quantity_target_outlet_<?php echo $outlet['outlet_id']?>', type: 'number' },
                 <?php
             }
@@ -171,7 +172,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         var cellsrenderer = function(row, column, value, defaultHtml, columnSettings, record)
         {
             var element = $(defaultHtml);
-            if(column=='quantity_target_zi')
+            if(column=='quantity_target_zi' || column=='quantity_budget_zi' || column.substr(0,23)=='quantity_budget_outlet_')
             {
                 if(value==0)
                 {
@@ -232,7 +233,21 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             element.css({'margin': '0px','width': '100%', 'height': '100%',padding:'5px','line-height':'25px'});
             return element[0].outerHTML;
         };
+        var aggregatesrenderer=function (aggregates)
+        {
+            //console.log('here');
+            return '<div style="position: relative; margin: 0px;padding: 5px;width: 100%;height: 100%; overflow: hidden;background-color:'+system_report_color_grand+';">' +aggregates['sum']+'</div>';
 
+        };
+        var aggregatesrenderer_kg=function (aggregates)
+        {
+            var text='';
+            if(!((aggregates['sum']=='0.000')||(aggregates['sum']=='')))
+            {
+                text=get_string_kg(aggregates['sum']);
+            }
+            return '<div style="position: relative; margin: 0px;padding: 5px;width: 100%;height: 100%; overflow: hidden;background-color:'+system_report_color_grand+';">' +text+'</div>';
+        };
         var dataAdapter = new $.jqx.dataAdapter(source);
         // create jqxgrid.
         $("#system_jqx_container").jqxGrid(
@@ -248,21 +263,25 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 enablebrowserselection: true,
                 selectionmode: 'singlerow',
                 altrows: true,
+                showaggregates: true,
+                showstatusbar: true,
                 rowsheight: 35,
-                columnsheight: 40,
+                /*columnsheight: 40,*/
                 editable:true,
                 columns:
                 [
                     { text: '<?php echo $CI->lang->line('LABEL_CROP_TYPE_NAME'); ?>', dataField: 'crop_type_name',width:'100', filtertype:'list',renderer: header_render,pinned:true,editable:false},
                     { text: '<?php echo $CI->lang->line('LABEL_VARIETY_NAME'); ?>', dataField: 'variety_name',width:'150',renderer: header_render,pinned:true,editable:false},
-                    { text: 'Total ZI <br />Target', dataField: 'quantity_target_zi',width:'100',filterable:false, align: 'center',cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
+                    { columngroup:'zi_budget_target',text: 'Budget', dataField: 'quantity_budget_zi',width:'100',filterable:false, align: 'center',cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
+                    { columngroup:'zi_budget_target',text: 'Target', dataField: 'quantity_target_zi',width:'100',filterable:false, align: 'center',cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
                     <?php
                     $serial=0;
                     foreach($outlets as $outlet)
                     {
                     ++$serial;
                     ?>
-                    { columngroup:'outlets',text: '<?php echo $serial.'. '.$outlet['outlet_name']?>',datafield: 'quantity_target_outlet_<?php echo $outlet['outlet_id']?>', width: 100,filterable: false,renderer: header_render,cellsrenderer: cellsrenderer,cellsalign: 'right',columntype: 'custom',
+                    { columngroup:'outlet_<?php echo $outlet['outlet_id']?>',text: 'Budget', dataField: 'quantity_budget_outlet_<?php echo $outlet['outlet_id']?>',width:'100',filterable:false, align: 'center',cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
+                    { columngroup:'outlet_<?php echo $outlet['outlet_id']?>',text: 'Target',datafield: 'quantity_target_outlet_<?php echo $outlet['outlet_id']?>', width: 100,filterable: false, align: 'center',cellsalign: 'right',cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg,columntype: 'custom',
                         initeditor: function (row, cellvalue, editor, celltext, pressedkey)
                         {
                             editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');
@@ -278,11 +297,21 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                     <?php
                     }
                     ?>
-                    { text: 'Total Outlet <br />Target', dataField: 'quantity_target_outlet_total',width:'100',filterable:false, align: 'center',cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer}
+                    { text: 'Total Outlet <br />Target', dataField: 'quantity_target_outlet_total',width:'100',filterable:false, align: 'center',cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg}
                 ],
                 columngroups:
                 [
-                    { text: 'Outlet Target', align: 'center', name: 'outlets' }
+                    <?php
+                    $serial=0;
+                    foreach($outlets as $outlet)
+                    {
+                    ++$serial;
+                    ?>
+                        { text: '<?php echo $serial.'. '.$outlet['outlet_name']?>', align: 'center', name: 'outlet_<?php echo $outlet['outlet_id']?>' },
+                    <?php
+                    }
+                    ?>
+                    { text: 'ZI Total', align: 'center', name: 'zi_budget_target' }
                 ]
             });
     });
