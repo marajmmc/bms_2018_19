@@ -130,18 +130,27 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 <?php
                  foreach($system_preference_items as $key=>$item)
                  {
-                    ?>
-                { name: '<?php echo $key ?>', type: 'string' },
-                <?php
-            }
-            foreach($outlets as $outlet)
-            {
-                    ?>
-                { name: 'quantity_budget_outlet_<?php echo $outlet['outlet_id']?>', type: 'number' },
-                { name: 'quantity_target_outlet_<?php echo $outlet['outlet_id']?>', type: 'number' },
-                <?php
-            }
-            ?>
+                    if(($key=='crop_type_name') || ($key=='variety_name'))
+                    {
+                        ?>
+                        { name: '<?php echo $key ?>', type: 'string' },
+                        <?php
+                    }
+                    else
+                    {
+                        ?>
+                        { name: '<?php echo $key ?>', type: 'number' },
+                        <?php
+                    }
+                }
+                foreach($outlets as $outlet)
+                {
+                ?>
+                    { name: 'quantity_budget_outlet_<?php echo $outlet['outlet_id']?>', type: 'number' },
+                    { name: 'quantity_target_outlet_<?php echo $outlet['outlet_id']?>', type: 'number' },
+                    <?php
+                }
+                ?>
             ],
             id: 'id',
             type: 'POST',
@@ -311,7 +320,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                     <?php
                     }
                     ?>
-                    { text: 'ZI Total', align: 'center', name: 'zi_budget_target' }
+                    { text: 'ZSC Total', align: 'center', name: 'zi_budget_target' }
                 ]
             });
     });

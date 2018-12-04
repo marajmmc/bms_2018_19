@@ -7,7 +7,7 @@ if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(is
     $action_buttons[]=array
     (
         'type'=>'button',
-        'label'=>$CI->lang->line('ACTION_EDIT').' ZI Budget',
+        'label'=>$CI->lang->line('ACTION_EDIT').' ZSC Budget',
         'class'=>'button_jqx_action',
         'data-action-link'=>site_url($CI->controller_url.'/index/list_budget_zone')
 
