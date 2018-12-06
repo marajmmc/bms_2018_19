@@ -120,8 +120,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         var cellsrenderer = function(row, column, value, defaultHtml, columnSettings, record)
         {
             var element = $(defaultHtml);
-            var number_of_variety_target_due=0;
-            if(column=='number_of_variety_active' || column=='number_of_variety_targeted')
+            if(column.substr(0,18)=='number_of_variety_')
             {
                 if(value==0)
                 {
@@ -130,18 +129,6 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 else if(value>0)
                 {
                     element.html(get_string_quantity(value));
-                }
-            }
-            else if(column=='number_of_variety_target_due')
-            {
-                number_of_variety_target_due=(parseFloat(record['number_of_variety_active'])-parseFloat(record['number_of_variety_targeted']));
-                if(number_of_variety_target_due==0)
-                {
-                    element.html('');
-                }
-                else if(number_of_variety_target_due>0)
-                {
-                    element.html(get_string_quantity(number_of_variety_target_due));
                 }
             }
             element.css({'margin': '0px','width': '100%', 'height': '100%',padding:'5px','line-height':'25px'});

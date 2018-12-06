@@ -53,7 +53,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         </div>
     </div>
     <?php
-        echo $CI->load->view("budget_zi_budget_target/acres_info",$acres,true);
+        echo $CI->load->view($this->common_view_location."/acres_info",$acres,true);
     ?>
     <div style="font-size: 12px;margin-top: -10px;font-style: italic; color: red;" class="row show-grid">
         <div class="col-xs-4"></div>
@@ -118,25 +118,34 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             dataType: "json",
             dataFields: [
                 <?php
-                 foreach($system_preference_items as $key=>$item)
-                 {
+                foreach($system_preference_items as $key=>$item)
+                {
+                    if(($key=='crop_type_name') || ($key=='variety_name'))
+                    {
                     ?>
-                { name: '<?php echo $key ?>', type: 'string' },
-                <?php
-            }
-            foreach($outlets as $outlet)
-            {
-                    ?>
-                { name: 'quantity_budget_outlet_<?php echo $outlet['outlet_id']?>', type: 'string' },
-                <?php
-            }
-            foreach($fiscal_years_previous_sales as $fy)
-            {
-                    ?>
-                { name: 'quantity_sale_<?php echo $fy['id']; ?>', type: 'string' },
-                <?php
-            }
-            ?>
+                        { name: '<?php echo $key ?>', type: 'string' },
+                        <?php
+                    }
+                    else
+                    {
+                        ?>
+                        { name: '<?php echo $key ?>', type: 'number' },
+                        <?php
+                    }
+                }
+                foreach($outlets as $outlet)
+                {
+                ?>
+                    { name: 'quantity_budget_outlet_<?php echo $outlet['outlet_id']?>', type: 'number' },
+                    <?php
+                }
+                foreach($fiscal_years_previous_sales as $fy)
+                {
+                        ?>
+                    { name: 'quantity_sale_<?php echo $fy['id']; ?>', type: 'number' },
+                    <?php
+                }
+                ?>
             ],
             id: 'id',
             type: 'POST',

@@ -5,6 +5,7 @@ class Budget_di_budget_target extends Root_Controller
     public $message;
     public $permissions;
     public $controller_url;
+    public $common_view_location;
     public $locations;
     public $user_divisions;
     public $user_division_ids;
@@ -15,6 +16,7 @@ class Budget_di_budget_target extends Root_Controller
         $this->message="";
         $this->permissions=User_helper::get_permission(get_class());
         $this->controller_url=strtolower(get_class());
+        $this->common_view_location='budget_zi_budget_target';
         $this->locations=User_helper::get_locations();
         if(!($this->locations))
         {

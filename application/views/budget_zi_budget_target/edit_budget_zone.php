@@ -70,7 +70,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         </div>
     </div>
     <?php
-    echo $CI->load->view($this->controller_url."/acres_info",$acres,true);
+    echo $CI->load->view($this->common_view_location."/acres_info",$acres,true);
     ?>
     <form id="save_form_jqx" action="<?php echo site_url($CI->controller_url.'/index/save_budget_zone');?>" method="post">
         <input type="hidden" name="item[fiscal_year_id]" value="<?php echo $options['fiscal_year_id']; ?>" />
@@ -130,13 +130,13 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 foreach($outlets as $outlet)
                 {
                     ?>
-                    { name: 'quantity_budget_outlet_<?php echo $outlet['outlet_id']?>', type: 'string' },
+                    { name: 'quantity_budget_outlet_<?php echo $outlet['outlet_id']?>', type: 'number' },
                     <?php
                 }
                 foreach($fiscal_years_previous_sales as $fy)
                 {
                     ?>
-                    { name: 'quantity_sale_<?php echo $fy['id']; ?>', type: 'string' },
+                    { name: 'quantity_sale_<?php echo $fy['id']; ?>', type: 'number' },
                     <?php
                 }
                 ?>
@@ -170,18 +170,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         var cellsrenderer = function(row, column, value, defaultHtml, columnSettings, record)
         {
             var element = $(defaultHtml);
-            if(column.substr(0,23)=='quantity_budget_outlet_')
-            {
-                if(value==0)
-                {
-                    element.html('');
-                }
-                else if(value>0)
-                {
-                    element.html(get_string_kg(value));
-                }
-            }
-            else if(column=='quantity_budget')
+            if(column=='quantity_budget')
             {
                 if(value==0)
                 {
@@ -189,13 +178,13 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 }
                 element.html('<div class="jqxgrid_input">'+value+'</div>');
             }
-            else if(column.substr(0,14)=='quantity_sale_')
+            else if(column.substr(0,9)=='quantity_')
             {
                 if(value==0)
                 {
                     element.html('');
                 }
-                else
+                else if(value>0)
                 {
                     element.html(get_string_kg(value));
                 }

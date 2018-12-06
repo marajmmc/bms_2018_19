@@ -62,7 +62,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         </div>
     </div>
     <?php
-    echo $CI->load->view($this->controller_url."/acres_info",$acres,true);
+    echo $CI->load->view($this->common_view_location."/acres_info",$acres,true);
     ?>
     <div class="col-xs-12" id="system_jqx_container">
 
@@ -255,7 +255,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 }
             }
 
-            if(column=='quantity_prediction_total_zi')
+            /*if(column=='quantity_prediction_total_zi')
             {
                 if(quantity_prediction_total_zi==0)
                 {
@@ -265,7 +265,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 {
                     element.html(get_string_kg(quantity_prediction_total_zi));
                 }
-            }
+            }*/
             if (record.variety_name=="Total Type")
             {
                 if(!((column=='crop_name')||(column=='crop_type_name')))

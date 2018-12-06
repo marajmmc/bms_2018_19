@@ -78,7 +78,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         </div>
     </div>
     <?php
-    echo $CI->load->view($this->controller_url."/acres_info",$acres,true);
+    echo $CI->load->view($this->common_view_location."/acres_info",$acres,true);
     ?>
     <form id="save_form_jqx" action="<?php echo site_url($CI->controller_url.'/index/save_target_outlet');?>" method="post">
         <input type="hidden" name="item[fiscal_year_id]" value="<?php echo $options['fiscal_year_id']; ?>" />
@@ -181,26 +181,15 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         var cellsrenderer = function(row, column, value, defaultHtml, columnSettings, record)
         {
             var element = $(defaultHtml);
-            if(column=='quantity_target_zi' || column=='quantity_budget_zi' || column.substr(0,23)=='quantity_budget_outlet_')
-            {
-                if(value==0)
-                {
-                    element.html('');
-                }
-                else if(value>0)
-                {
-                    element.html(get_string_kg(value));
-                }
-            }
-            else if(column=='quantity_target_outlet_total')
+            if(column=='quantity_target_outlet_total')
             {
                 var quantity_target_outlet_total=0;
                 <?php
                 foreach($outlets as $outlet)
                 {
                     ?>
-                    quantity_target_outlet_total+=parseFloat(record['quantity_target_outlet_<?php echo $outlet['outlet_id']?>']);
-                    <?php
+                quantity_target_outlet_total+=parseFloat(record['quantity_target_outlet_<?php echo $outlet['outlet_id']?>']);
+                <?php
                 }
                 ?>
                 if(quantity_target_outlet_total>0)
@@ -228,13 +217,13 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 }
                 element.html('<div class="jqxgrid_input">'+value+'</div>');
             }
-            else if(column.substr(0,14)=='quantity_sale_')
+            else if(column.substr(0,9)=='quantity_')
             {
                 if(value==0)
                 {
                     element.html('');
                 }
-                else
+                else if(value>0)
                 {
                     element.html(get_string_kg(value));
                 }

@@ -62,7 +62,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         </div>
     </div>
     <?php
-    echo $CI->load->view($this->controller_url."/acres_info",$acres,true);
+    echo $CI->load->view($this->common_view_location."/acres_info",$acres,true);
     ?>
     <div class="col-xs-12" id="system_jqx_container">
 
@@ -172,26 +172,15 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         var cellsrenderer = function(row, column, value, defaultHtml, columnSettings, record)
         {
             var element = $(defaultHtml);
-            if(column=='quantity_target_zi' || column=='quantity_budget_zi' || column.substr(0,23)=='quantity_budget_outlet_')
-            {
-                if(value==0)
-                {
-                    element.html('');
-                }
-                else if(value>0)
-                {
-                    element.html(get_string_kg(value));
-                }
-            }
-            else if(column=='quantity_target_outlet_total')
+            if(column=='quantity_target_outlet_total')
             {
                 var quantity_target_outlet_total=0;
                 <?php
                 foreach($outlets as $outlet)
                 {
                     ?>
-                    quantity_target_outlet_total+=parseFloat(record['quantity_target_outlet_<?php echo $outlet['outlet_id']?>']);
-                    <?php
+                quantity_target_outlet_total+=parseFloat(record['quantity_target_outlet_<?php echo $outlet['outlet_id']?>']);
+                <?php
                 }
                 ?>
                 if(quantity_target_outlet_total>0)
@@ -211,24 +200,13 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                     element.html('');
                 }
             }
-            else if(column.substr(0,23)=='quantity_target_outlet_')
+            else if(column.substr(0,9)=='quantity_')
             {
                 if(value==0)
                 {
                     element.html('');
                 }
-                else
-                {
-                    element.html(get_string_kg(value));
-                }
-            }
-            else if(column.substr(0,14)=='quantity_sale_')
-            {
-                if(value==0)
-                {
-                    element.html('');
-                }
-                else
+                else if(value>0)
                 {
                     element.html(get_string_kg(value));
                 }
@@ -309,8 +287,8 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                     { text: '<?php echo $CI->lang->line('LABEL_CROP_NAME'); ?>', dataField: 'crop_name',width:'100', filtertype:'list',pinned:true,editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer},
                     { text: '<?php echo $CI->lang->line('LABEL_CROP_TYPE_NAME'); ?>', dataField: 'crop_type_name',width:'100', pinned:true,editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer},
                     { text: '<?php echo $CI->lang->line('LABEL_VARIETY_NAME'); ?>', dataField: 'variety_name',width:'150',pinned:true,editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer},
-                    { columngroup:'zi_budget_target',text: 'Budget', dataField: 'quantity_budget_zi',width:'100',filterable:false, align: 'center',cellsalign: 'right',cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
-                    { columngroup:'zi_budget_target',text: 'Target', dataField: 'quantity_target_zi',width:'100',filterable:false, align: 'center',cellsalign: 'right',cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
+                    { columngroup:'zi_budget_target',text: 'Budget', dataField: 'quantity_budget_zi',width:'100', align: 'center',cellsalign: 'right',cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
+                    { columngroup:'zi_budget_target',text: 'Target', dataField: 'quantity_target_zi',width:'100', align: 'center',cellsalign: 'right',cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
                     <?php
                     $serial=0;
                     foreach($outlets as $outlet)

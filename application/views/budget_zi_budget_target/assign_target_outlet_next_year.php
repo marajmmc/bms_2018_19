@@ -77,7 +77,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         </div>
     </div>
     <?php
-    echo $CI->load->view($this->controller_url."/acres_info",$acres,true);
+    echo $CI->load->view($this->common_view_location."/acres_info",$acres,true);
     ?>
     <form id="save_form_jqx" action="<?php echo site_url($CI->controller_url.'/index/save_target_outlet_next_year');?>" method="post">
         <input type="hidden" name="item[fiscal_year_id]" value="<?php echo $options['fiscal_year_id']; ?>" />
@@ -200,7 +200,15 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         var cellsrenderer = function(row, column, value, defaultHtml, columnSettings, record)
         {
             var element = $(defaultHtml);
-            if(column.substr(0,37)=='quantity_prediction_sub_total_outlet_' || column.substr(0,20)=='quantity_prediction_' || column.substr(0,14)=='quantity_sale_' || column=='quantity_target_zi')
+            if(column.substr(0,)=='quantity_prediction_outlet_')
+            {
+                if(value==0)
+                {
+                    value='';
+                }
+                element.html('<div class="jqxgrid_input">'+value+'</div>');
+            }
+            /*if(column.substr(0,37)=='quantity_prediction_sub_total_outlet_' || column.substr(0,20)=='quantity_prediction_' || column.substr(0,14)=='quantity_sale_' || column=='quantity_target_zi')
             {
                 if(value==0)
                 {
@@ -211,7 +219,6 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                     element.html(get_string_kg(value));
                 }
             }
-
             var quantity_prediction_outlet_total=0;
             <?php
             $serial=0;
@@ -262,11 +269,25 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 {
                     element.html(get_string_kg(quantity_prediction_outlet_total));
                 }
-            }
+            }*/
             element.css({'margin': '0px','width': '100%', 'height': '100%',padding:'5px','line-height':'25px'});
             return element[0].outerHTML;
         };
+        var aggregatesrenderer=function (aggregates)
+        {
+            //console.log('here');
+            return '<div style="position: relative; margin: 0px;padding: 5px;width: 100%;height: 100%; overflow: hidden;background-color:'+system_report_color_grand+';">' +aggregates['sum']+'</div>';
 
+        };
+        var aggregatesrenderer_kg=function (aggregates)
+        {
+            var text='';
+            if(!((aggregates['sum']=='0.000')||(aggregates['sum']=='')))
+            {
+                text=get_string_kg(aggregates['sum']);
+            }
+            return '<div style="position: relative; margin: 0px;padding: 5px;width: 100%;height: 100%; overflow: hidden;background-color:'+system_report_color_grand+';">' +text+'</div>';
+        };
         var dataAdapter = new $.jqx.dataAdapter(source);
         // create jqxgrid.
         $("#system_jqx_container").jqxGrid(
@@ -282,8 +303,10 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 enablebrowserselection: true,
                 selectionmode: 'singlerow',
                 altrows: true,
+                showaggregates: true,
+                showstatusbar: true,
                 rowsheight: 35,
-                columnsheight: 40,
+                /*columnsheight: 40,*/
                 editable:true,
                 columns:
                 [
@@ -293,25 +316,25 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                     for($i=sizeof($fiscal_years_previous_sales)-1;$i>=0;$i--)
                     {
                         ?>
-                        {columngroup: 'previous_years',text: '<?php echo $fiscal_years_previous_sales[$i]['name']; ?>', dataField: 'quantity_sale_<?php echo $fiscal_years_previous_sales[$i]['id']; ?>',width:'100',filterable: false,cellsrenderer: cellsrenderer,align:'center',cellsAlign:'right',editable:false},
+                        {columngroup: 'previous_years',text: '<?php echo $fiscal_years_previous_sales[$i]['name']; ?>', dataField: 'quantity_sale_<?php echo $fiscal_years_previous_sales[$i]['id']; ?>',width:'100',filterable: false,align:'center',cellsAlign:'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
                         <?php
                     }
                     ?>
-                    { text: 'Current Year <br />ZI Target', dataField: 'quantity_target_zi',width:'100',filterable:false, align: 'center',cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
+                    { text: 'Current Year <br />ZI Target', dataField: 'quantity_target_zi',width:'100',filterable:false, align: 'center',cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
                     <?php
                     $serial=0;
                     foreach($fiscal_years_next_budgets as $budget)
                     {
                         ++$serial;
                         ?>
-                        { columngroup: 'next_years_<?php echo $serial;?>', text: 'Prediction', dataField: 'quantity_prediction_<?php echo $serial;?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
+                        { columngroup: 'next_years_<?php echo $serial;?>', text: 'Prediction', dataField: 'quantity_prediction_<?php echo $serial;?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
                         <?php
                         $outlet_sl=0;
                         foreach($outlets as $outlet)
                         {
                             ++$outlet_sl;
                             ?>
-                            {columngroup: 'next_years_<?php echo $serial;?>', text: '<?php echo $outlet_sl.'. '.$outlet['outlet_name']?>', datafield: 'quantity_prediction_outlet_<?php echo $budget['id'];?>_<?php echo $outlet['outlet_id']?>', width: 100, filterable: false, cellsalign: 'right',cellsrenderer: cellsrenderer,columntype: 'custom',
+                            {columngroup: 'next_years_<?php echo $serial;?>', text: '<?php echo $outlet_sl.'. '.$outlet['outlet_name']?>', datafield: 'quantity_prediction_outlet_<?php echo $serial;?>_<?php echo $outlet['outlet_id']?>', width: 100, filterable: false, cellsalign: 'right',aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg,cellsrenderer: cellsrenderer,columntype: 'custom',
                                 initeditor: function (row, cellvalue, editor, celltext, pressedkey)
                                 {
                                     editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');
@@ -327,11 +350,11 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                             <?php
                         }
                         ?>
-                        { columngroup: 'next_years_<?php echo $serial;?>', text: 'Total Prediction', dataField: 'quantity_prediction_sub_total_outlet_<?php echo $budget['id'];?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
+                        { columngroup: 'next_years_<?php echo $serial;?>', text: 'Total Prediction', dataField: 'quantity_prediction_sub_total_outlet_<?php echo $budget['id'];?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
                         <?php
                     }
                     ?>
-                    { text: 'Total Outlet <br />Prediction', dataField: 'quantity_prediction_outlet_total',width:'100',filterable:false, align: 'center',cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer}
+                    { text: 'Total Outlet <br />Prediction', dataField: 'quantity_prediction_outlet_total',width:'100',filterable:false, align: 'center',cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg}
                 ],
                 columngroups:
                 [

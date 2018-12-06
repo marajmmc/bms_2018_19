@@ -69,7 +69,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         </div>
     </div>
     <?php
-    echo $CI->load->view("budget_zi_budget_target/acres_info",$acres,true);
+    echo $CI->load->view($this->common_view_location."/acres_info",$acres,true);
     ?>
     <form id="save_form_jqx" action="<?php echo site_url($CI->controller_url.'/index/save_target_zi');?>" method="post">
         <input type="hidden" name="item[fiscal_year_id]" value="<?php echo $options['fiscal_year_id']; ?>" />

@@ -5,6 +5,7 @@ class Budget_hom_budget_target extends Root_Controller
     public $message;
     public $permissions;
     public $controller_url;
+    public $common_view_location;
     
     public function __construct()
     {
@@ -12,6 +13,7 @@ class Budget_hom_budget_target extends Root_Controller
         $this->message="";
         $this->permissions=User_helper::get_permission(get_class());
         $this->controller_url=strtolower(get_class());
+        $this->common_view_location='budget_zi_budget_target';
         $this->load->helper('budget');
         $this->lang->load('budget');
 
