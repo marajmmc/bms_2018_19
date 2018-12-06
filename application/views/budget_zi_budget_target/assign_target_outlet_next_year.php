@@ -111,7 +111,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                     foreach($outlets as $outlet)
                     {
                     ?>
-                    $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+'][<?php echo $outlet['outlet_id'];?>][quantity_prediction_<?php echo $serial;?>]" value="'+data[i]['quantity_prediction_outlet_<?php echo $budget['id'];?>_<?php echo $outlet['outlet_id']?>']+'">');
+                    $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+'][<?php echo $outlet['outlet_id'];?>][quantity_prediction_<?php echo $serial;?>]" value="'+data[i]['quantity_prediction_outlet_<?php echo $serial;?>_<?php echo $outlet['outlet_id']?>']+'">');
                     <?php
                     }
                 }
@@ -134,7 +134,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 <?php
                 foreach($system_preference_items as $key=>$item)
                 {
-                    if($key=='id')
+                    if(($key!='crop_type_name')||($key!='variety_name'))
                     {
                         ?>
                         { name: '<?php echo $key ?>', type: 'number' },
@@ -153,6 +153,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                     { name: 'quantity_sale_<?php echo $fy['id']; ?>', type: 'number' },
                     <?php
                 }
+
                 $serial=0;
                 foreach($fiscal_years_next_budgets as $budget)
                 {
@@ -163,16 +164,15 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                     foreach($outlets as $outlet)
                     {
                         ?>
-                        { name: 'quantity_prediction_outlet_<?php echo $budget['id']; ?>_<?php echo $outlet['outlet_id']?>', type: 'number' },
+                        { name: 'quantity_prediction_outlet_<?php echo $serial; ?>_<?php echo $outlet['outlet_id']?>', type: 'number' },
                         <?php
                     }
                     ?>
-                    { name: 'quantity_prediction_sub_total_outlet_<?php echo $budget['id']; ?>', type: 'number' },
+                    { name: 'quantity_prediction_sub_total_outlet_<?php echo $serial; ?>', type: 'number' },
                     <?php
                 }
                 ?>
             ],
-            id: 'id',
             type: 'POST',
             url: url,
             data:JSON.parse('<?php echo json_encode($options);?>')
@@ -200,15 +200,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         var cellsrenderer = function(row, column, value, defaultHtml, columnSettings, record)
         {
             var element = $(defaultHtml);
-            if(column.substr(0,)=='quantity_prediction_outlet_')
-            {
-                if(value==0)
-                {
-                    value='';
-                }
-                element.html('<div class="jqxgrid_input">'+value+'</div>');
-            }
-            /*if(column.substr(0,37)=='quantity_prediction_sub_total_outlet_' || column.substr(0,20)=='quantity_prediction_' || column.substr(0,14)=='quantity_sale_' || column=='quantity_target_zi')
+            if((column=='quantity_prediction_outlet_total')||(column.substr(0,37)=='quantity_prediction_sub_total_outlet_'))
             {
                 if(value==0)
                 {
@@ -219,57 +211,25 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                     element.html(get_string_kg(value));
                 }
             }
-            var quantity_prediction_outlet_total=0;
-            <?php
-            $serial=0;
-            foreach($fiscal_years_next_budgets as $budget)
+            else if(column.substr(0,27)=='quantity_prediction_outlet_')
             {
-                ++$serial;
-                ?>
-                var quantity_prediction_sub_total_outlet=0;
-                <?php
-                foreach($outlets as $outlet)
+                if(value==0)
                 {
-                    ?>
-                    quantity_prediction_sub_total_outlet+=parseFloat(record['quantity_prediction_outlet_<?php echo $budget['id'];?>_<?php echo $outlet['outlet_id']?>']);
-                    quantity_prediction_outlet_total+=parseFloat(record['quantity_prediction_outlet_<?php echo $budget['id'];?>_<?php echo $outlet['outlet_id']?>']);
-
-                    if(column=='quantity_prediction_outlet_<?php echo $budget['id'];?>_<?php echo $outlet['outlet_id']?>')
-                    {
-                        if(value==0)
-                        {
-                            value='';
-                        }
-                        element.html('<div class="jqxgrid_input">'+value+'</div>');
-                    }
-                    <?php
+                    value='';
                 }
-                ?>
-                if(column=='quantity_prediction_sub_total_outlet_<?php echo $budget['id']?>')
-                {
-                    if(quantity_prediction_sub_total_outlet==0)
-                    {
-                        element.html('');
-                    }
-                    else if(quantity_prediction_sub_total_outlet>0)
-                    {
-                        element.html(get_string_kg(quantity_prediction_sub_total_outlet));
-                    }
-                }
-                <?php
+                element.html('<div class="jqxgrid_input">'+value+'</div>');
             }
-            ?>
-            if(column=='quantity_prediction_outlet_total')
+            else if(column.substr(0,9)=='quantity_')
             {
-                if(quantity_prediction_outlet_total==0)
+                if(value==0)
                 {
                     element.html('');
                 }
-                else if(quantity_prediction_outlet_total>0)
+                else
                 {
-                    element.html(get_string_kg(quantity_prediction_outlet_total));
+                    element.html(get_string_kg(value));
                 }
-            }*/
+            }
             element.css({'margin': '0px','width': '100%', 'height': '100%',padding:'5px','line-height':'25px'});
             return element[0].outerHTML;
         };
@@ -315,11 +275,11 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                     <?php
                     for($i=sizeof($fiscal_years_previous_sales)-1;$i>=0;$i--)
                     {
-                        ?>
-                        {columngroup: 'previous_years',text: '<?php echo $fiscal_years_previous_sales[$i]['name']; ?>', dataField: 'quantity_sale_<?php echo $fiscal_years_previous_sales[$i]['id']; ?>',width:'100',filterable: false,align:'center',cellsAlign:'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
-                        <?php
-                    }
                     ?>
+                    {columngroup: 'previous_years',text: '<?php echo $fiscal_years_previous_sales[$i]['name']; ?>', dataField: 'quantity_sale_<?php echo $fiscal_years_previous_sales[$i]['id']; ?>',width:'100',filterable: false,align:'center',cellsAlign:'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
+                    <?php
+                    }
+                ?>
                     { text: 'Current Year <br />ZI Target', dataField: 'quantity_target_zi',width:'100',filterable:false, align: 'center',cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
                     <?php
                     $serial=0;
@@ -345,12 +305,26 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                                     var value=editor.find('input').val();
                                     var selectedRowData = $('#system_jqx_container').jqxGrid('getrowdata', row);
                                     return editor.find('input').val();
+                                },
+                                cellvaluechanging: function (row, datafield, columntype, oldvalue, newvalue)
+                                {
+                                    if (newvalue != oldvalue)
+                                    {
+                                        var selectedRowData = $('#system_jqx_container').jqxGrid('getrowdata', row);//only last selected
+                                        var sub_total=parseFloat(selectedRowData['quantity_prediction_sub_total_outlet_<?php echo $serial;?>'])-parseFloat(oldvalue)+parseFloat(newvalue);
+                                        var outlet_total=parseFloat(selectedRowData['quantity_prediction_outlet_total'])-parseFloat(oldvalue)+parseFloat(newvalue);
+
+                                        //console.log(selectedRowData);
+                                        $("#system_jqx_container").jqxGrid('setcellvalue', row, 'quantity_prediction_sub_total_outlet_<?php echo $serial;?>', sub_total);
+                                        $("#system_jqx_container").jqxGrid('setcellvalue', row, 'quantity_prediction_outlet_total', outlet_total);
+
+                                    }
                                 }
                             },
                             <?php
                         }
                         ?>
-                        { columngroup: 'next_years_<?php echo $serial;?>', text: 'Total Prediction', dataField: 'quantity_prediction_sub_total_outlet_<?php echo $budget['id'];?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
+                        { columngroup: 'next_years_<?php echo $serial;?>', text: 'Total Prediction', dataField: 'quantity_prediction_sub_total_outlet_<?php echo $serial;?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
                         <?php
                     }
                     ?>

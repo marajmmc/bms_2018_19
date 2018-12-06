@@ -230,7 +230,10 @@ class Budget_zi_budget_target extends Root_Controller
             $data['crop_type_name']= 1;
             $data['variety_name']= 1;
             $data['variety_id']= 1;
+            //previous sales form initialize row
             $data['quantity_target_zi']= 1;
+            //zi prediction from initialize row
+            //outlet prediction from initialize row
             $data['quantity_prediction_outlet_total']= 1;
         }
         else if($method=='assign_target_outlet_forward_next_year')
@@ -2053,7 +2056,7 @@ class Budget_zi_budget_target extends Root_Controller
         $results=Budget_helper::get_crop_type_varieties(array($crop_id));
         foreach($results as $result)
         {
-            $info=$this->initialize_row_assign_target_outlet_next_year($fiscal_years_previous_sales, $fiscal_years_next_budgets,$outlet_ids,$result);
+            $info=$this->initialize_row_assign_target_outlet_next_year($fiscal_years_previous_sales, $fiscal_years_next_budgets,$outlets,$result);
             foreach($fiscal_years_previous_sales as $fy)
             {
                 if(isset($sales_previous[$fy['id']][$result['variety_id']]))
@@ -2072,13 +2075,13 @@ class Budget_zi_budget_target extends Root_Controller
                     if(isset($items_old[$result['variety_id']][$outlet_id]))
                     {
                         //$info['quantity_target_']
-                        $info['quantity_prediction_outlet_'.$fy['id'].'_'.$outlet_id]=$items_old[$result['variety_id']][$outlet_id]['quantity_prediction_'.$fiscal_year_serial];
+                        $info['quantity_prediction_outlet_'.$fiscal_year_serial.'_'.$outlet_id]=$items_old[$result['variety_id']][$outlet_id]['quantity_prediction_'.$fiscal_year_serial];
 
-                        $quantity_prediction_total_outlet+=$info['quantity_prediction_outlet_'.$fy['id'].'_'.$outlet_id];
-                        $quantity_prediction_sub_total_outlet+=$info['quantity_prediction_outlet_'.$fy['id'].'_'.$outlet_id];
+                        $quantity_prediction_total_outlet+=$info['quantity_prediction_outlet_'.$fiscal_year_serial.'_'.$outlet_id];
+                        $quantity_prediction_sub_total_outlet+=$info['quantity_prediction_outlet_'.$fiscal_year_serial.'_'.$outlet_id];
                     }
                 }
-                $info['quantity_prediction_sub_total_outlet_'.$fy['id']]+=$quantity_prediction_sub_total_outlet;
+                $info['quantity_prediction_sub_total_outlet_'.$fiscal_year_serial]+=$quantity_prediction_sub_total_outlet;
             }
             $info['quantity_prediction_total_outlet']= $quantity_prediction_total_outlet;
 
@@ -2093,7 +2096,7 @@ class Budget_zi_budget_target extends Root_Controller
         }
         $this->json_return($items);
     }
-    private function initialize_row_assign_target_outlet_next_year($fiscal_years_previous_sales, $fiscal_years_next_budgets,$outlet_ids,$info)
+    private function initialize_row_assign_target_outlet_next_year($fiscal_years_previous_sales, $fiscal_years_next_budgets,$outlets,$info)
     {
         $row=$this->get_preference_headers('assign_target_outlet_next_year');
         foreach($row  as $key=>$r)
@@ -2112,11 +2115,11 @@ class Budget_zi_budget_target extends Root_Controller
         {
             ++$serial;
             $row['quantity_prediction_'.$serial]=0;
-            foreach($outlet_ids as $outlet_id)
+            foreach($outlets as $outlet)
             {
-                $row['quantity_prediction_outlet_'.$fy['id'].'_'.$outlet_id]= 0;
+                $row['quantity_prediction_outlet_'.$serial.'_'.$outlet['outlet_id']]= 0;
             }
-            $row['quantity_prediction_sub_total_outlet_'.$fy['id']]=0;
+            $row['quantity_prediction_sub_total_outlet_'.$serial]=0;
         }
         return $row;
     }
@@ -2126,6 +2129,7 @@ class Budget_zi_budget_target extends Root_Controller
         $time=time();
         $item_head=$this->input->post('item');
         $items=$this->input->post('items');
+
 
         if(!((isset($this->permissions['action1']) && ($this->permissions['action1']==1))||(isset($this->permissions['action2']) && ($this->permissions['action2']==1))))
         {
