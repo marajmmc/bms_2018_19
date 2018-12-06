@@ -2434,9 +2434,6 @@ class Budget_zi_budget_target extends Root_Controller
                 if(isset($sales_previous[$fy['id']][$result['variety_id']]))
                 {
                     $info['quantity_sale_'.$fy['id']]=$sales_previous[$fy['id']][$result['variety_id']]/1000;
-                    /*$type_total['quantity_sale_'.$fy['id']]+=$info['quantity_sale_'.$fy['id']];
-                    $crop_total['quantity_sale_'.$fy['id']]+=$info['quantity_sale_'.$fy['id']];
-                    $grand_total['quantity_sale_'.$fy['id']]+=$info['quantity_sale_'.$fy['id']];*/
                 }
             }
             $quantity_prediction_outlet_total=0;
@@ -2451,45 +2448,20 @@ class Budget_zi_budget_target extends Root_Controller
                     {
                         //$info['quantity_target_']
                         $info['quantity_prediction_outlet_'.$fy['id'].'_'.$outlet_id]=$items_old[$result['variety_id']][$outlet_id]['quantity_prediction_'.$fiscal_year_serial];
-                        /*$type_total['quantity_prediction_outlet_'.$fy['id'].'_'.$outlet_id]+=$info['quantity_prediction_outlet_'.$fy['id'].'_'.$outlet_id];
-                        $crop_total['quantity_prediction_outlet_'.$fy['id'].'_'.$outlet_id]+=$info['quantity_prediction_outlet_'.$fy['id'].'_'.$outlet_id];
-                        $grand_total['quantity_prediction_outlet_'.$fy['id'].'_'.$outlet_id]+=$info['quantity_prediction_outlet_'.$fy['id'].'_'.$outlet_id];*/
-
                         $quantity_prediction_outlet_total+=$info['quantity_prediction_outlet_'.$fy['id'].'_'.$outlet_id];
                         $quantity_prediction_sub_total_outlet+=$info['quantity_prediction_outlet_'.$fy['id'].'_'.$outlet_id];
                     }
                 }
                 $info['quantity_prediction_sub_total_outlet_'.$fy['id']]+=$quantity_prediction_sub_total_outlet;
-                /*$type_total['quantity_prediction_sub_total_outlet_'.$fy['id']]+=$quantity_prediction_sub_total_outlet;
-                $crop_total['quantity_prediction_sub_total_outlet_'.$fy['id']]+=$quantity_prediction_sub_total_outlet;
-                $grand_total['quantity_prediction_sub_total_outlet_'.$fy['id']]+=$quantity_prediction_sub_total_outlet;*/
             }
             $info['quantity_prediction_outlet_total']= $quantity_prediction_outlet_total;
-            /*$type_total['quantity_prediction_outlet_total']+= $quantity_prediction_outlet_total;
-            $crop_total['quantity_prediction_outlet_total']+= $quantity_prediction_outlet_total;
-            $grand_total['quantity_prediction_outlet_total']+= $quantity_prediction_outlet_total;*/
 
             if(isset($target_zones[$result['variety_id']]))
             {
                 $info['quantity_target_zi']=$target_zones[$result['variety_id']]['quantity_target'];
-                /*$type_total['quantity_target_zi']+= $info['quantity_target_zi'];
-                $crop_total['quantity_target_zi']+= $info['quantity_target_zi'];
-                $grand_total['quantity_target_zi']+= $info['quantity_target_zi'];*/
-
                 $info['quantity_prediction_1']=$target_zones[$result['variety_id']]['quantity_prediction_1'];
-                /*$type_total['quantity_prediction_1']+=$info['quantity_prediction_1'];
-                $crop_total['quantity_prediction_1']+=$info['quantity_prediction_1'];
-                $grand_total['quantity_prediction_1']+=$info['quantity_prediction_1'];*/
-
                 $info['quantity_prediction_2']=$target_zones[$result['variety_id']]['quantity_prediction_2'];
-                /*$type_total['quantity_prediction_2']+=$info['quantity_prediction_2'];
-                $crop_total['quantity_prediction_2']+=$info['quantity_prediction_2'];
-                $grand_total['quantity_prediction_2']+=$info['quantity_prediction_2'];*/
-
                 $info['quantity_prediction_3']=$target_zones[$result['variety_id']]['quantity_prediction_3'];
-                /*$type_total['quantity_prediction_3']+=$info['quantity_prediction_3'];
-                $crop_total['quantity_prediction_3']+=$info['quantity_prediction_3'];
-                $grand_total['quantity_prediction_3']+=$info['quantity_prediction_3'];*/
             }
             foreach($info as $key=>$r)
             {
@@ -2523,7 +2495,6 @@ class Budget_zi_budget_target extends Root_Controller
         }
         foreach($fiscal_years_next_budgets as $fy)
         {
-            //$row['quantity_prediction_'.$fy['id']]=0;
             foreach($outlet_ids as $outlet_id)
             {
                 $row['quantity_prediction_outlet_'.$fy['id'].'_'.$outlet_id]= 0;

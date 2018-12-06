@@ -152,7 +152,6 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 }
                 ?>
             ],
-            id: 'id',
             type: 'POST',
             url: url,
             data:JSON.parse('<?php echo json_encode($options);?>')
@@ -290,6 +289,18 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                             var value=editor.find('input').val();
                             var selectedRowData = $('#system_jqx_container').jqxGrid('getrowdata', row);
                             return editor.find('input').val();
+                        },
+                        cellvaluechanging: function (row, datafield, columntype, oldvalue, newvalue)
+                        {
+                            if (newvalue != oldvalue)
+                            {
+                                var selectedRowData = $('#system_jqx_container').jqxGrid('getrowdata', row);//only last selected
+                                var quantity_target_outlet_total=parseFloat(selectedRowData['quantity_target_outlet_total'])-parseFloat(oldvalue)+parseFloat(newvalue);
+
+                                //console.log(selectedRowData);
+                                $("#system_jqx_container").jqxGrid('setcellvalue', row, 'quantity_target_outlet_total', quantity_target_outlet_total);
+
+                            }
                         }
                     },
                     <?php
