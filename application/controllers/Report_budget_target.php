@@ -204,7 +204,54 @@ class Report_budget_target extends Root_Controller
         {
             $areas=Query_helper::get_info($this->config->item('table_login_setup_location_divisions'),array('id value','name text'),array('status ="'.$this->config->item('system_status_active').'"'));
         }
+        //get variety pricing
+        $variety_pricing=array();
+        $results=Query_helper::get_info($this->config->item('table_bms_setup_budget_config_variety_pricing'),array('variety_id','amount_price'),array('fiscal_year_id ='.$fiscal_year_id));
+        foreach($results as $result)
+        {
+            $variety_pricing[$result['variety_id']]=$result['amount_price'];
+        }
+        //getting sub area budget and target
+        $budget_target_sub=array();
+        if($zone_id>0)
+        {
+            $this->db->from($this->config->item('table_pos_si_budget_target_outlet').' bt');
+            $this->db->select('bt.outlet_id as area_id');
+            $this->db->select('bt.variety_id,bt.quantity_budget,bt.quantity_target');
 
+            $this->db->join($this->config->item('table_login_csetup_cus_info').' cus_info','cus_info.customer_id = bt.outlet_id','INNER');
+            $this->db->where('cus_info.revision',$zone_id);
+
+            $this->db->join($this->config->item('table_login_setup_location_districts').' d','d.id = cus_info.district_id','INNER');
+            $this->db->join($this->config->item('table_login_setup_location_territories').' t','t.id = d.territory_id','INNER');
+            $this->db->where('t.zone_id',$zone_id);
+
+        }
+        elseif($division_id>0)
+        {
+            $this->db->from($this->config->item('table_bms_zi_budget_target_zone').' bt');
+            $this->db->select('bt.zone_id as area_id');
+            $this->db->select('bt.variety_id,bt.quantity_budget,bt.quantity_target');
+            $this->db->join($this->config->item('table_login_setup_location_zones').' zone','zone.id = bt.zone_id','INNER');
+            $this->db->where('zone.division_id',$division_id);
+        }
+        else
+        {
+            $this->db->from($this->config->item('table_bms_di_budget_target_division').' bt');
+            $this->db->select('bt.division_id as area_id');
+            $this->db->select('bt.variety_id,bt.quantity_budget,bt.quantity_target');
+
+        }
+
+        $this->db->where('bt.fiscal_year_id',$fiscal_year_id);
+        $results=$this->db->get()->result_array();
+        foreach($results as $result)
+        {
+            $budget_target_sub[$result['variety_id']][$result['area_id']]=$result;
+        }
+
+        //getting budget and target
+        $budget_target=array();
         if($zone_id>0)
         {
             $this->db->from($this->config->item('table_bms_zi_budget_target_zone').' bt');
@@ -221,18 +268,19 @@ class Report_budget_target extends Root_Controller
         }
         $this->db->select('bt.*');
         $this->db->where('bt.fiscal_year_id',$fiscal_year_id);
-        $this->db->join($this->config->item('table_login_setup_classification_varieties').' v','v.id=bt.variety_id','INNER');
-        $this->db->select('v.name variety_name, v.price_kg price_unit_kg_amount');
+        $results=$this->db->get()->result_array();
+        foreach($results as $result)
+        {
+            $budget_target[$result['variety_id']]=$result;
+        }
+
+
+        $this->db->from($this->config->item('table_login_setup_classification_varieties').' v');
+        $this->db->select('v.id variety_id,v.name variety_name');
         $this->db->join($this->config->item('table_login_setup_classification_crop_types').' crop_type','crop_type.id=v.crop_type_id','INNER');
         $this->db->select('crop_type.id crop_type_id, crop_type.name crop_type_name');
         $this->db->join($this->config->item('table_login_setup_classification_crops').' crop','crop.id=crop_type.crop_id','INNER');
         $this->db->select('crop.id crop_id, crop.name crop_name');
-        $this->db->order_by('crop.ordering','ASC');
-        $this->db->order_by('crop.id','ASC');
-        $this->db->order_by('crop_type.ordering','ASC');
-        $this->db->order_by('crop_type.id','ASC');
-        $this->db->order_by('v.ordering','ASC');
-        $this->db->order_by('v.id','ASC');
         if($crop_id>0)
         {
             $this->db->where('crop.id',$crop_id);
@@ -245,6 +293,18 @@ class Report_budget_target extends Root_Controller
                 }
             }
         }
+        $this->db->where('v.status',$this->config->item('system_status_active'));
+        $this->db->where('v.status',$this->config->item('system_status_active'));
+
+        $this->db->where('v.whose','ARM');
+
+        $this->db->order_by('crop.ordering','ASC');
+        $this->db->order_by('crop.id','ASC');
+        $this->db->order_by('crop_type.ordering','ASC');
+        $this->db->order_by('crop_type.id','ASC');
+        $this->db->order_by('v.ordering','ASC');
+        $this->db->order_by('v.id','ASC');
+
         $results=$this->db->get()->result_array();
         $prev_crop_name='';
         $prev_type_name='';
@@ -256,11 +316,38 @@ class Report_budget_target extends Root_Controller
 
         foreach($results as $result)
         {
+            //pricing set
+            if(isset($variety_pricing[$result['variety_id']]))
+            {
+                $result['price_unit_kg_amount']=$variety_pricing[$result['variety_id']];
+            }
+            //budget target set
+            if(isset($budget_target[$result['variety_id']]))
+            {
+                $result['quantity_budget']=$budget_target[$result['variety_id']]['quantity_budget'];
+                $result['quantity_target']=$budget_target[$result['variety_id']]['quantity_target'];
+                $result['quantity_prediction_1']=$budget_target[$result['variety_id']]['quantity_prediction_1'];
+                $result['quantity_prediction_2']=$budget_target[$result['variety_id']]['quantity_prediction_2'];
+                $result['quantity_prediction_3']=$budget_target[$result['variety_id']]['quantity_prediction_3'];
+            }
+            //sub budget target set
+            if(isset($budget_target_sub[$result['variety_id']]))
+            {
+                foreach($budget_target_sub[$result['variety_id']] as $area_id=>$bud_tar)
+                {
+                    $result['quantity_budget_'.$area_id]=$bud_tar['quantity_budget'];
+                    $result['quantity_target_'.$area_id]=$bud_tar['quantity_target'];
+                }
+            }
             $info=$this->initialize_row($result,$areas);
             if(!$first_row)
             {
                 if($prev_crop_name!=$info['crop_name'])
                 {
+                    $type_total['crop_name']=$prev_crop_name;
+                    $type_total['crop_type_name']=$prev_type_name;
+                    $crop_total['crop_name']=$prev_crop_name;
+
                     $items[]=$type_total;
                     $items[]=$crop_total;
                     $type_total=$this->reset_row($type_total);
@@ -271,6 +358,9 @@ class Report_budget_target extends Root_Controller
                 }
                 elseif($prev_type_name!=$info['crop_type_name'])
                 {
+                    $type_total['crop_name']=$prev_crop_name;
+                    $type_total['crop_type_name']=$prev_type_name;
+                    
                     $items[]=$type_total;
                     $type_total=$this->reset_row($type_total);
                     //$info['crop_name']='';
@@ -320,10 +410,10 @@ class Report_budget_target extends Root_Controller
         $row['target_amount']=$row['target_kg']*$row['price_unit_kg_amount'];
         foreach($areas as $area)
         {
-            $row['budget_sub_'.$area['value'].'_kg']=0;
-            $row['budget_sub_'.$area['value'].'_amount']=0;
-            $row['target_sub_'.$area['value'].'_kg']=0;
-            $row['target_sub_'.$area['value'].'_amount']=0;
+            $row['budget_sub_'.$area['value'].'_kg']=isset($info['quantity_budget_'.$area['value']])?$info['quantity_budget_'.$area['value']]:0;
+            $row['budget_sub_'.$area['value'].'_amount']=$row['budget_sub_'.$area['value'].'_kg']*$row['price_unit_kg_amount'];
+            $row['target_sub_'.$area['value'].'_kg']=isset($info['quantity_target_'.$area['value']])?$info['quantity_target_'.$area['value']]:0;
+            $row['target_sub_'.$area['value'].'_amount']=$row['target_sub_'.$area['value'].'_kg']*$row['price_unit_kg_amount'];;
         }
 
         $row['prediction_1_kg']=isset($info['quantity_prediction_1'])?$info['quantity_prediction_1']:0;
