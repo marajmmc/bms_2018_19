@@ -162,7 +162,9 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                     { text: '<?php echo $CI->lang->line('LABEL_FISCAL_YEAR'); ?>', dataField: 'fiscal_year',width:'80',filtertype: 'list'},
                     { text: '<?php echo $CI->lang->line('LABEL_ZONE_NAME'); ?>', dataField: 'zone_name',width:'200',filtertype: 'list'},
                     { text: '<?php echo $CI->lang->line('LABEL_STATUS_BUDGET_FORWARD'); ?>', dataField: 'status_budget_forward', width:'200',filtertype: 'list'},
+                    { text: '(ZONE) <?php echo $CI->lang->line('LABEL_STATUS_TARGET_FORWARD'); ?>', dataField: 'status_target_zi_forward', width:'200',filtertype: 'list'},
                     { text: '(Outlet) <?php echo $CI->lang->line('LABEL_STATUS_TARGET_FORWARD'); ?>', dataField: 'status_target_outlet_forward', width:'200',filtertype: 'list'},
+                    { text: '(ZONE NXT 3Y) <?php echo $CI->lang->line('LABEL_STATUS_TARGET_FORWARD'); ?>', dataField: 'status_target_zi_next_year_forward', width:'200',filtertype: 'list'},
                     { text: '(Outlet NXT 3Y) <?php echo $CI->lang->line('LABEL_STATUS_TARGET_FORWARD'); ?>', dataField: 'status_target_outlet_next_year_forward', width:'200',filtertype: 'list'}
                 ]
             });

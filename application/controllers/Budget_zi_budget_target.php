@@ -167,7 +167,9 @@ class Budget_zi_budget_target extends Root_Controller
             $data['zone_id']= 1;
             $data['zone_name']= 1;
             $data['status_budget_forward']= 1;
+            $data['status_target_zi_forward']= 1;
             $data['status_target_outlet_forward']= 1;
+            $data['status_target_zi_next_year_forward']= 1;
             $data['status_target_outlet_next_year_forward']= 1;
         }
         else if($method=='list_budget_zone')
@@ -277,6 +279,23 @@ class Budget_zi_budget_target extends Root_Controller
     private function system_get_items()
     {
         $fiscal_years=Budget_helper::get_fiscal_years();
+
+        $this->db->from($this->config->item('table_bms_di_budget_target').' di_budget_target');
+        $this->db->select('di_budget_target.status_target_zi_forward, di_budget_target.status_target_zi_next_year_forward');
+        $this->db->select('di_budget_target.fiscal_year_id');
+        $this->db->join($this->config->item('table_login_setup_location_divisions').' division','division.id = di_budget_target.division_id','INNER');
+        $this->db->join($this->config->item('table_login_setup_location_zones').' zone','division.id = zone.division_id','INNER');
+
+        $this->db->select('zone.id zone_id');
+        $this->db->where_in('zone.id',$this->user_zone_ids);
+        $results=$this->db->get()->result_array();
+        $budget_target_di=array();
+        foreach($results as $result)
+        {
+            $budget_target_di[$result['fiscal_year_id']][$result['zone_id']]=$result;
+        }
+
+
         $this->db->from($this->config->item('table_bms_zi_budget_target').' budget_target');
         $this->db->select('budget_target.status_budget_forward, budget_target.status_target_outlet_forward, budget_target.status_target_outlet_next_year_forward');
         $this->db->select('budget_target.fiscal_year_id');
@@ -299,13 +318,20 @@ class Budget_zi_budget_target extends Root_Controller
                 $data['zone_id']=$zone['zone_id'];
                 $data['zone_name']=$zone['zone_name'];
                 $data['status_budget_forward']=$this->config->item('system_status_pending');
+                $data['status_target_zi_forward']=$this->config->item('system_status_pending');
                 $data['status_target_outlet_forward']=$this->config->item('system_status_pending');
+                $data['status_target_zi_next_year_forward']=$this->config->item('system_status_pending');
                 $data['status_target_outlet_next_year_forward']=$this->config->item('system_status_pending');
                 if(isset($budget_target[$fy['id']][$zone['zone_id']]))
                 {
                     $data['status_budget_forward']=$budget_target[$fy['id']][$zone['zone_id']]['status_budget_forward'];
                     $data['status_target_outlet_forward']=$budget_target[$fy['id']][$zone['zone_id']]['status_target_outlet_forward'];
                     $data['status_target_outlet_next_year_forward']=$budget_target[$fy['id']][$zone['zone_id']]['status_target_outlet_next_year_forward'];
+                }
+                if(isset($budget_target_di[$fy['id']][$zone['zone_id']]))
+                {
+                    $data['status_target_zi_forward']=$budget_target_di[$fy['id']][$zone['zone_id']]['status_target_zi_forward'];
+                    $data['status_target_zi_next_year_forward']=$budget_target_di[$fy['id']][$zone['zone_id']]['status_target_zi_next_year_forward'];
                 }
                 $items[]=$data;
             }
