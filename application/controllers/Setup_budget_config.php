@@ -29,13 +29,13 @@ class Setup_budget_config extends Root_Controller
         {
             $this->system_get_items();
         }
-        elseif($action=="add_edit_pricing_packing")
+        elseif($action=="add_edit_pricing")
         {
-            $this->system_add_edit_pricing_packing($id);
+            $this->system_add_edit_pricing($id);
         }
-        elseif($action=="get_items_add_edit_pricing_packing")
+        elseif($action=="get_items_add_edit_pricing")
         {
-            $this->system_get_items_add_edit_pricing_packing();
+            $this->system_get_items_add_edit_pricing();
         }
         elseif($action=="save_pricing_packing")
         {
@@ -73,15 +73,13 @@ class Setup_budget_config extends Root_Controller
             $data['revision_currency_rate_count']= 1;
             $data['revision_direct_cost_percentage_count']= 1;
         }
-        else if($method=='add_edit_pricing_packing')
+        else if($method=='add_edit_pricing')
         {
             $data['crop_name']= 1;
             $data['crop_type_name']= 1;
             $data['variety_name']= 1;
             $data['variety_id']= 1;
             $data['amount_price']= 1;
-            $data['amount_packing_cost']= 1;
-            $data['amount_sticker_cost']= 1;
         }
         return $data;
     }
@@ -139,7 +137,7 @@ class Setup_budget_config extends Root_Controller
         }
         $this->json_return($items);
     }
-    private function system_add_edit_pricing_packing($fiscal_year_id=0)
+    private function system_add_edit_pricing($fiscal_year_id=0)
     {
         $method='add_edit_pricing_packing';
         if((isset($this->permissions['action1']) && ($this->permissions['action1']==1))||(isset($this->permissions['action2']) && ($this->permissions['action2']==1)))
@@ -161,12 +159,12 @@ class Setup_budget_config extends Root_Controller
             $data['title']="Variety Pricing and Packing cost Setup for (".$data['fiscal_year']['name'].') Fiscal Year';
             $data['options']['fiscal_year_id']=$fiscal_year_id;
             $ajax['status']=true;
-            $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/add_edit_pricing_packing",$data,true));
+            $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/add_edit_pricing",$data,true));
             if($this->message)
             {
                 $ajax['system_message']=$this->message;
             }
-            $ajax['system_page_url']=site_url($this->controller_url.'/index/add_edit_pricing_packing/'.$fiscal_year_id);
+            $ajax['system_page_url']=site_url($this->controller_url.'/index/add_edit_pricing/'.$fiscal_year_id);
             $this->json_return($ajax);
         }
         else
@@ -176,7 +174,7 @@ class Setup_budget_config extends Root_Controller
             $this->json_return($ajax);
         }
     }
-    private function system_get_items_add_edit_pricing_packing()
+    private function system_get_items_add_edit_pricing()
     {
         $items=array();
         $fiscal_year_id=$this->input->post('fiscal_year_id');
@@ -190,10 +188,10 @@ class Setup_budget_config extends Root_Controller
         // main data checking
         $info_budget_config=$this->get_info_budget_config($fiscal_year_id);
         //old items
-        $results=Query_helper::get_info($this->config->item('table_bms_setup_budget_config_variety_pricing_packing'),'*',array('fiscal_year_id ='.$fiscal_year_id));
+        $results=Query_helper::get_info($this->config->item('table_bms_setup_budget_config_variety_pricing'),'*',array('fiscal_year_id ='.$fiscal_year_id));
         if(!$results)
         {
-            $results=Query_helper::get_info($this->config->item('table_bms_setup_budget_config_variety_pricing_packing'),'*',array('fiscal_year_id ='.($fiscal_year_id-1)),0,1,array('fiscal_year_id DESC'));
+            $results=Query_helper::get_info($this->config->item('table_bms_setup_budget_config_variety_pricing'),'*',array('fiscal_year_id ='.($fiscal_year_id-1)),0,1,array('fiscal_year_id DESC'));
         }
         $items_old=array();
         foreach($results as $result)
@@ -207,8 +205,6 @@ class Setup_budget_config extends Root_Controller
             if(isset($items_old[$result['variety_id']]))
             {
                 $info['amount_price']=$items_old[$result['variety_id']]['amount_price'];
-                $info['amount_packing_cost']=$items_old[$result['variety_id']]['amount_packing_cost'];
-                $info['amount_sticker_cost']=$items_old[$result['variety_id']]['amount_sticker_cost'];
             }
             $items[]=$info;
         }
@@ -217,7 +213,7 @@ class Setup_budget_config extends Root_Controller
     }
     private function initialize_row_add_edit_pricing_packing($info)
     {
-        $method='add_edit_pricing_packing';
+        $method='add_edit_pricing';
         $row=$this->get_preference_headers($method);
         foreach($row  as $key=>$r)
         {
@@ -250,7 +246,7 @@ class Setup_budget_config extends Root_Controller
         }
         $info_budget_config=$this->get_info_budget_config($item_head['fiscal_year_id']);
         //old items
-        $results=Query_helper::get_info($this->config->item('table_bms_setup_budget_config_variety_pricing_packing'),'*',array('fiscal_year_id ='.$item_head['fiscal_year_id']));
+        $results=Query_helper::get_info($this->config->item('table_bms_setup_budget_config_variety_pricing'),'*',array('fiscal_year_id ='.$item_head['fiscal_year_id']));
         $items_old=array();
         foreach($results as $result)
         {
@@ -261,13 +257,11 @@ class Setup_budget_config extends Root_Controller
         {
             if(isset($items_old[$variety_id]))
             {
-                if(($items_old[$variety_id]['amount_price']!=$price['amount_price']) || ($items_old[$variety_id]['amount_packing_cost']!=$price['amount_packing_cost']) || ($items_old[$variety_id]['amount_sticker_cost']!=$price['amount_sticker_cost']))
+                if(($items_old[$variety_id]['amount_price']!=$price['amount_price']))
                 {
                     $data=array();
                     $data['amount_price']=$price['amount_price'];
-                    $data['amount_packing_cost']=$price['amount_packing_cost'];
-                    $data['amount_sticker_cost']=$price['amount_sticker_cost'];
-                    Query_helper::update($this->config->item('table_bms_setup_budget_config_variety_pricing_packing'),$data,array('id='.$items_old[$variety_id]['id']),false);
+                    Query_helper::update($this->config->item('table_bms_setup_budget_config_variety_pricing'),$data,array('id='.$items_old[$variety_id]['id']),false);
                 }
             }
             else
@@ -276,9 +270,7 @@ class Setup_budget_config extends Root_Controller
                 $data['fiscal_year_id']=$item_head['fiscal_year_id'];
                 $data['variety_id']=$variety_id;
                 $data['amount_price']=$price['amount_price'];
-                $data['amount_packing_cost']=$price['amount_packing_cost'];
-                $data['amount_sticker_cost']=$price['amount_sticker_cost'];
-                Query_helper::add($this->config->item('table_bms_setup_budget_config_variety_pricing_packing'),$data,false);
+                Query_helper::add($this->config->item('table_bms_setup_budget_config_variety_pricing'),$data,false);
             }
         }
         $data=array();

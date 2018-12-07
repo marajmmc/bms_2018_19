@@ -7,9 +7,9 @@ if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(is
     $action_buttons[]=array
     (
         'type'=>'button',
-        'label'=>'Edit Pricing and Packing',
+        'label'=>'Edit Pricing',
         'class'=>'button_jqx_action',
-        'data-action-link'=>site_url($CI->controller_url.'/index/add_edit_pricing_packing')
+        'data-action-link'=>site_url($CI->controller_url.'/index/add_edit_pricing')
 
     );
     $action_buttons[]=array
@@ -103,7 +103,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 columns:
                 [
                     { text: '<?php echo $CI->lang->line('LABEL_FISCAL_YEAR'); ?>', dataField: 'fiscal_year',width:'80',filtertype: 'list'},
-                    { text: 'Pricing & Packing Time(s)', dataField: 'revision_pricing_count', width:'150',cellsAlign:'right'},
+                    { text: 'Pricing Time(s)', dataField: 'revision_pricing_count', width:'150',cellsAlign:'right'},
                     { text: 'Currency Rate Time(s)', dataField: 'revision_currency_rate_count', width:'150',cellsAlign:'right'},
                     { text: 'Direct Cost Percentage Time(s)', dataField: 'revision_direct_cost_percentage_count', width:'150',cellsAlign:'right'}
                 ]
