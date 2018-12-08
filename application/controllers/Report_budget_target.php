@@ -220,7 +220,7 @@ class Report_budget_target extends Root_Controller
             $this->db->select('bt.variety_id,bt.quantity_budget,bt.quantity_target');
 
             $this->db->join($this->config->item('table_login_csetup_cus_info').' cus_info','cus_info.customer_id = bt.outlet_id','INNER');
-            $this->db->where('cus_info.revision',$zone_id);
+            $this->db->where('cus_info.revision',1);
 
             $this->db->join($this->config->item('table_login_setup_location_districts').' d','d.id = cus_info.district_id','INNER');
             $this->db->join($this->config->item('table_login_setup_location_territories').' t','t.id = d.territory_id','INNER');
@@ -249,7 +249,6 @@ class Report_budget_target extends Root_Controller
         {
             $budget_target_sub[$result['variety_id']][$result['area_id']]=$result;
         }
-
         //getting budget and target
         $budget_target=array();
         if($zone_id>0)
@@ -294,8 +293,6 @@ class Report_budget_target extends Root_Controller
             }
         }
         $this->db->where('v.status',$this->config->item('system_status_active'));
-        $this->db->where('v.status',$this->config->item('system_status_active'));
-
         $this->db->where('v.whose','ARM');
 
         $this->db->order_by('crop.ordering','ASC');
@@ -360,7 +357,7 @@ class Report_budget_target extends Root_Controller
                 {
                     $type_total['crop_name']=$prev_crop_name;
                     $type_total['crop_type_name']=$prev_type_name;
-                    
+
                     $items[]=$type_total;
                     $type_total=$this->reset_row($type_total);
                     //$info['crop_name']='';
