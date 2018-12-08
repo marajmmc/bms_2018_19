@@ -216,7 +216,7 @@ class Report_budget_target extends Root_Controller
         if($zone_id>0)
         {
             $this->db->from($this->config->item('table_pos_si_budget_target_outlet').' bt');
-            $this->db->select('bt.outlet_id as area_id');
+            $this->db->select('bt.outlet_id area_id');
             $this->db->select('bt.variety_id,bt.quantity_budget,bt.quantity_target');
 
             $this->db->join($this->config->item('table_login_csetup_cus_info').' cus_info','cus_info.customer_id = bt.outlet_id','INNER');
@@ -230,7 +230,7 @@ class Report_budget_target extends Root_Controller
         elseif($division_id>0)
         {
             $this->db->from($this->config->item('table_bms_zi_budget_target_zone').' bt');
-            $this->db->select('bt.zone_id as area_id');
+            $this->db->select('bt.zone_id area_id');
             $this->db->select('bt.variety_id,bt.quantity_budget,bt.quantity_target');
             $this->db->join($this->config->item('table_login_setup_location_zones').' zone','zone.id = bt.zone_id','INNER');
             $this->db->where('zone.division_id',$division_id);
@@ -238,7 +238,7 @@ class Report_budget_target extends Root_Controller
         else
         {
             $this->db->from($this->config->item('table_bms_di_budget_target_division').' bt');
-            $this->db->select('bt.division_id as area_id');
+            $this->db->select('bt.division_id area_id');
             $this->db->select('bt.variety_id,bt.quantity_budget,bt.quantity_target');
 
         }
