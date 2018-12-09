@@ -2784,7 +2784,7 @@ class Budget_zi_budget_target extends Root_Controller
                 $result['time']=System_helper::display_date_time($budget_target['date_target_outlet_forwarded']);
             }
             $data['info_basic'][]=$result;
-            //target forward area(to ZI from DI)
+            //target forward area 3yr(to ZI from DI)
             $result=array();
             $result['label_prefix']=$this->lang->line('LABEL_STATUS_TARGET_FORWARD_AREA_NEXT_YEAR');
             $result['status']=$this->config->item('system_status_pending');
@@ -2799,7 +2799,7 @@ class Budget_zi_budget_target extends Root_Controller
             $data['info_basic'][]=$result;
 
 
-            //target forward sub area(to outlets from ZI)
+            //target forward sub area 3yr(to outlets from ZI)
             $result=array();
             $result['label_prefix']=$this->lang->line('LABEL_STATUS_TARGET_FORWARD_AREA_SUB_NEXT_YEAR');
             $result['status']=$budget_target['status_target_outlet_next_year_forward'];
