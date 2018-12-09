@@ -18,6 +18,14 @@ class Setup_budget_config extends Root_Controller
     private function language_config()
     {
         $this->lang->language['LABEL_PRICE']='Price';
+
+        /* Setup > Budget Config > Indirect Cost */
+        $this->lang->language['LABEL_GENERAL_EXPENSE'] = 'General Expense';
+        $this->lang->language['LABEL_MARKETING_EXPENSE'] = 'Marketing Expense';
+        $this->lang->language['LABEL_FINANCIAL_EXPENSE'] = 'Financial Expense';
+        $this->lang->language['LABEL_INCENTIVE'] = 'Incentive';
+        $this->lang->language['LABEL_PROFIT'] = 'Profit';
+        $this->lang->language['LABEL_SALES_COMMISSION'] = 'Sales Commission';
     }
     public function index($action="list", $id=0)
     {
@@ -57,6 +65,22 @@ class Setup_budget_config extends Root_Controller
         {
             $this->system_save_direct_cost();
         }
+        elseif($action=="add_edit_packing_cost")
+        {
+            $this->system_add_edit_packing_cost($id);
+        }
+        elseif($action=="save_packing_cost")
+        {
+            $this->system_save_packing_cost();
+        }
+        elseif($action=="add_edit_indirect_cost")
+        {
+            $this->system_add_edit_indirect_cost($id);
+        }
+        elseif($action=="save_indirect_cost")
+        {
+            $this->system_save_indirect_cost();
+        }
         else
         {
             $this->system_list();
@@ -72,6 +96,8 @@ class Setup_budget_config extends Root_Controller
             $data['revision_pricing_count']= 1;
             $data['revision_currency_rate_count']= 1;
             $data['revision_direct_cost_percentage_count']= 1;
+            $data['revision_packing_cost_percentage_count']= 1;
+            $data['revision_indirect_cost_percentage_count']= 1;
         }
         else if($method=='add_edit_pricing')
         {
@@ -80,6 +106,7 @@ class Setup_budget_config extends Root_Controller
             $data['variety_name']= 1;
             $data['variety_id']= 1;
             $data['amount_price']= 1;
+            $data['amount_price_net']= 1;
         }
         return $data;
     }
@@ -127,11 +154,15 @@ class Setup_budget_config extends Root_Controller
             $data['revision_pricing_count']=0;
             $data['revision_currency_rate_count']=0;
             $data['revision_direct_cost_percentage_count']=0;
+            $data['revision_packing_cost_percentage_count']=0;
+            $data['revision_indirect_cost_percentage_count']=0;
             if(isset($budget_configs[$fy['id']]))
             {
                 $data['revision_pricing_count']=$budget_configs[$fy['id']]['revision_pricing_count'];
                 $data['revision_currency_rate_count']=$budget_configs[$fy['id']]['revision_currency_rate_count'];
                 $data['revision_direct_cost_percentage_count']=$budget_configs[$fy['id']]['revision_direct_cost_percentage_count'];
+                $data['revision_packing_cost_percentage_count']=$budget_configs[$fy['id']]['revision_packing_cost_percentage_count'];
+                $data['revision_indirect_cost_percentage_count']=$budget_configs[$fy['id']]['revision_indirect_cost_percentage_count'];
             }
             $items[]=$data;
         }
@@ -199,12 +230,15 @@ class Setup_budget_config extends Root_Controller
             $items_old[$result['variety_id']]=$result;
         }
         $results = Budget_helper::get_crop_type_varieties();
+
+
         foreach($results as $result)
         {
             $info=$this->initialize_row_add_edit_pricing_packing($result);
             if(isset($items_old[$result['variety_id']]))
             {
                 $info['amount_price']=$items_old[$result['variety_id']]['amount_price'];
+                $info['amount_price_net']=$items_old[$result['variety_id']]['amount_price_net'];
             }
             $items[]=$info;
         }
@@ -257,10 +291,11 @@ class Setup_budget_config extends Root_Controller
         {
             if(isset($items_old[$variety_id]))
             {
-                if(($items_old[$variety_id]['amount_price']!=$price['amount_price']))
+                if( ($items_old[$variety_id]['amount_price']!=$price['amount_price']) || ($items_old[$variety_id]['amount_price_net']!=$price['amount_price_net']) )
                 {
                     $data=array();
                     $data['amount_price']=$price['amount_price'];
+                    $data['amount_price_net']=$price['amount_price_net'];
                     Query_helper::update($this->config->item('table_bms_setup_budget_config_variety_pricing'),$data,array('id='.$items_old[$variety_id]['id']),false);
                 }
             }
@@ -270,6 +305,7 @@ class Setup_budget_config extends Root_Controller
                 $data['fiscal_year_id']=$item_head['fiscal_year_id'];
                 $data['variety_id']=$variety_id;
                 $data['amount_price']=$price['amount_price'];
+                $data['amount_price_net']=$price['amount_price_net'];
                 Query_helper::add($this->config->item('table_bms_setup_budget_config_variety_pricing'),$data,false);
             }
         }
@@ -458,6 +494,165 @@ class Setup_budget_config extends Root_Controller
         }
     }
 
+    private function system_add_edit_packing_cost($fiscal_year_id=0)
+    {
+        if((isset($this->permissions['action1']) && ($this->permissions['action1']==1))||(isset($this->permissions['action2']) && ($this->permissions['action2']==1)))
+        {
+            if(!($fiscal_year_id>0))
+            {
+                $fiscal_year_id=$this->input->post('fiscal_year_id');
+            }
+            $data = array();
+            $data['item']=$this->get_info_budget_config($fiscal_year_id);
+
+            if(!$data['item']['amount_packing_cost_percentage'])
+            {
+                $before_year_info=Query_helper::get_info($this->config->item('table_bms_setup_budget_config'),'*',array('fiscal_year_id ='.($fiscal_year_id-1)),1);
+
+                if($before_year_info)
+                {
+                    $data['item']['amount_packing_cost_percentage']=$before_year_info['amount_packing_cost_percentage'];
+                }
+            }
+            $data['packing_cost_items']=Query_helper::get_info($this->config->item('table_login_setup_packing_cost_items'),'*',array('status !="'.$this->config->item('system_status_delete').'"'));
+            $data['fiscal_year']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id ='.$fiscal_year_id),1);
+            $data['title']='Packing Cost Percentage Setup for ( '.$data['fiscal_year']['name'].' ) Fiscal Year';
+            //$data['item']['fiscal_year_id']=$fiscal_year_id;
+            $ajax['status']=true;
+            $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/add_edit_packing_cost",$data,true));
+            if($this->message)
+            {
+                $ajax['system_message']=$this->message;
+            }
+            $ajax['system_page_url']=site_url($this->controller_url.'/index/add_edit_packing_cost/'.$fiscal_year_id);
+            $this->json_return($ajax);
+        }
+        else
+        {
+            $ajax['status']=false;
+            $ajax['system_message']=$this->lang->line("YOU_DONT_HAVE_ACCESS");
+            $this->json_return($ajax);
+        }
+    }
+    private function system_save_packing_cost()
+    {
+        $user = User_helper::get_user();
+        $time=time();
+        $item_head=$this->input->post('item');
+        $items=$this->input->post('items');
+        if(!((isset($this->permissions['action1']) && ($this->permissions['action1']==1))||(isset($this->permissions['action2']) && ($this->permissions['action2']==1))))
+        {
+            $ajax['status']=false;
+            $ajax['system_message']=$this->lang->line("YOU_DONT_HAVE_ACCESS");
+            $this->json_return($ajax);
+        }
+        if(!Budget_helper::check_validation_fiscal_year($item_head['fiscal_year_id']))
+        {
+            System_helper::invalid_try(__FUNCTION__,$item_head['fiscal_year_id'],'Invalid Fiscal year');
+            $ajax['status']=false;
+            $ajax['system_message']='Invalid Fiscal Year';
+            $this->json_return($ajax);
+        }
+
+        $this->db->trans_start();  //DB Transaction Handle START
+
+        $data=array();
+        $data['amount_packing_cost_percentage'] = json_encode($items);
+        $data['date_packing_cost_percentage'] = $time;
+        $data['user_packing_cost_percentage'] = $user->user_id;
+        $this->db->set('revision_packing_cost_percentage_count','revision_packing_cost_percentage_count+1',false);
+        Query_helper::update($this->config->item('table_bms_setup_budget_config'),$data,array('fiscal_year_id='.$item_head['fiscal_year_id']),false);
+
+        $this->db->trans_complete();   //DB Transaction Handle END
+        if ($this->db->trans_status() === TRUE)
+        {
+            $this->message=$this->lang->line("MSG_SAVED_SUCCESS");
+            $this->system_list();
+        }
+        else
+        {
+            $ajax['status']=false;
+            $ajax['system_message']=$this->lang->line("MSG_SAVED_FAIL");
+            $this->json_return($ajax);
+        }
+    }
+
+    private function system_add_edit_indirect_cost($fiscal_year_id=0)
+    {
+        if((isset($this->permissions['action1']) && ($this->permissions['action1']==1))||(isset($this->permissions['action2']) && ($this->permissions['action2']==1)))
+        {
+            if(!($fiscal_year_id>0))
+            {
+                $fiscal_year_id=$this->input->post('fiscal_year_id');
+            }
+            $data = array();
+            $data['item']=$this->get_info_budget_config($fiscal_year_id);
+            $data['fiscal_year']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id ='.$fiscal_year_id),1);
+
+            $data['title']='Indirect Cost Setup for ( '.$data['fiscal_year']['name'].' ) Fiscal Year';
+            $ajax['status']=true;
+            $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/add_edit_indirect_cost",$data,true));
+            if($this->message)
+            {
+                $ajax['system_message']=$this->message;
+            }
+            $ajax['system_page_url']=site_url($this->controller_url.'/index/add_edit_indirect_cost/'.$fiscal_year_id);
+            $this->json_return($ajax);
+        }
+        else
+        {
+            $ajax['status']=false;
+            $ajax['system_message']=$this->lang->line("YOU_DONT_HAVE_ACCESS");
+            $this->json_return($ajax);
+        }
+    }
+    private function system_save_indirect_cost()
+    {
+        $user = User_helper::get_user();
+        $time=time();
+        $item_head=$this->input->post('item');
+        $data=$this->input->post('items');
+        if(!((isset($this->permissions['action1']) && ($this->permissions['action1']==1))||(isset($this->permissions['action2']) && ($this->permissions['action2']==1))))
+        {
+            $ajax['status']=false;
+            $ajax['system_message']=$this->lang->line("YOU_DONT_HAVE_ACCESS");
+            $this->json_return($ajax);
+        }
+        if(!Budget_helper::check_validation_fiscal_year($item_head['fiscal_year_id']))
+        {
+            System_helper::invalid_try(__FUNCTION__,$item_head['fiscal_year_id'],'Invalid Fiscal year');
+            $ajax['status']=false;
+            $ajax['system_message']='Invalid Fiscal Year';
+            $this->json_return($ajax);
+        }
+        //Validation Checking
+        if (!$this->check_validation())
+        {
+            $ajax['status'] = false;
+            $ajax['system_message'] = $this->message;
+            $this->json_return($ajax);
+        }
+
+        $this->db->trans_start();  //DB Transaction Handle START
+
+        $data['date_indirect_cost_percentage'] = $time;
+        $data['user_indirect_cost_percentage'] = $user->user_id;
+        $this->db->set('revision_indirect_cost_percentage_count','revision_indirect_cost_percentage_count+1',false);
+        Query_helper::update($this->config->item('table_bms_setup_budget_config'),$data,array('fiscal_year_id='.$item_head['fiscal_year_id']),false);
+
+        $this->db->trans_complete();   //DB Transaction Handle END
+        if ($this->db->trans_status() === TRUE)
+        {
+            $this->message=$this->lang->line("MSG_SAVED_SUCCESS");
+            $this->system_list();
+        }
+        else
+        {
+            $ajax['status']=false;
+            $ajax['system_message']=$this->lang->line("MSG_SAVED_FAIL");
+            $this->json_return($ajax);
+        }
+    }
 
     private function get_info_budget_config($fiscal_year_id)
     {
@@ -473,5 +668,22 @@ class Setup_budget_config extends Root_Controller
             $info=Query_helper::get_info($this->config->item('table_bms_setup_budget_config'),'*',array('id ='.$id),1);
         }
         return $info;
+    }
+
+    private function check_validation()
+    {
+        $this->load->library('form_validation');
+        $this->form_validation->set_rules('items[amount_general_percentage]', $this->lang->line('LABEL_GENERAL_EXPENSE'), 'required|numeric');
+        $this->form_validation->set_rules('items[amount_marketing_percentage]', $this->lang->line('LABEL_MARKETING_EXPENSE'), 'required|numeric');
+        $this->form_validation->set_rules('items[amount_finance_percentage]', $this->lang->line('LABEL_FINANCIAL_EXPENSE'), 'required|numeric');
+        $this->form_validation->set_rules('items[amount_incentive_percentage]', $this->lang->line('LABEL_INCENTIVE'), 'required|numeric');
+        $this->form_validation->set_rules('items[amount_profit_percentage]', $this->lang->line('LABEL_PROFIT'), 'required|numeric');
+        $this->form_validation->set_rules('items[amount_sales_commission_percentage]', $this->lang->line('LABEL_SALES_COMMISSION'), 'required|numeric');
+        if ($this->form_validation->run() == FALSE)
+        {
+            $this->message = validation_errors();
+            return false;
+        }
+        return true;
     }
 }

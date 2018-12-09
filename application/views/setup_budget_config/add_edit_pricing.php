@@ -76,6 +76,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             for(var i=0;i<data.length;i++)
             {
                 $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+'][amount_price]" value="'+data[i]['amount_price']+'">');
+                $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+'][amount_price_net]" value="'+data[i]['amount_price_net']+'">');
             }
             var sure = confirm('<?php echo $CI->lang->line('MSG_CONFIRM_SAVE'); ?>');
             if(sure)
@@ -129,7 +130,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         var cellsrenderer = function(row, column, value, defaultHtml, columnSettings, record)
         {
             var element = $(defaultHtml);
-            if(column=='amount_price')
+            if(column.substr(0,12)=='amount_price')
             {
                 if(value==0)
                 {
@@ -164,6 +165,19 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                     { text: '<?php echo $CI->lang->line('LABEL_CROP_TYPE_NAME'); ?>', dataField: 'crop_type_name',width:'100',pinned:true,editable:false},
                     { text: '<?php echo $CI->lang->line('LABEL_VARIETY_NAME'); ?>', dataField: 'variety_name',width:'150',pinned:true,editable:false},
                     { text: '<?php echo $CI->lang->line('LABEL_PRICE'); ?> (BDT)',datafield: 'amount_price', width: 100,filterable: false,cellsrenderer: cellsrenderer,cellsalign: 'right',columntype: 'custom',
+                        initeditor: function (row, cellvalue, editor, celltext, pressedkey)
+                        {
+                            editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');
+                        },
+                        geteditorvalue: function (row, cellvalue, editor)
+                        {
+                            // return the editor's value.
+                            var value=editor.find('input').val();
+                            var selectedRowData = $('#system_jqx_container').jqxGrid('getrowdata', row);
+                            return editor.find('input').val();
+                        }
+                    },
+                    { text: 'Net <?php echo $CI->lang->line('LABEL_PRICE'); ?> (BDT)',datafield: 'amount_price_net', width: 100,filterable: false,cellsrenderer: cellsrenderer,cellsalign: 'right',columntype: 'custom',
                         initeditor: function (row, cellvalue, editor, celltext, pressedkey)
                         {
                             editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');
