@@ -62,7 +62,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         </div>
     </div>
     <?php
-    echo $CI->load->view($this->common_view_location."/acres_info",$acres,true);
+    echo $CI->load->view($this->common_view_location."/info_acres",'',true);
     ?>
     <div class="col-xs-12" id="system_jqx_container">
 
