@@ -2498,7 +2498,7 @@ class Budget_hom_budget_target extends Root_Controller
             {
                 $ajax['system_message']=$this->message;
             }
-            $ajax['system_page_url']=site_url($this->common_view_location.'/index/details/'.$fiscal_year_id);
+            $ajax['system_page_url']=site_url($this->controller_url.'/index/details/'.$fiscal_year_id);
             $this->json_return($ajax);
         }
         else
