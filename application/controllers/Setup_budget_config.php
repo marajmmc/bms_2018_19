@@ -93,11 +93,11 @@ class Setup_budget_config extends Root_Controller
         {
             $data['fiscal_year_id']= 1;
             $data['fiscal_year']= 1;
-            $data['revision_pricing_count']= 1;
-            $data['revision_currency_rate_count']= 1;
-            $data['revision_direct_cost_percentage_count']= 1;
-            $data['revision_packing_cost_percentage_count']= 1;
-            $data['revision_indirect_cost_percentage_count']= 1;
+            $data['revision_count_pricing']= 1;
+            $data['revision_count_currency_rate']= 1;
+            $data['revision_count_direct_cost_percentage']= 1;
+            $data['revision_count_packing_cost_percentage']= 1;
+            $data['revision_count_indirect_cost_percentage']= 1;
         }
         else if($method=='add_edit_pricing')
         {
@@ -105,8 +105,8 @@ class Setup_budget_config extends Root_Controller
             $data['crop_type_name']= 1;
             $data['variety_name']= 1;
             $data['variety_id']= 1;
-            $data['amount_price']= 1;
             $data['amount_price_net']= 1;
+            $data['amount_price_trade']= 1;
         }
         return $data;
     }
@@ -151,18 +151,18 @@ class Setup_budget_config extends Root_Controller
             $data=array();
             $data['fiscal_year_id']=$fy['id'];
             $data['fiscal_year']=$fy['text'];
-            $data['revision_pricing_count']=0;
-            $data['revision_currency_rate_count']=0;
-            $data['revision_direct_cost_percentage_count']=0;
-            $data['revision_packing_cost_percentage_count']=0;
-            $data['revision_indirect_cost_percentage_count']=0;
+            $data['revision_count_pricing']=0;
+            $data['revision_count_currency_rate']=0;
+            $data['revision_count_direct_cost_percentage']=0;
+            $data['revision_count_packing_cost_percentage']=0;
+            $data['revision_count_indirect_cost_percentage']=0;
             if(isset($budget_configs[$fy['id']]))
             {
-                $data['revision_pricing_count']=$budget_configs[$fy['id']]['revision_pricing_count'];
-                $data['revision_currency_rate_count']=$budget_configs[$fy['id']]['revision_currency_rate_count'];
-                $data['revision_direct_cost_percentage_count']=$budget_configs[$fy['id']]['revision_direct_cost_percentage_count'];
-                $data['revision_packing_cost_percentage_count']=$budget_configs[$fy['id']]['revision_packing_cost_percentage_count'];
-                $data['revision_indirect_cost_percentage_count']=$budget_configs[$fy['id']]['revision_indirect_cost_percentage_count'];
+                $data['revision_count_pricing']=$budget_configs[$fy['id']]['revision_count_pricing'];
+                $data['revision_count_currency_rate']=$budget_configs[$fy['id']]['revision_count_currency_rate'];
+                $data['revision_count_direct_cost_percentage']=$budget_configs[$fy['id']]['revision_count_direct_cost_percentage'];
+                $data['revision_count_packing_cost_percentage']=$budget_configs[$fy['id']]['revision_count_packing_cost_percentage'];
+                $data['revision_count_indirect_cost_percentage']=$budget_configs[$fy['id']]['revision_count_indirect_cost_percentage'];
             }
             $items[]=$data;
         }
@@ -237,8 +237,8 @@ class Setup_budget_config extends Root_Controller
             $info=$this->initialize_row_add_edit_pricing_packing($result);
             if(isset($items_old[$result['variety_id']]))
             {
-                $info['amount_price']=$items_old[$result['variety_id']]['amount_price'];
                 $info['amount_price_net']=$items_old[$result['variety_id']]['amount_price_net'];
+                $info['amount_price_trade']=$items_old[$result['variety_id']]['amount_price_trade'];
             }
             $items[]=$info;
         }
@@ -291,11 +291,11 @@ class Setup_budget_config extends Root_Controller
         {
             if(isset($items_old[$variety_id]))
             {
-                if( ($items_old[$variety_id]['amount_price']!=$price['amount_price']) || ($items_old[$variety_id]['amount_price_net']!=$price['amount_price_net']) )
+                if( ($items_old[$variety_id]['amount_price_net']!=$price['amount_price_net']) || ($items_old[$variety_id]['amount_price_trade']!=$price['amount_price_trade']) )
                 {
                     $data=array();
-                    $data['amount_price']=$price['amount_price'];
                     $data['amount_price_net']=$price['amount_price_net'];
+                    $data['amount_price_trade']=$price['amount_price_trade'];
                     Query_helper::update($this->config->item('table_bms_setup_budget_config_variety_pricing'),$data,array('id='.$items_old[$variety_id]['id']),false);
                 }
             }
@@ -304,15 +304,15 @@ class Setup_budget_config extends Root_Controller
                 $data=array();
                 $data['fiscal_year_id']=$item_head['fiscal_year_id'];
                 $data['variety_id']=$variety_id;
-                $data['amount_price']=$price['amount_price'];
                 $data['amount_price_net']=$price['amount_price_net'];
+                $data['amount_price_trade']=$price['amount_price_trade'];
                 Query_helper::add($this->config->item('table_bms_setup_budget_config_variety_pricing'),$data,false);
             }
         }
         $data=array();
         $data['date_pricing_updated'] = $time;
         $data['user_pricing_updated'] = $user->user_id;
-        $this->db->set('revision_pricing_count','revision_pricing_count+1',false);
+        $this->db->set('revision_count_pricing','revision_count_pricing+1',false);
         Query_helper::update($this->config->item('table_bms_setup_budget_config'),$data,array('fiscal_year_id='.$item_head['fiscal_year_id']),false);
 
         $this->db->trans_complete();   //DB Transaction Handle END
@@ -394,7 +394,7 @@ class Setup_budget_config extends Root_Controller
         $data['amount_currency_rate'] = json_encode($items);
         $data['user_currency_rate'] = $time;
         $data['date_currency_rate'] = $user->user_id;
-        $this->db->set('revision_currency_rate_count','revision_currency_rate_count+1',false);
+        $this->db->set('revision_count_currency_rate','revision_count_currency_rate+1',false);
         Query_helper::update($this->config->item('table_bms_setup_budget_config'),$data,array('fiscal_year_id='.$item_head['fiscal_year_id']),false);
 
         $this->db->trans_complete();   //DB Transaction Handle END
@@ -477,7 +477,7 @@ class Setup_budget_config extends Root_Controller
         $data['amount_direct_cost_percentage'] = json_encode($items);
         $data['date_direct_cost_percentage'] = $time;
         $data['user_direct_cost_percentage'] = $user->user_id;
-        $this->db->set('revision_direct_cost_percentage_count','revision_direct_cost_percentage_count+1',false);
+        $this->db->set('revision_count_direct_cost_percentage','revision_count_direct_cost_percentage+1',false);
         Query_helper::update($this->config->item('table_bms_setup_budget_config'),$data,array('fiscal_year_id='.$item_head['fiscal_year_id']),false);
 
         $this->db->trans_complete();   //DB Transaction Handle END
@@ -560,7 +560,7 @@ class Setup_budget_config extends Root_Controller
         $data['amount_packing_cost_percentage'] = json_encode($items);
         $data['date_packing_cost_percentage'] = $time;
         $data['user_packing_cost_percentage'] = $user->user_id;
-        $this->db->set('revision_packing_cost_percentage_count','revision_packing_cost_percentage_count+1',false);
+        $this->db->set('revision_count_packing_cost_percentage','revision_count_packing_cost_percentage+1',false);
         Query_helper::update($this->config->item('table_bms_setup_budget_config'),$data,array('fiscal_year_id='.$item_head['fiscal_year_id']),false);
 
         $this->db->trans_complete();   //DB Transaction Handle END
@@ -637,7 +637,7 @@ class Setup_budget_config extends Root_Controller
 
         $data['date_indirect_cost_percentage'] = $time;
         $data['user_indirect_cost_percentage'] = $user->user_id;
-        $this->db->set('revision_indirect_cost_percentage_count','revision_indirect_cost_percentage_count+1',false);
+        $this->db->set('revision_count_indirect_cost_percentage','revision_count_indirect_cost_percentage+1',false);
         Query_helper::update($this->config->item('table_bms_setup_budget_config'),$data,array('fiscal_year_id='.$item_head['fiscal_year_id']),false);
 
         $this->db->trans_complete();   //DB Transaction Handle END

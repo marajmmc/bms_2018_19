@@ -75,8 +75,8 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             var data=$('#system_jqx_container').jqxGrid('getrows');
             for(var i=0;i<data.length;i++)
             {
-                $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+'][amount_price]" value="'+data[i]['amount_price']+'">');
                 $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+'][amount_price_net]" value="'+data[i]['amount_price_net']+'">');
+                $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+'][amount_price_trade]" value="'+data[i]['amount_price_trade']+'">');
             }
             var sure = confirm('<?php echo $CI->lang->line('MSG_CONFIRM_SAVE'); ?>');
             if(sure)
@@ -164,7 +164,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                     { text: '<?php echo $CI->lang->line('LABEL_CROP_NAME'); ?>', dataField: 'crop_name',width:'100', filtertype:'list',pinned:true,editable:false},
                     { text: '<?php echo $CI->lang->line('LABEL_CROP_TYPE_NAME'); ?>', dataField: 'crop_type_name',width:'100',pinned:true,editable:false},
                     { text: '<?php echo $CI->lang->line('LABEL_VARIETY_NAME'); ?>', dataField: 'variety_name',width:'150',pinned:true,editable:false},
-                    { text: '<?php echo $CI->lang->line('LABEL_PRICE'); ?> (BDT)',datafield: 'amount_price', width: 100,filterable: false,cellsrenderer: cellsrenderer,cellsalign: 'right',columntype: 'custom',
+                    { text: 'Net <?php echo $CI->lang->line('LABEL_PRICE'); ?> (BDT)',datafield: 'amount_price_net', width: 130,filterable: false,cellsrenderer: cellsrenderer,cellsalign: 'right',columntype: 'custom',
                         initeditor: function (row, cellvalue, editor, celltext, pressedkey)
                         {
                             editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');
@@ -177,7 +177,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                             return editor.find('input').val();
                         }
                     },
-                    { text: 'Net <?php echo $CI->lang->line('LABEL_PRICE'); ?> (BDT)',datafield: 'amount_price_net', width: 100,filterable: false,cellsrenderer: cellsrenderer,cellsalign: 'right',columntype: 'custom',
+                    { text: 'Trade <?php echo $CI->lang->line('LABEL_PRICE'); ?> (BDT)',datafield: 'amount_price_trade', width: 130,filterable: false,cellsrenderer: cellsrenderer,cellsalign: 'right',columntype: 'custom',
                         initeditor: function (row, cellvalue, editor, celltext, pressedkey)
                         {
                             editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');

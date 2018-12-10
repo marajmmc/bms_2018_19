@@ -39,7 +39,7 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                     <thead>
                         <tr>
                             <th>Costing Head</th>
-                            <th class="text-right">Amount</th>
+                            <th class="text-right">Percentage (%)</th>
                         </tr>
                     </thead>
                     <tbody>
