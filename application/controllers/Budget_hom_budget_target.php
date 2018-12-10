@@ -2517,7 +2517,7 @@ class Budget_hom_budget_target extends Root_Controller
 
         //get variety pricing
         $variety_pricing=array();
-        $results=Query_helper::get_info($this->config->item('table_bms_setup_budget_config_variety_pricing'),array('variety_id','amount_price'),array('fiscal_year_id ='.$fiscal_year_id));
+        $results=Query_helper::get_info($this->config->item('table_bms_setup_budget_config_variety_pricing'),array('variety_id','amount_price_net amount_price'),array('fiscal_year_id ='.$fiscal_year_id));
         foreach($results as $result)
         {
             $variety_pricing[$result['variety_id']]=$result['amount_price'];

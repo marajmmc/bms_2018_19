@@ -71,7 +71,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
     <?php
     echo $CI->load->view($this->common_view_location."/info_acres",'',true);
     ?>
-    <form id="save_form_jqx" action="<?php echo site_url($CI->controller_url.'/index/save_target_zi');?>" method="post">
+    <form id="save_form_jqx" action="<?php echo site_url($CI->controller_url.'/index/save_target_zone');?>" method="post">
         <input type="hidden" name="item[fiscal_year_id]" value="<?php echo $options['fiscal_year_id']; ?>" />
         <input type="hidden" name="item[division_id]" value="<?php echo $options['division_id']; ?>" />
         <div id="jqx_inputs">
@@ -111,7 +111,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             }
         });
 
-        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_assign_target_zi');?>";
+        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_edit_target_zone');?>";
 
         // prepare the data
         var source =

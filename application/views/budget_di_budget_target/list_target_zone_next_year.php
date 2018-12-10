@@ -14,7 +14,7 @@ if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(is
         'type'=>'button',
         'label'=>$CI->lang->line('ACTION_EDIT'),
         'class'=>'button_jqx_action',
-        'data-action-link'=>site_url($CI->controller_url.'/index/assign_target_zi_next_year/'.$options['fiscal_year_id'].'/'.$options['division_id'])
+        'data-action-link'=>site_url($CI->controller_url.'/index/edit_target_zone_next_year/'.$options['fiscal_year_id'].'/'.$options['division_id'])
 
     );
 }
@@ -22,7 +22,7 @@ if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(is
 $action_buttons[]=array
 (
     'label'=>$CI->lang->line("ACTION_REFRESH"),
-    'href'=>site_url($CI->controller_url.'/index/list_target_zi_next_year/'.$options['fiscal_year_id'])
+    'href'=>site_url($CI->controller_url.'/index/list_target_zone_next_year/'.$options['fiscal_year_id'])
 );
 $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
 ?>
@@ -59,7 +59,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
     {
         system_off_events();
         system_preset({controller:'<?php echo $CI->router->class; ?>'});
-        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_target_zi_next_year');?>";
+        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_target_zone_next_year');?>";
 
         // prepare the data
         var source =

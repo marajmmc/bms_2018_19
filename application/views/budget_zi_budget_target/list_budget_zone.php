@@ -87,7 +87,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 <?php
                 foreach($system_preference_items as $key => $value)
                 {
-                    if(($key=='id') || ($key=='number_of_variety_active') || ($key=='number_of_variety_budgeted') || ($key=='number_of_variety_budget_due'))
+                    if($key=='id' ||(substr($key, 0, 10)=='number_of_'))
                     {
                         ?>
                         { name: '<?php echo $key ?>', type: 'number' },
@@ -106,6 +106,27 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             type: 'POST',
             url: url,
             data:JSON.parse('<?php echo json_encode($options);?>')
+        };
+        var header_render=function (text, align)
+        {
+            var words = text.split(" ");
+            var label=words[0];
+            var count=words[0].length;
+            for (i = 1; i < words.length; i++)
+            {
+                if((count+words[i].length)>10)
+                {
+                    label=label+'</br>'+words[i];
+                    count=words[i].length;
+                }
+                else
+                {
+                    label=label+' '+words[i];
+                    count=count+words[i].length;
+                }
+
+            }
+            return '<div style="margin: 5px;">'+label+'</div>';
         };
         var cellsrenderer = function(row, column, value, defaultHtml, columnSettings, record)
         {
@@ -141,15 +162,16 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 selectionmode: 'singlerow',
                 altrows: true,
                 rowsheight: 35,
+                /*columnsheight: 40,*/
                 columnsreorder: true,
                 enablebrowserselection: true,
                 columns:
                 [
                     { text: '<?php echo $CI->lang->line('LABEL_ID'); ?>', dataField: 'crop_id',width:'50',cellsAlign:'right'},
                     { text: '<?php echo $CI->lang->line('LABEL_CROP_NAME'); ?>', dataField: 'crop_name', width:100},
-                    { columngroup: 'number_of_variety',text: 'Active', dataField: 'number_of_variety_active',width:'100', cellsalign:'right', align:'right',cellsrenderer: cellsrenderer},
-                    { columngroup: 'number_of_variety',text: 'Budgeted', dataField: 'number_of_variety_budgeted',width:'100', cellsalign:'right', align:'right',cellsrenderer: cellsrenderer},
-                    { columngroup: 'number_of_variety',text: 'Due Budget', dataField: 'number_of_variety_budget_due',width:'100', cellsalign:'right', align:'right',cellsrenderer: cellsrenderer}
+                    { columngroup: 'number_of_variety',text: 'Active', dataField: 'number_of_variety_active',width:'70', cellsalign:'right', align:'right',cellsrenderer: cellsrenderer},
+                    { columngroup: 'number_of_variety',text: 'Budgeted', dataField: 'number_of_variety_budgeted',width:'70', cellsalign:'right', align:'right',cellsrenderer: cellsrenderer},
+                    { columngroup: 'number_of_variety',text: 'Due Budget', dataField: 'number_of_variety_budget_due',width:'70', cellsalign:'right', align:'right',cellsrenderer: cellsrenderer}
                 ],
                 columngroups:
                 [

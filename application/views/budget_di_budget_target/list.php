@@ -20,7 +20,7 @@ if((isset($CI->permissions['action7']) && ($CI->permissions['action7']==1)))
         'type'=>'button',
         'label'=>'Forward Budget',
         'class'=>'button_jqx_action',
-        'data-action-link'=>site_url($CI->controller_url.'/index/budget_forward')
+        'data-action-link'=>site_url($CI->controller_url.'/index/forward_budget_division')
     );
 }
 if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(isset($CI->permissions['action2']) && ($CI->permissions['action2']==1)))
@@ -30,7 +30,7 @@ if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(is
         'type'=>'button',
         'label'=>' Assign ZI Target',
         'class'=>'button_jqx_action',
-        'data-action-link'=>site_url($CI->controller_url.'/index/list_target_zi')
+        'data-action-link'=>site_url($CI->controller_url.'/index/list_target_zone')
 
     );
 }
@@ -41,7 +41,7 @@ if((isset($CI->permissions['action7']) && ($CI->permissions['action7']==1)))
         'type'=>'button',
         'label'=>'Forward ZI Target',
         'class'=>'button_jqx_action',
-        'data-action-link'=>site_url($CI->controller_url.'/index/assign_target_zi_forward')
+        'data-action-link'=>site_url($CI->controller_url.'/index/forward_target_zone')
     );
 }
 if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(isset($CI->permissions['action2']) && ($CI->permissions['action2']==1)))
@@ -51,7 +51,7 @@ if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(is
         'type'=>'button',
         'label'=>' Next 3Y ZI Target',
         'class'=>'button_jqx_action',
-        'data-action-link'=>site_url($CI->controller_url.'/index/list_target_zi_next_year')
+        'data-action-link'=>site_url($CI->controller_url.'/index/list_target_zone_next_year')
 
     );
 }
@@ -62,7 +62,7 @@ if((isset($CI->permissions['action7']) && ($CI->permissions['action7']==1)))
         'type'=>'button',
         'label'=>'Forward Next 3Y ZI Target',
         'class'=>'button_jqx_action',
-        'data-action-link'=>site_url($CI->controller_url.'/index/assign_target_zi_forward_next_year')
+        'data-action-link'=>site_url($CI->controller_url.'/index/forward_target_zone_next_year')
     );
 }
 if(isset($CI->permissions['action0']) && ($CI->permissions['action0']==1))

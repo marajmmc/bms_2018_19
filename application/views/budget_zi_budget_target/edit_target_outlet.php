@@ -120,7 +120,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             }
         });
 
-        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_assign_target_outlet');?>";
+        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_edit_target_outlet');?>";
 
         // prepare the data
         var source =

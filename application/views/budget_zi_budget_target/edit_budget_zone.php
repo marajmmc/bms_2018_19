@@ -226,7 +226,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 showaggregates: true,
                 showstatusbar: true,
                 rowsheight: 35,
-                /*columnsheight: 40,*/
+                columnsheight: 40,
                 editable:true,
                 columns:
                 [

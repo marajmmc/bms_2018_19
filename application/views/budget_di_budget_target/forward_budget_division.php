@@ -26,6 +26,7 @@ if(isset($CI->permissions['action5']) && ($CI->permissions['action5']==1))
         'data-title'=>"Download"
     );
 }
+
 $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
 ?>
 
@@ -46,29 +47,30 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
     </div>
     <div style="" class="row show-grid">
         <div class="col-xs-4">
-            <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_ZONE_NAME');?></label>
+            <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_DIVISION_NAME');?></label>
         </div>
         <div class="col-sm-4 col-xs-8">
-            <label class="control-label"><?php echo $zone['name'];?></label>
+            <label class="control-label"><?php echo $division['name'];?></label>
         </div>
     </div>
+
     <?php
     echo $CI->load->view($this->common_view_location."/info_acres",'',true);
     ?>
-    <div style="font-size: 12px;margin-top: -10px;font-style: italic; color: red;" class="row show-grid">
+    <!--<div style="font-size: 12px;margin-top: -10px;font-style: italic; color: red;" class="row show-grid">
         <div class="col-xs-4"></div>
         <div class="col-sm-4 col-xs-8 text-center">
             <strong>Note:</strong> All item amount showing to kg.
         </div>
-    </div>
+    </div>-->
     <div class="col-xs-12" id="system_jqx_container">
 
     </div>
 </div>
 
-<form id="save_form" action="<?php echo site_url($CI->controller_url.'/index/save_forward_budget');?>" method="post">
+<form id="save_form" action="<?php echo site_url($CI->controller_url.'/index/save_forward_budget_division');?>" method="post">
     <input type="hidden" name="item[fiscal_year_id]" value="<?php echo $options['fiscal_year_id']; ?>" />
-    <input type="hidden" name="item[zone_id]" value="<?php echo $options['zone_id']; ?>" />
+    <input type="hidden" name="item[division_id]" value="<?php echo $options['division_id']; ?>" />
     <div class="row widget">
         <div class="widget-header">
             <div class="title">
@@ -110,7 +112,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         system_off_events();
         system_preset({controller:'<?php echo $CI->router->class; ?>'});
 
-        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_forward_budget');?>";
+        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_forward_budget_division');?>";
 
         // prepare the data
         var source =
@@ -118,34 +120,25 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             dataType: "json",
             dataFields: [
                 <?php
-                foreach($system_preference_items as $key=>$item)
-                {
-                    if(($key=='crop_type_name') || ($key=='variety_name'))
-                    {
+                 foreach($system_preference_items as $key=>$item)
+                 {
                     ?>
-                        { name: '<?php echo $key ?>', type: 'string' },
-                        <?php
-                    }
-                    else
-                    {
-                        ?>
-                        { name: '<?php echo $key ?>', type: 'number' },
-                        <?php
-                    }
-                }
-                foreach($outlets as $outlet)
-                {
-                ?>
-                    { name: 'quantity_budget_outlet_<?php echo $outlet['outlet_id']?>', type: 'number' },
-                    <?php
-                }
-                foreach($fiscal_years_previous_sales as $fy)
-                {
-                        ?>
-                    { name: 'quantity_sale_<?php echo $fy['id']; ?>', type: 'number' },
-                    <?php
-                }
-                ?>
+                { name: '<?php echo $key ?>', type: 'string' },
+                <?php
+            }
+            foreach($zones as $zone)
+            {
+                    ?>
+                { name: 'quantity_budget_zone_<?php echo $zone['zone_id']?>', type: 'string' },
+                <?php
+            }
+            foreach($fiscal_years_previous_sales as $fy)
+            {
+                    ?>
+                { name: 'quantity_sale_<?php echo $fy['id']; ?>', type: 'string' },
+                <?php
+            }
+            ?>
             ],
             id: 'id',
             type: 'POST',
@@ -274,15 +267,15 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                                 <?php
                             }
                         ?>
-                        { text: 'Total</br>Zone Budget', dataField: 'quantity_budget_zone',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
-                        { text: 'Total</br>Outlet Budget', dataField: 'quantity_budget_outlet_total',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
+                        { text: 'Total</br>division Budget', dataField: 'quantity_budget_division',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
+                        { text: 'Total</br>Zone Budget', dataField: 'quantity_budget_zone_total',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
                         <?php
                     $serial=0;
-                    foreach($outlets as $outlet)
+                    foreach($zones as $zone)
                     {
                     ++$serial;
                     ?>
-                        { text: '<?php echo $serial.'. '.$outlet['outlet_name']?>',renderer: header_render, dataField: 'quantity_budget_outlet_<?php echo $outlet['outlet_id']?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
+                        { text: '<?php echo $serial.'. '.$zone['zone_name']?>',renderer: header_render, dataField: 'quantity_budget_zone_<?php echo $zone['zone_id']?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
                         <?php
                         }
                         ?>
