@@ -116,26 +116,35 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             dataType: "json",
             dataFields: [
                 <?php
-                 foreach($system_preference_items as $key=>$item)
-                 {
-                    ?>
-                    { name: '<?php echo $key ?>', type: 'string' },
-                    <?php
+                foreach($system_preference_items as $key=>$item)
+                {
+                    if(($key=='crop_name') || ($key=='crop_type_name') || ($key=='variety_name'))
+                    {
+                        ?>
+                        { name: '<?php echo $key ?>', type: 'string' },
+                        <?php
+                    }
+                    else
+                    {
+                        ?>
+                        { name: '<?php echo $key ?>', type: 'number' },
+                        <?php
+                    }
                 }
                 foreach($zones as $zone)
                 {
-                        ?>
-                    { name: 'quantity_target_zi_<?php echo $zone['zone_id']?>', type: 'string' },
+                ?>
+                    { name: 'quantity_budget_zi_<?php echo $zone['zone_id']?>', type: 'number' },
+                    { name: 'quantity_target_zi_<?php echo $zone['zone_id']?>', type: 'number' },
                     <?php
                 }
                 ?>
             ],
-            id: 'id',
             type: 'POST',
             url: url,
             data:JSON.parse('<?php echo json_encode($options);?>')
         };
-        var header_render=function (text, align)
+        /*var header_render=function (text, align)
         {
             var words = text.split(" ");
             var label=words[0];
@@ -155,30 +164,19 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
 
             }
             return '<div style="margin: 5px;">'+label+'</div>';
-        };
+        };*/
         var cellsrenderer = function(row, column, value, defaultHtml, columnSettings, record)
         {
             var element = $(defaultHtml);
-            if(column=='quantity_target_di')
-            {
-                if(value==0)
-                {
-                    element.html('');
-                }
-                else if(value>0)
-                {
-                    element.html(get_string_kg(value));
-                }
-            }
-            else if(column=='quantity_target_zi_total')
+            if(column=='quantity_target_zi_total')
             {
                 var quantity_target_zi_total=0;
                 <?php
                 foreach($zones as $zone)
                 {
                     ?>
-                    quantity_target_zi_total+=parseFloat(record['quantity_target_zi_<?php echo $zone['zone_id']?>']);
-                    <?php
+                quantity_target_zi_total+=parseFloat(record['quantity_target_zi_<?php echo $zone['zone_id']?>']);
+                <?php
                 }
                 ?>
                 if(quantity_target_zi_total>0)
@@ -198,7 +196,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                     element.html('');
                 }
             }
-            else if(column.substr(0,19)=='quantity_target_zi_')
+            else if(column.substr(0,9)=='quantity_')
             {
                 if(value==0)
                 {
@@ -280,28 +278,40 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 showstatusbar: true,
                 altrows: true,
                 rowsheight: 35,
-                editable:true,
+                editable:false,
                 columns:
                 [
                     { text: '<?php echo $CI->lang->line('LABEL_CROP_NAME'); ?>', dataField: 'crop_name',width:'100', filtertype:'list',pinned:true,editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer},
                     { text: '<?php echo $CI->lang->line('LABEL_CROP_TYPE_NAME'); ?>', dataField: 'crop_type_name',width:'100', pinned:true,editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer},
                     { text: '<?php echo $CI->lang->line('LABEL_VARIETY_NAME'); ?>', dataField: 'variety_name',width:'150',pinned:true,editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer},
-                    { text: 'DI Target', dataField: 'quantity_target_di',width:'100',pinned:true,editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
+                    { columngroup:'di_budget_target',text: 'Budget', dataField: 'quantity_budget_di',width:'100',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
+                    { columngroup:'di_budget_target',text: 'Target', dataField: 'quantity_target_di',width:'100',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
                     <?php
                     $serial=0;
                     foreach($zones as $zone)
                     {
                     ++$serial;
-                    ?>
-                    { columngroup: 'zone_list', text: '<?php echo $serial.'. '.$zone['zone_name']?>', dataField: 'quantity_target_zi_<?php echo $zone['zone_id']?>',width:'100',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
-                    <?php
+                        ?>
+                        { columngroup: 'zone_<?php echo $zone['zone_id']?>', text: 'Budget', dataField: 'quantity_budget_zi_<?php echo $zone['zone_id']?>',width:'100',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
+                        { columngroup: 'zone_<?php echo $zone['zone_id']?>', text: 'Target', dataField: 'quantity_target_zi_<?php echo $zone['zone_id']?>',width:'100',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
+                        <?php
                     }
                     ?>
                     { text: 'Total ZI Target', dataField: 'quantity_target_zi_total',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg}
                 ],
                 columngroups:
                 [
-                    { text: 'Zone of <?php echo $division['name']?>', align: 'center', name: 'zone_list' }
+                    <?php
+                    $serial=0;
+                    foreach($zones as $zone)
+                    {
+                    ++$serial;
+                        ?>
+                        { text: '<?php echo $serial.'. '.$zone['zone_name']?>', align: 'center', name: 'zone_<?php echo $zone['zone_id']?>' },
+                        <?php
+                    }
+                    ?>
+                    { text: 'DI Total', align: 'center', name: 'di_budget_target' }
                 ]
             });
     });

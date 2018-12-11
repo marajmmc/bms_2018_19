@@ -45,6 +45,8 @@ class Budget_zi_budget_target extends Root_Controller
     }
     private function language_labels()
     {
+        // Title
+        $this->lang->language['LABEL_TITLE_DETAILS']='Zone budget and target details';
         // area
         $this->lang->language['LABEL_STATUS_BUDGET_FORWARD_AREA']='Zone Budget';
         // area sub
@@ -245,7 +247,6 @@ class Budget_zi_budget_target extends Root_Controller
             $data['variety_name']= 1;
             $data['variety_id']= 1;
             $data['quantity_budget_zi']= 1;
-            /*$data['quantity_budget_zi_total']= 1;*/
             $data['quantity_target_zi']= 1;
             $data['quantity_target_outlet_total']= 1;
         }
@@ -454,7 +455,7 @@ class Budget_zi_budget_target extends Root_Controller
 
             $data['system_preference_items']= $this->get_preference_headers($method);
             $data['fiscal_year']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id ='.$fiscal_year_id),1);
-            $data['zone']=Query_helper::get_info($this->config->item('table_login_setup_location_zones'),'*',array('id ='.$zone_id,'status ="'.$this->config->item('system_status_active').'"'),1);
+            $data['zone']=Query_helper::get_info($this->config->item('table_login_setup_location_zones'),'*',array('id ='.$zone_id),1);
             $data['title']="ZSC Yearly Budget Crop list";
             $data['options']['fiscal_year_id']=$fiscal_year_id;
             $data['options']['zone_id']=$zone_id;
@@ -519,7 +520,6 @@ class Budget_zi_budget_target extends Root_Controller
             $item=$crop;
             $item['number_of_variety_active']=$crop['number_of_variety_active'];
             $item['number_of_variety_budgeted']=0;
-            $item['number_of_variety_budget_due']=0;
             if(isset($budgeted[$crop['crop_id']]))
             {
                 $item['number_of_variety_budgeted']=$budgeted[$crop['crop_id']];
@@ -585,7 +585,7 @@ class Budget_zi_budget_target extends Root_Controller
 
             $data['fiscal_years_previous_sales']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id <'.$fiscal_year_id),Budget_helper::$NUM_FISCAL_YEAR_PREVIOUS_SALE,0,array('id DESC'));
             $data['fiscal_year']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id ='.$fiscal_year_id),1);
-            $data['zone']=Query_helper::get_info($this->config->item('table_login_setup_location_zones'),'*',array('id ='.$zone_id,'status ="'.$this->config->item('system_status_active').'"'),1);
+            $data['zone']=Query_helper::get_info($this->config->item('table_login_setup_location_zones'),'*',array('id ='.$zone_id),1);
             $data['crop']=$crop;
             $data['outlets']=$this->get_outlets($zone_id);
             $data['acres']=$this->get_acres($zone_id,$crop_id);
@@ -658,7 +658,7 @@ class Budget_zi_budget_target extends Root_Controller
         $results=Budget_helper::get_crop_type_varieties(array($crop_id));
         foreach($results as $result)
         {
-            $info=$this->initialize_row_edit_budget_zone($fiscal_years_previous_sales,$outlet_ids,$result);
+            $info=$this->initialize_row_edit_budget_zone($fiscal_years_previous_sales,$outlets,$result);
             foreach($fiscal_years_previous_sales as $fy)
             {
                 if(isset($sales_previous[$fy['id']][$result['variety_id']]))
@@ -686,17 +686,14 @@ class Budget_zi_budget_target extends Root_Controller
 
             if(isset($items_old[$result['variety_id']]))
             {
-                if($items_old[$result['variety_id']]['quantity_budget']>0)
-                {
-                    $info['quantity_budget']=$items_old[$result['variety_id']]['quantity_budget'];
-                }
+                $info['quantity_budget']=$items_old[$result['variety_id']]['quantity_budget'];
             }
             $items[]=$info;
         }
 
         $this->json_return($items);
     }
-    private function initialize_row_edit_budget_zone($fiscal_years,$outlet_ids,$info)
+    private function initialize_row_edit_budget_zone($fiscal_years,$outlets,$info)
     {
         $row=$this->get_preference_headers('edit_budget_zone');
         foreach($row  as $key=>$r)
@@ -710,9 +707,9 @@ class Budget_zi_budget_target extends Root_Controller
         {
             $row['quantity_sale_'.$fy['id']]=0;
         }
-        foreach($outlet_ids as $outlet_id)
+        foreach($outlets as $outlet)
         {
-            $row['quantity_budget_outlet_'.$outlet_id]= 'N/D';
+            $row['quantity_budget_outlet_'.$outlet['outlet_id']]= 'N/D';
         }
         return $row;
     }
@@ -1254,7 +1251,6 @@ class Budget_zi_budget_target extends Root_Controller
             $item=$crop;
             $item['number_of_variety_active']=$crop['number_of_variety_active'];
             $item['number_of_variety_targeted']=0;
-            $item['number_of_variety_target_due']=0;
             if(isset($targeted[$crop['crop_id']]))
             {
                 $item['number_of_variety_targeted']=$targeted[$crop['crop_id']];
@@ -1430,9 +1426,9 @@ class Budget_zi_budget_target extends Root_Controller
     {
         $row=$this->get_preference_headers('edit_target_outlet');
         foreach($row  as $key=>$r)
-        {
-            $row[$key]=0;
-        }
+    {
+        $row[$key]=0;
+    }
         $row['crop_type_name']=$info['crop_type_name'];
         $row['variety_name']=$info['variety_name'];
         $row['variety_id']=$info['variety_id'];
@@ -1995,7 +1991,6 @@ class Budget_zi_budget_target extends Root_Controller
             $item=$crop;
             $item['number_of_variety_active']=$crop['number_of_variety_active'];
             $item['number_of_variety_targeted']=0;
-            $item['number_of_variety_target_due']=0;
             if(isset($targeted[$crop['crop_id']]))
             {
                 $item['number_of_variety_targeted']=$targeted[$crop['crop_id']];
@@ -2693,7 +2688,7 @@ class Budget_zi_budget_target extends Root_Controller
             $data['options']['fiscal_year_id']=$fiscal_year_id;
             $data['options']['area_id']=$zone_id;
 
-            $data['title']='Zone budget and target details';
+            $data['title']=$this->lang->line('LABEL_TITLE_DETAILS');
             $outlets=$this->get_outlets($zone_id);;
             $data['areas']=array();//here areas means sub area or dealers
             foreach($outlets as $result)

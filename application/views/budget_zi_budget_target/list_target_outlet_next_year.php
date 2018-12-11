@@ -116,7 +116,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             url: url,
             data:JSON.parse('<?php echo json_encode($options);?>')
         };
-        var header_render=function (text, align)
+        /*var header_render=function (text, align)
         {
             var words = text.split(" ");
             var label=words[0];
@@ -136,7 +136,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
 
             }
             return '<div style="margin: 5px;">'+label+'</div>';
-        };
+        };*/
         var cellsrenderer = function(row, column, value, defaultHtml, columnSettings, record)
         {
             var element = $(defaultHtml);
@@ -158,8 +158,9 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         // create jqxgrid.
         $("#system_jqx_container").jqxGrid(
             {
-                width: '100%',
                 source: dataAdapter,
+                width: '100%',
+                height: '350px',
                 pageable: true,
                 filterable: true,
                 sortable: true,
@@ -169,7 +170,6 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 pagesizeoptions: ['50', '100', '200','300','500','1000','5000'],
                 selectionmode: 'singlerow',
                 altrows: true,
-                height: '350px',
                 rowsheight: 35,
                 columnsreorder: true,
                 enablebrowserselection: true,

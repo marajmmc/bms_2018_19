@@ -119,26 +119,35 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             dataType: "json",
             dataFields: [
                 <?php
-                 foreach($system_preference_items as $key=>$item)
-                 {
+                foreach($system_preference_items as $key=>$item)
+                {
+                    if(($key=='crop_type_name') || ($key=='variety_name'))
+                    {
+                        ?>
+                        { name: '<?php echo $key ?>', type: 'string' },
+                        <?php
+                    }
+                    else
+                    {
+                        ?>
+                        { name: '<?php echo $key ?>', type: 'number' },
+                        <?php
+                    }
+                }
+                foreach($zones as $zone)
+                {
                     ?>
-                { name: '<?php echo $key ?>', type: 'string' },
-                <?php
-            }
-            foreach($zones as $zone)
-            {
-                    ?>
-                { name: 'quantity_target_zi_<?php echo $zone['zone_id']?>', type: 'string' },
-                <?php
-            }
-            ?>
+                        { name: 'quantity_budget_zi_<?php echo $zone['zone_id']?>', type: 'number' },
+                        { name: 'quantity_target_zi_<?php echo $zone['zone_id']?>', type: 'number' },
+                        <?php
+                    }
+                ?>
             ],
-            id: 'id',
             type: 'POST',
             url: url,
             data:JSON.parse('<?php echo json_encode($options);?>')
         };
-        var header_render=function (text, align)
+        /*var header_render=function (text, align)
         {
             var words = text.split(" ");
             var label=words[0];
@@ -158,22 +167,11 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
 
             }
             return '<div style="margin: 5px;">'+label+'</div>';
-        };
+        };*/
         var cellsrenderer = function(row, column, value, defaultHtml, columnSettings, record)
         {
             var element = $(defaultHtml);
-            if(column=='quantity_target_di')
-            {
-                if(value==0)
-                {
-                    element.html('');
-                }
-                else if(value>0)
-                {
-                    element.html(get_string_kg(value));
-                }
-            }
-            else if(column=='quantity_target_zi_total')
+            if(column=='quantity_target_zi_total')
             {
                 var quantity_target_zi_total=0;
                 <?php
@@ -209,11 +207,36 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 }
                 element.html('<div class="jqxgrid_input">'+value+'</div>');
             }
+            else if(column.substr(0,9)=='quantity_')
+            {
+                if(value==0)
+                {
+                    element.html('');
+                }
+                else if(value>0)
+                {
+                    element.html(get_string_kg(value));
+                }
+            }
 
             element.css({'margin': '0px','width': '100%', 'height': '100%',padding:'5px','line-height':'25px'});
             return element[0].outerHTML;
         };
+        var aggregatesrenderer=function (aggregates)
+        {
+            //console.log('here');
+            return '<div style="position: relative; margin: 0px;padding: 5px;width: 100%;height: 100%; overflow: hidden;background-color:'+system_report_color_grand+';">' +aggregates['sum']+'</div>';
 
+        };
+        var aggregatesrenderer_kg=function (aggregates)
+        {
+            var text='';
+            if(!((aggregates['sum']=='0.000')||(aggregates['sum']=='')))
+            {
+                text=get_string_kg(aggregates['sum']);
+            }
+            return '<div style="position: relative; margin: 0px;padding: 5px;width: 100%;height: 100%; overflow: hidden;background-color:'+system_report_color_grand+';">' +text+'</div>';
+        };
         var dataAdapter = new $.jqx.dataAdapter(source);
         // create jqxgrid.
         $("#system_jqx_container").jqxGrid(
@@ -229,20 +252,25 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 enablebrowserselection: true,
                 selectionmode: 'singlerow',
                 altrows: true,
+                showaggregates: true,
+                showstatusbar: true,
                 rowsheight: 35,
+                /*columnsheight: 40,*/
                 editable:true,
                 columns:
                 [
-                    { text: '<?php echo $CI->lang->line('LABEL_CROP_TYPE_NAME'); ?>', dataField: 'crop_type_name',width:'100', filtertype:'list',renderer: header_render,pinned:true,editable:false},
-                    { text: '<?php echo $CI->lang->line('LABEL_VARIETY_NAME'); ?>', dataField: 'variety_name',width:'150',renderer: header_render,pinned:true,editable:false},
-                    { text: 'DI Target', dataField: 'quantity_target_di',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
+                    { text: '<?php echo $CI->lang->line('LABEL_CROP_TYPE_NAME'); ?>', dataField: 'crop_type_name',width:'100', filtertype:'list',pinned:true,editable:false},
+                    { text: '<?php echo $CI->lang->line('LABEL_VARIETY_NAME'); ?>', dataField: 'variety_name',width:'150',pinned:true,editable:false},
+                    { columngroup:'di_budget_target',text: 'Target', dataField: 'quantity_budget_di',width:'100',filterable:false, align: 'center',cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
+                    { columngroup:'di_budget_target',text: 'Target', dataField: 'quantity_target_di',width:'100',filterable:false, align: 'center',cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
                     <?php
-                    $serial=0;
-                    foreach($zones as $zone)
-                    {
-                    ++$serial;
-                    ?>
-                    { columngroup: 'zone_list', text: '<?php echo $serial.'. '.$zone['zone_name']?>',datafield: 'quantity_target_zi_<?php echo $zone['zone_id']?>', width: 110,filterable: false,cellsrenderer: cellsrenderer,cellsalign: 'right',columntype: 'custom',
+                   $serial=0;
+                   foreach($zones as $zone)
+                   {
+                   ++$serial;
+                   ?>
+                    { columngroup:'zone_<?php echo $zone['zone_id']?>',text: 'Budget',dataField: 'quantity_budget_zi_<?php echo $zone['zone_id']?>', width:100,filterable:false, align: 'center',cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
+                    { columngroup:'zone_<?php echo $zone['zone_id']?>',text: 'Target',datafield: 'quantity_target_zi_<?php echo $zone['zone_id']?>', width:100,filterable:false, align: 'center',cellsalign: 'right',cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg,columntype: 'custom',
                         initeditor: function (row, cellvalue, editor, celltext, pressedkey)
                         {
                             editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');
@@ -253,16 +281,38 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                             var value=editor.find('input').val();
                             var selectedRowData = $('#system_jqx_container').jqxGrid('getrowdata', row);
                             return editor.find('input').val();
+                        },
+                        cellvaluechanging: function (row, datafield, columntype, oldvalue, newvalue)
+                        {
+                            if (newvalue != oldvalue)
+                            {
+                                var selectedRowData = $('#system_jqx_container').jqxGrid('getrowdata', row);//only last selected
+                                var quantity_target_zi_total=parseFloat(selectedRowData['quantity_target_zi_total'])-parseFloat(oldvalue)+parseFloat(newvalue);
+
+                                //console.log(selectedRowData);
+                                $("#system_jqx_container").jqxGrid('setcellvalue', row, 'quantity_target_zi_total', quantity_target_zi_total);
+
+                            }
                         }
                     },
                     <?php
                     }
                     ?>
-                    { text: 'Total ZI Target', dataField: 'quantity_target_zi_total',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer}
+                    { text: 'Total ZI <br /> Target', dataField: 'quantity_target_zi_total',width:'100',filterable:false, align: 'center',cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg}
                 ],
                 columngroups:
                 [
-                    { text: 'Zone of <?php echo $division['name']?>', align: 'center', name: 'zone_list' }
+                    <?php
+                    $serial=0;
+                    foreach($zones as $zone)
+                    {
+                    ++$serial;
+                    ?>
+                    { text: '<?php echo $serial.'. '.$zone['zone_name']?>', align: 'center', name: 'zone_<?php echo $zone['zone_id']?>' },
+                    <?php
+                    }
+                    ?>
+                    { text: 'DI Total', align: 'center', name: 'di_budget_target' }
                 ]
             });
     });

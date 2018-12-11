@@ -159,8 +159,9 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         // create jqxgrid.
         $("#system_jqx_container").jqxGrid(
             {
-                width: '100%',
                 source: dataAdapter,
+                width: '100%',
+                height: '350px',
                 pageable: true,
                 filterable: true,
                 sortable: true,
@@ -170,7 +171,6 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 pagesizeoptions: ['50', '100', '200','300','500','1000','5000'],
                 selectionmode: 'singlerow',
                 altrows: true,
-                height: '350px',
                 rowsheight: 35,
                 columnsreorder: true,
                 enablebrowserselection: true,

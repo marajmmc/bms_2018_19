@@ -122,16 +122,16 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 <?php
                 foreach($system_preference_items as $key=>$item)
                 {
-                    if($key=='id')
+                    if(($key=='crop_name') || ($key=='crop_type_name') || ($key=='variety_name'))
                     {
                         ?>
-                        { name: '<?php echo $key ?>', type: 'number' },
+                        { name: '<?php echo $key ?>', type: 'string' },
                         <?php
                     }
                     else
                     {
                         ?>
-                        { name: '<?php echo $key ?>', type: 'string' },
+                        { name: '<?php echo $key ?>', type: 'number' },
                         <?php
                     }
                 }

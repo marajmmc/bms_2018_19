@@ -59,7 +59,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
 
     </div>
 </div>
-<form id="save_form" action="<?php echo site_url($CI->controller_url.'/index/save_target_zi_forward_next_year');?>" method="post">
+<form id="save_form" action="<?php echo site_url($CI->controller_url.'/index/save_forward_target_zone_next_year');?>" method="post">
     <input type="hidden" name="item[fiscal_year_id]" value="<?php echo $options['fiscal_year_id']; ?>" />
     <input type="hidden" name="item[division_id]" value="<?php echo $options['division_id']; ?>" />
     <div class="row widget">
@@ -102,7 +102,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         system_off_events();
         system_preset({controller:'<?php echo $CI->router->class; ?>'});
 
-        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_forward_assign_target_zi_next_year');?>";
+        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_forward_target_zone_next_year');?>";
         // prepare the data
         var source =
         {
@@ -111,31 +111,40 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 <?php
                 foreach($system_preference_items as $key=>$item)
                 {
-                    ?>
-                    { name: '<?php echo $key ?>', type: 'string' },
-                    <?php
+                    if(($key=='crop_name') || ($key=='crop_type_name') || ($key=='variety_name'))
+                    {
+                        ?>
+                        { name: '<?php echo $key ?>', type: 'string' },
+                        <?php
+                    }
+                    else
+                    {
+                        ?>
+                        { name: '<?php echo $key ?>', type: 'number' },
+                        <?php
+                    }
                 }
                 foreach($fiscal_years_previous_sales as $fy)
                 {
                     ?>
-                    { name: 'quantity_sale_<?php echo $fy['id']; ?>', type: 'string' },
+                    { name: 'quantity_sale_<?php echo $fy['id']; ?>', type: 'number' },
                     <?php
                 }
                 $serial=0;
-                foreach($fiscal_years_next_budgets as $budget)
+                foreach($fiscal_years_next_budgets as $fy)
                 {
                     ++$serial;
                         ?>
-                    { name: 'quantity_prediction_<?php echo $serial; ?>', type: 'string' },
+                    { name: 'quantity_prediction_<?php echo $serial; ?>', type: 'number' },
                     <?php
                     foreach($zones as $zone)
                     {
                         ?>
-                        { name: 'quantity_prediction_zi_<?php echo $budget['id']; ?>_<?php echo $zone['zone_id']?>', type: 'string' },
+                        { name: 'quantity_prediction_zi_<?php echo $serial; ?>_<?php echo $zone['zone_id']?>', type: 'number' },
                         <?php
                     }
                     ?>
-                    { name: 'quantity_prediction_sub_total_zi_<?php echo $budget['id']; ?>', type: 'string' },
+                    { name: 'quantity_prediction_sub_total_zi_<?php echo $serial; ?>', type: 'number' },
                     <?php
                 }
         ?>
@@ -205,7 +214,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             var quantity_prediction_total_zi=0;
             <?php
             $serial=0;
-            foreach($fiscal_years_next_budgets as $budget)
+            foreach($fiscal_years_next_budgets as $fy)
             {
                 ++$serial;
                 ?>
@@ -214,12 +223,12 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 foreach($zones as $zone)
                 {
                     ?>
-                    quantity_prediction_sub_total_zi+=parseFloat(record['quantity_prediction_zi_<?php echo $budget['id'];?>_<?php echo $zone['zone_id']?>']);
-                    quantity_prediction_total_zi+=parseFloat(record['quantity_prediction_zi_<?php echo $budget['id'];?>_<?php echo $zone['zone_id']?>']);
+                    quantity_prediction_sub_total_zi+=parseFloat(record['quantity_prediction_zi_<?php echo $serial;?>_<?php echo $zone['zone_id']?>']);
+                    quantity_prediction_total_zi+=parseFloat(record['quantity_prediction_zi_<?php echo $serial;?>_<?php echo $zone['zone_id']?>']);
                     <?php
                 }
                 ?>
-                if(column=='quantity_prediction_sub_total_zi_<?php echo $budget['id']?>')
+                if(column=='quantity_prediction_sub_total_zi_<?php echo $serial?>')
                 {
                     if(quantity_prediction_sub_total_zi==0)
                     {
@@ -341,7 +350,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                         { text: 'Current Year<br> Target', dataField: 'quantity_target_di',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
                         <?php
                         $serial=0;
-                        foreach($fiscal_years_next_budgets as $budget)
+                        foreach($fiscal_years_next_budgets as $fy)
                         {
                             ++$serial;
                             ?>
@@ -352,11 +361,11 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                             {
                                 ++$zone_sl;
                                 ?>
-                                {columngroup: 'next_years_<?php echo $serial;?>', text: '<?php echo $zone_sl.'. '.$zone['zone_name']?>', dataField: 'quantity_prediction_zi_<?php echo $budget['id'];?>_<?php echo $zone['zone_id']?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
+                                {columngroup: 'next_years_<?php echo $serial;?>', text: '<?php echo $zone_sl.'. '.$zone['zone_name']?>', dataField: 'quantity_prediction_zi_<?php echo $serial;?>_<?php echo $zone['zone_id']?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
                                 <?php
                             }
                             ?>
-                            { columngroup: 'next_years_<?php echo $serial;?>', text: 'Total Target', dataField: 'quantity_prediction_sub_total_zi_<?php echo $budget['id'];?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
+                            { columngroup: 'next_years_<?php echo $serial;?>', text: 'Total Target', dataField: 'quantity_prediction_sub_total_zi_<?php echo $serial;?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
                             <?php
                         }
                         ?>
@@ -367,16 +376,15 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                         { text: '<?php echo $CI->lang->line('LABEL_PREVIOUS_YEARS'); ?> Achieved', align: 'center', name: 'previous_years' },
                         <?php
                         $serial=0;
-                        foreach($fiscal_years_next_budgets as $budget)
+                        foreach($fiscal_years_next_budgets as $fy)
                         {
                             ++$serial;
                             ?>
-                            { text: '<?php echo $budget['name']; ?>', align: 'center', name: 'next_years_<?php echo $serial;?>' },
+                            { text: '<?php echo $fy['name']; ?>', align: 'center', name: 'next_years_<?php echo $serial;?>' },
                             <?php
                         }
                         ?>
                     ]
             });
-
     });
 </script>

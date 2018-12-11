@@ -87,7 +87,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 <?php
                 foreach($system_preference_items as $key=>$item)
                 {
-                    if(($key=='id') || ($key=='number_of_variety_active') || ($key=='number_of_variety_budgeted') || ($key=='number_of_variety_budget_due'))
+                    if($key=='id' ||(substr($key, 0, 10)=='number_of_'))
                     {
                         ?>
                         { name: '<?php echo $key ?>', type: 'number' },
@@ -102,7 +102,6 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 }
             ?>
             ],
-            id: 'id',
             type: 'POST',
             url: url,
             data:JSON.parse('<?php echo json_encode($options);?>')
@@ -110,8 +109,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         var cellsrenderer = function(row, column, value, defaultHtml, columnSettings, record)
         {
             var element = $(defaultHtml);
-            var number_of_variety_budget_due=0;
-            if(column=='number_of_variety_active' || column=='number_of_variety_budgeted')
+            if(column.substr(0,10)=='number_of_')
             {
                 if(value==0)
                 {
@@ -122,18 +120,6 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                     element.html(get_string_quantity(value));
                 }
             }
-            else if(column=='number_of_variety_budget_due')
-            {
-                number_of_variety_budget_due=(parseFloat(record['number_of_variety_active'])-parseFloat(record['number_of_variety_budgeted']));
-                if(number_of_variety_budget_due==0)
-                {
-                    element.html('');
-                }
-                else if(number_of_variety_budget_due>0)
-                {
-                    element.html(get_string_quantity(number_of_variety_budget_due));
-                }
-            }
             element.css({'margin': '0px','width': '100%', 'height': '100%',padding:'5px','line-height':'25px'});
             return element[0].outerHTML;
         };
@@ -141,9 +127,9 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         // create jqxgrid.
         $("#system_jqx_container").jqxGrid(
             {
+                source: dataAdapter,
                 width: '100%',
                 height: '350px',
-                source: dataAdapter,
                 filterable: true,
                 sortable: true,
                 showfilterrow: true,
@@ -160,9 +146,9 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 [
                     { text: '<?php echo $CI->lang->line('LABEL_ID'); ?>', dataField: 'crop_id',width:'50',cellsAlign:'right'},
                     { text: '<?php echo $CI->lang->line('LABEL_CROP_NAME'); ?>', dataField: 'crop_name', width:100},
-                    { columngroup: 'number_of_variety',text: 'Active', dataField: 'number_of_variety_active',width:'100', cellsalign:'right', align:'right',cellsrenderer: cellsrenderer},
-                    { columngroup: 'number_of_variety',text: 'Budgeted', dataField: 'number_of_variety_budgeted',width:'100', cellsalign:'right', align:'right',cellsrenderer: cellsrenderer},
-                    { columngroup: 'number_of_variety',text: 'Due Budget', dataField: 'number_of_variety_budget_due',width:'100', cellsalign:'right', align:'right',cellsrenderer: cellsrenderer}
+                    { columngroup: 'number_of_variety',text: 'Active', dataField: 'number_of_variety_active',width:'70', cellsalign:'right', align:'right',cellsrenderer: cellsrenderer},
+                    { columngroup: 'number_of_variety',text: 'Budgeted', dataField: 'number_of_variety_budgeted',width:'70', cellsalign:'right', align:'right',cellsrenderer: cellsrenderer},
+                    { columngroup: 'number_of_variety',text: 'Due Budget', dataField: 'number_of_variety_budget_due',width:'70', cellsalign:'right', align:'right',cellsrenderer: cellsrenderer}
                 ],
                 columngroups:
                 [

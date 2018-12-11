@@ -105,7 +105,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 //$('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+']" value="'+data[i]['quantity_budget']+'">');
                 <?php
                 $serial=0;
-                foreach($fiscal_years_next_budgets as $budget)
+                foreach($fiscal_years_next_budgets as $fy)
                 {
                     ++$serial;
                     foreach($outlets as $outlet)
@@ -155,7 +155,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 }
 
                 $serial=0;
-                foreach($fiscal_years_next_budgets as $budget)
+                foreach($fiscal_years_next_budgets as $fy)
                 {
                     ++$serial;
                     ?>
@@ -283,7 +283,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                     { text: 'Current Year <br />ZI Target', dataField: 'quantity_target_zi',width:'100',filterable:false, align: 'center',cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
                     <?php
                     $serial=0;
-                    foreach($fiscal_years_next_budgets as $budget)
+                    foreach($fiscal_years_next_budgets as $fy)
                     {
                         ++$serial;
                         ?>
@@ -335,11 +335,11 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                     { text: '<?php echo $CI->lang->line('LABEL_PREVIOUS_YEARS'); ?> Achieved', align: 'center', name: 'previous_years' },
                     <?php
                     $serial=0;
-                    foreach($fiscal_years_next_budgets as $budget)
+                    foreach($fiscal_years_next_budgets as $fy)
                     {
                         ++$serial;
                         ?>
-                        { text: '<?php echo $budget['name']; ?>', align: 'center', name: 'next_years_<?php echo $serial;?>' },
+                        { text: '<?php echo $fy['name']; ?>', align: 'center', name: 'next_years_<?php echo $serial;?>' },
                         <?php
                     }
                     ?>

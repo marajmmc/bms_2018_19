@@ -143,18 +143,37 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                  }
                 ?>
             ],
-            id: 'id',
             type: 'POST',
             url: url
         };
+        var header_render=function (text, align)
+        {
+            var words = text.split(" ");
+            var label=words[0];
+            var count=words[0].length;
+            for (i = 1; i < words.length; i++)
+            {
+                if((count+words[i].length)>10)
+                {
+                    label=label+'</br>'+words[i];
+                    count=words[i].length;
+                }
+                else
+                {
+                    label=label+' '+words[i];
+                    count=count+words[i].length;
+                }
 
+            }
+            return '<div style="margin: 5px;">'+label+'</div>';
+        };
         var dataAdapter = new $.jqx.dataAdapter(source);
         // create jqxgrid.
         $("#system_jqx_container").jqxGrid(
         {
+            source: dataAdapter,
             width: '100%',
             height: '350px',
-            source: dataAdapter,
             filterable: true,
             sortable: true,
             showfilterrow: true,
@@ -165,15 +184,18 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             selectionmode: 'singlerow',
             altrows: true,
             rowsheight: 35,
+            columnsheight: 40,
             columnsreorder: true,
             enablebrowserselection: true,
             columns:
             [
-                { text: '<?php echo $CI->lang->line('LABEL_FISCAL_YEAR'); ?>', dataField: 'fiscal_year',width:'80',filtertype: 'list'},
-                { text: '<?php echo $CI->lang->line('LABEL_DIVISION_NAME'); ?>', dataField: 'division_name',width:'200',filtertype: 'list'},
-                { text: '<?php echo $CI->lang->line('LABEL_STATUS_BUDGET_FORWARD'); ?>', dataField: 'status_budget_forward', width:'150',filtertype: 'list'},
-                { text: '(ZI) <?php echo $CI->lang->line('LABEL_STATUS_TARGET_FORWARD'); ?>', dataField: 'status_target_zi_forward', width:'150',filtertype: 'list'},
-                { text: '(ZI NXT 3Y) <?php echo $CI->lang->line('LABEL_STATUS_TARGET_FORWARD'); ?>', dataField: 'status_target_zi_next_year_forward', width:'150',filtertype: 'list'}
+                { text: '<?php echo $CI->lang->line('LABEL_FISCAL_YEAR'); ?>', dataField: 'fiscal_year',width:'80',filtertype: 'list',renderer: header_render},
+                { text: '<?php echo $CI->lang->line('LABEL_DIVISION_NAME'); ?>', dataField: 'division_name',width:'200',filtertype: 'list',renderer: header_render},
+                { text: '<?php echo $CI->lang->line('LABEL_STATUS_BUDGET_FORWARD'); ?>', dataField: 'status_budget_forward', width:'80',filtertype: 'list',renderer: header_render},
+                { text: '(DI) Target', dataField: 'status_target_di_forward', width:'80',filtertype: 'list',renderer: header_render},
+                { text: '(ZI) <?php echo $CI->lang->line('LABEL_STATUS_TARGET_FORWARD'); ?>', dataField: 'status_target_zi_forward', width:'80',filtertype: 'list',renderer: header_render},
+                { text: '(DI NXT 3Y) <?php echo $CI->lang->line('LABEL_STATUS_TARGET_FORWARD'); ?>', dataField: 'status_target_di_next_year_forward', width:'80',filtertype: 'list',renderer: header_render},
+                { text: '(ZI NXT 3Y) <?php echo $CI->lang->line('LABEL_STATUS_TARGET_FORWARD'); ?>', dataField: 'status_target_zi_next_year_forward', width:'80',filtertype: 'list',renderer: header_render}
             ]
         });
     });
