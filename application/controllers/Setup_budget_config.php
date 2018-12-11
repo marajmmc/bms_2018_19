@@ -18,7 +18,6 @@ class Setup_budget_config extends Root_Controller
     private function language_config()
     {
         $this->lang->language['LABEL_PRICE']='Price';
-
         /* Setup > Budget Config > Indirect Cost */
         $this->lang->language['LABEL_GENERAL_EXPENSE'] = 'General Expense';
         $this->lang->language['LABEL_MARKETING_EXPENSE'] = 'Marketing Expense';
@@ -218,12 +217,15 @@ class Setup_budget_config extends Root_Controller
         }
         // main data checking
         $info_budget_config=$this->get_info_budget_config($fiscal_year_id);
-        //old items
-        $results=Query_helper::get_info($this->config->item('table_bms_setup_budget_config_variety_pricing'),'*',array('fiscal_year_id ='.$fiscal_year_id));
-        if(!$results)
+        if($info_budget_config['revision_count_pricing'] > 0)
+        {
+            $results=Query_helper::get_info($this->config->item('table_bms_setup_budget_config_variety_pricing'),'*',array('fiscal_year_id ='.$fiscal_year_id));
+        }
+        else
         {
             $results=Query_helper::get_info($this->config->item('table_bms_setup_budget_config_variety_pricing'),'*',array('fiscal_year_id ='.($fiscal_year_id-1)),0,1,array('fiscal_year_id DESC'));
         }
+
         $items_old=array();
         foreach($results as $result)
         {
@@ -338,7 +340,7 @@ class Setup_budget_config extends Root_Controller
                 $fiscal_year_id=$this->input->post('fiscal_year_id');
             }
             $data['item']=$this->get_info_budget_config($fiscal_year_id);
-            if(!$data['item']['amount_currency_rate'])
+            if(!($data['item']['revision_count_currency_rate'] > 0))
             {
                 $before_year_info=Query_helper::get_info($this->config->item('table_bms_setup_budget_config'),'*',array('fiscal_year_id ='.($fiscal_year_id-1)),1);
 
@@ -347,10 +349,12 @@ class Setup_budget_config extends Root_Controller
                     $data['item']['amount_currency_rate']=$before_year_info['amount_currency_rate'];
                 }
             }
+
             $data['currencies']=Query_helper::get_info($this->config->item('table_login_setup_currency'),'*',array('status !="'.$this->config->item('system_status_delete').'"'));
             $data['fiscal_year']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id ='.$fiscal_year_id),1);
             $data['title']="Currency Rate Setup For (".$data['fiscal_year']['name'].') Fiscal Year';
             //$data['item']['fiscal_year_id']=$fiscal_year_id;
+
             $ajax['status']=true;
             $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/add_edit_currency_rate",$data,true));
             if($this->message)
@@ -420,7 +424,7 @@ class Setup_budget_config extends Root_Controller
                 $fiscal_year_id=$this->input->post('fiscal_year_id');
             }
             $data['item']=$this->get_info_budget_config($fiscal_year_id);
-            if(!$data['item']['amount_direct_cost_percentage'])
+            if(!($data['item']['revision_count_direct_cost_percentage']>0))
             {
                 $before_year_info=Query_helper::get_info($this->config->item('table_bms_setup_budget_config'),'*',array('fiscal_year_id ='.($fiscal_year_id-1)),1);
 
@@ -505,7 +509,7 @@ class Setup_budget_config extends Root_Controller
             $data = array();
             $data['item']=$this->get_info_budget_config($fiscal_year_id);
 
-            if(!$data['item']['amount_packing_cost_percentage'])
+            if(!($data['item']['revision_count_packing_cost_percentage'] > 0))
             {
                 $before_year_info=Query_helper::get_info($this->config->item('table_bms_setup_budget_config'),'*',array('fiscal_year_id ='.($fiscal_year_id-1)),1);
 
