@@ -590,7 +590,21 @@ class Setup_budget_config extends Root_Controller
                 $fiscal_year_id=$this->input->post('fiscal_year_id');
             }
             $data = array();
+
             $data['item']=$this->get_info_budget_config($fiscal_year_id);
+            if(!($data['item']['revision_count_indirect_cost_percentage'] > 0))
+            {
+                $before_year_info=Query_helper::get_info($this->config->item('table_bms_setup_budget_config'),'*',array('fiscal_year_id ='.($fiscal_year_id-1)),1);
+                if($before_year_info)
+                {
+                    $data['item']['amount_general_percentage']=$before_year_info['amount_general_percentage'];
+                    $data['item']['amount_marketing_percentage']=$before_year_info['amount_marketing_percentage'];
+                    $data['item']['amount_finance_percentage']=$before_year_info['amount_finance_percentage'];
+                    $data['item']['amount_incentive_percentage']=$before_year_info['amount_incentive_percentage'];
+                    $data['item']['amount_profit_percentage']=$before_year_info['amount_profit_percentage'];
+                    $data['item']['amount_sales_commission_percentage']=$before_year_info['amount_sales_commission_percentage'];
+                }
+            }
             $data['fiscal_year']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id ='.$fiscal_year_id),1);
 
             $data['title']='Indirect Cost Setup for ( '.$data['fiscal_year']['name'].' ) Fiscal Year';
