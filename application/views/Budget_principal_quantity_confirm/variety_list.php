@@ -14,7 +14,7 @@ if ((isset($CI->permissions['action1']) && ($CI->permissions['action1'] == 1)) |
         'type' => 'button',
         'label' => 'Edit',
         'class' => 'button_jqx_action',
-        'data-action-link' => site_url($CI->controller_url . '/index/add_edit_principal_quantity/'.$options['fiscal_year_id'])
+        'data-action-link' => site_url($CI->controller_url . '/index/add_edit/'.$options['fiscal_year_id'])
     );
 }
 if (isset($CI->permissions['action4']) && ($CI->permissions['action4'] == 1))

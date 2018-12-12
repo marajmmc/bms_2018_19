@@ -21,8 +21,9 @@ if ((isset($CI->permissions['action1']) && ($CI->permissions['action1'] == 1)) |
 
 $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
 ?>
-<form id="save_form" action="<?php echo site_url($CI->controller_url . '/index/save_indirect_cost'); ?>" method="post">
-<input type="hidden" id="fiscal_year_id" name="item[fiscal_year_id]" value="<?php echo $fiscal_year_data['fiscal_year_id'] ?>"/>
+<form id="save_form" action="<?php echo site_url($CI->controller_url . '/index/save'); ?>" method="post">
+<input type="hidden" name="item[fiscal_year_id]" value="<?php echo $fiscal_year_data['fiscal_year_id'] ?>"/>
+<input type="hidden" name="item[variety_id]" value="<?php echo $item['variety_id'] ?>"/>
 
 <div class="row widget">
 
@@ -156,12 +157,12 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
     </div>
 </div>
 
-<!---------------------- Each Block of a Single Principle ---------------------->
+<!---------------------- Each Block of a Single principal ---------------------->
 <?php
 foreach ($item['principals'] as $principal)
 {
     ?>
-    <div style="background:#cfcfcf;padding-top:10px;margin-bottom:10px"><!---Each Block of a Single Principle--->
+    <div style="background:#cfcfcf;padding-top:20px;margin-bottom:20px"><!---Each Block of a Single principal--->
         <div class="row show-grid">
             <div class="col-xs-4">
                 <label class="control-label pull-right">Principal Name :</label>
@@ -189,7 +190,7 @@ foreach ($item['principals'] as $principal)
                                     ?>
                                     <td style="width:130px;text-align:right;font-weight:bold;padding:0 5px 10px 0"><?php echo $CI->lang->line('LABEL_MONTH_' . $i); ?> :</td>
                                     <td style="padding-bottom:10px">
-                                        <input type="text" class="form-control float_type_positive quantity_month" id="quantity_<?php echo $i . '_' . $principal['id']; ?>" data-principal-id="<?php echo $principal['id']; ?>" value=""/>
+                                        <input type="text" name="items[<?php echo $principal['id']; ?>][monthly_principal_quantity][Q_<?php echo $i; ?>]" class="form-control float_type_positive quantity_month" id="quantity_<?php echo $i . '_' . $principal['id']; ?>" data-principal-id="<?php echo $principal['id']; ?>" value=""/>
                                     </td>
                                     <?php
                                     if (($i % 3 == 0) && ($i != 12))
@@ -211,7 +212,7 @@ foreach ($item['principals'] as $principal)
             </div>
             <div class="col-xs-6">
                 <div class="row show-grid">
-                    <label class="control-label quantity_total_principle" id="quantity_total_<?php echo $principal['id']; ?>"><?php echo $sub_total; ?></label>
+                    <label class="control-label quantity_total_principal" id="quantity_total_<?php echo $principal['id']; ?>"><?php echo $sub_total; ?></label>
                 </div>
             </div>
         </div>
@@ -222,12 +223,12 @@ foreach ($item['principals'] as $principal)
             </div>
             <div class="col-xs-2">
                 <div class="row show-grid">
-                    <input type="text" class="form-control float_type_positive unit_price" id="amount_unit_price_<?php echo $principal['id']; ?>" data-principal-id="<?php echo $principal['id']; ?>" value=""/>
+                    <input type="text" name="items[<?php echo $principal['id']; ?>][unit_price]" class="form-control float_type_positive unit_price" id="amount_unit_price_<?php echo $principal['id']; ?>" data-principal-id="<?php echo $principal['id']; ?>" value=""/>
                 </div>
             </div>
             <div class="col-xs-2">
                 <div class="row show-grid">
-                    <select class="form-control currency_dropdown" id="currency_dropdown_<?php echo $principal['id']; ?>" data-principal-id="<?php echo $principal['id']; ?>">
+                    <select name="items[<?php echo $principal['id']; ?>][currency_id]" class="form-control currency_dropdown" id="currency_dropdown_<?php echo $principal['id']; ?>" data-principal-id="<?php echo $principal['id']; ?>">
                         <?php
                         foreach ($currencies as $currency_id => $currency)
                         {
@@ -258,7 +259,7 @@ foreach ($item['principals'] as $principal)
             </div>
             <div class="col-xs-6">
                 <div class="row show-grid">
-                    <label class="control-label cogs_total_principle" id="cogs_total_<?php echo $principal['id']; ?>"><?php echo 0.0; ?></label>
+                    <label class="control-label cogs_total_principal" id="cogs_total_<?php echo $principal['id']; ?>"><?php echo 0.0; ?></label>
                 </div>
             </div>
         </div>
@@ -293,15 +294,6 @@ foreach ($item['principals'] as $principal)
             calculate_principal(principal_id);
             calculate_grand();
         });
-
-
-        // if Currency DropDown changes
-        /*$(document).on('change', '.currency_dropdown', function () {
-            var principal_id = $(this).attr('data-principal-id');
-            var COGS = calculate_principal_cogs(principal_id);
-            set_principle_cogs(principal_id, COGS);
-        });*/
-
     });
     function calculate_principal(principal_id)
     {
@@ -344,7 +336,7 @@ foreach ($item['principals'] as $principal)
     {
 
         var grand_total=0;
-        $('.quantity_total_principle').each(function(i, obj)
+        $('.quantity_total_principal').each(function(i, obj)
         {
             var quantity=parseFloat($(obj).html().replace(/,/g,''));
             if(quantity>0)
@@ -354,7 +346,7 @@ foreach ($item['principals'] as $principal)
 
         });
         var grand_cogs_total=0;
-        $('.cogs_total_principle').each(function(i, obj)
+        $('.cogs_total_principal').each(function(i, obj)
         {
             var total_cogs=parseFloat($(obj).html().replace(/,/g,''));
             if(total_cogs>0)
@@ -363,7 +355,7 @@ foreach ($item['principals'] as $principal)
             }
 
         });
-        //cogs_total_principle
+        //cogs_total_principal
         $('#quantity_grand').html(grand_total);
         $('#cogs_total_grand').html(get_string_amount(grand_cogs_total));
         var grand_cogs=0;
