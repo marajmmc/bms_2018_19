@@ -245,7 +245,7 @@ class Budget_principal_quantity_confirm extends Root_Controller
                 {
                     $sum += $value;
                 }
-                $data['item']['total_packing_cost_percentage'] = (float)$sum;
+                $data['item']['total_packing_cost_percentage'] = $sum;
             }
 
             $currency_items = json_decode($data['fiscal_year_data']['amount_currency_rate'], true); // From 'bms_setup_budget_config' table
@@ -254,15 +254,12 @@ class Budget_principal_quantity_confirm extends Root_Controller
             $currencies = Query_helper::get_info($this->config->item('table_login_setup_currency'), '*', array('status !="' . $this->config->item('system_status_delete') . '"'));
             foreach ($currencies as $currency)
             {
-                if (isset($currency_items[$currency['id']]))
-                {
-                    $data['currencies'][$currency['id']] = array(
-                        'name' => $currency['name'],
-                        'symbol' => $currency['symbol'],
-                        'currency_rate' => (float)$currency_items[$currency['id']],
-                        'description' => $currency['description']
-                    );
-                }
+                $data['currencies'][$currency['id']] = array(
+                    'name' => $currency['name'],
+                    'symbol' => $currency['symbol'],
+                    'currency_rate' => (isset($currency_items[$currency['id']])) ? $currency_items[$currency['id']] : 0,
+                    'description' => $currency['description']
+                );
             }
 
             // Variety Principles
