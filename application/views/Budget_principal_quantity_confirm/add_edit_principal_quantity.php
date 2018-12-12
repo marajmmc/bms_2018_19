@@ -211,7 +211,7 @@ foreach ($item['principals'] as $principal)
             </div>
             <div class="col-xs-6">
                 <div class="row show-grid">
-                    <label class="control-label" id="quantity_total_<?php echo $principal['id']; ?>"><?php echo $sub_total; ?></label>
+                    <label class="control-label quantity_total_principle" id="quantity_total_<?php echo $principal['id']; ?>"><?php echo $sub_total; ?></label>
                 </div>
             </div>
         </div>
@@ -258,7 +258,7 @@ foreach ($item['principals'] as $principal)
             </div>
             <div class="col-xs-6">
                 <div class="row show-grid">
-                    <label class="control-label" id="cogs_total_<?php echo $principal['id']; ?>"><?php echo 0.0; ?></label>
+                    <label class="control-label cogs_total_principle" id="cogs_total_<?php echo $principal['id']; ?>"><?php echo 0.0; ?></label>
                 </div>
             </div>
         </div>
@@ -272,83 +272,105 @@ foreach ($item['principals'] as $principal)
 <script type="text/javascript">
     jQuery(document).ready(function ($) {
         system_off_events();
-
-        $(document).on('input', '.quantity_month', function () {
+        $(document).off('input','.quantity_month');
+        $(document).on('input', '.quantity_month', function ()
+        {
             var principal_id = $(this).attr('data-principal-id');
-            var COGS = calculate_principal_cogs(principal_id);
-            calculate_total_principal_quantity(principal_id)
-            set_principle_cogs(principal_id, COGS);
+            calculate_principal(principal_id);
+            calculate_grand();
+        });
+        $(document).off('input','.unit_price');
+        $(document).on('input', '.unit_price', function ()
+        {
+            var principal_id = $(this).attr('data-principal-id');
+            calculate_principal(principal_id);
+            calculate_grand();
+        });
+        $(document).off('change','.currency_dropdown');
+        $(document).on('change', '.currency_dropdown', function ()
+        {
+            var principal_id = $(this).attr('data-principal-id');
+            calculate_principal(principal_id);
+            calculate_grand();
         });
 
-        // if Currency Rate Input changes
-        $(document).on('input', '.unit_price', function () {
-            var principal_id = $(this).attr('data-principal-id');
-            var COGS = calculate_principal_cogs(principal_id);
-            set_principle_cogs(principal_id, COGS);
-        });
 
         // if Currency DropDown changes
-        $(document).on('change', '.currency_dropdown', function () {
+        /*$(document).on('change', '.currency_dropdown', function () {
             var principal_id = $(this).attr('data-principal-id');
             var COGS = calculate_principal_cogs(principal_id);
             set_principle_cogs(principal_id, COGS);
-        });
+        });*/
 
     });
+    function calculate_principal(principal_id)
+    {
+        var percentage_direct_cost=parseFloat($('#percentage_direct_cost').html().replace(/,/g,''));
 
-    function calculate_total_principal_quantity(principal_id){
-        var subTotal = 0.0;
-        var qty_input = 0.0;
-        for (var i = 1; i <= 12; i++) {
-            qty_input = $('#quantity_' + i + '_' + principal_id).val();
-            if (!(isNaN(qty_input) || qty_input == '')) {
-                subTotal += parseFloat(qty_input);
+        var percentage_packing_cost=parseFloat($('#percentage_packing_cost').html().replace(/,/g,''));
+
+        var currency_id= $('#currency_dropdown_' + principal_id).val();
+
+        var unit_price = parseFloat($('#amount_unit_price_' + principal_id).val().replace(/,/g,''));
+        var currency_rate=parseFloat($('#currency_rate_'+currency_id).html().replace(/,/g,''));
+        var total_quantity=0;
+        for(i=1;i<13;i++)
+        {
+            var quantity=parseFloat($('#quantity_'+i+'_'+ principal_id).val().replace(/,/g,''));
+            if(quantity>0)
+            {
+                total_quantity+=quantity;
             }
         }
-        $('#quantity_total_' + principal_id).text(subTotal);
-    }
+        $('#quantity_total_' + principal_id).html(total_quantity);
+        if((unit_price>0)&&(currency_id>0))
+        {
+            var a=unit_price*currency_rate;
+            var b=a*percentage_direct_cost/100;
+            var c=a*percentage_packing_cost/100;
+            var cogs=a+b+c;
+            var total_cogs=cogs*total_quantity;
+            $('#cogs_' + principal_id).html(get_string_amount(cogs));
+            $('#cogs_total_' + principal_id).html(get_string_amount(total_cogs));
 
-    function calculate_principal_cogs(principal_id) {
-
-        var unit_price = $('#amount_unit_price_' + principal_id).val();
-        var currency_id = $('#currency_dropdown_' + principal_id).val();
-        var currency_rate = $('#currency_rate_' + currency_id).text();
-
-        var direct_cost_percentage = $('#percentage_direct_cost').text();
-        var packing_cost_percentage = $('#percentage_packing_cost').text();
-
-        var A = 0.0;
-        var B = 0.0;
-        var C = 0.0;
-
-        // A (Unit price X Currency rate):
-        if (!(isNaN(unit_price) || (unit_price == '')) && !(isNaN(currency_rate) || (currency_rate == ''))) {
-            A = parseFloat(unit_price) * parseFloat(currency_rate);
         }
-
-        // B ((A X DC percentage) / 100):
-        if (!(isNaN(direct_cost_percentage) || direct_cost_percentage == '')) {
-            B = (A * parseFloat(direct_cost_percentage)) / 100;
+        else
+        {
+            $('#cogs_' + principal_id).html('0');
+            $('#cogs_total_' + principal_id).html('0');
         }
+    }
+    function calculate_grand()
+    {
 
-        // C ((A X PC percentage) / 100):
-        if (!(isNaN(packing_cost_percentage) || packing_cost_percentage == '')) {
-            C = (A * parseFloat(packing_cost_percentage)) / 100;
+        var grand_total=0;
+        $('.quantity_total_principle').each(function(i, obj)
+        {
+            var quantity=parseFloat($(obj).html().replace(/,/g,''));
+            if(quantity>0)
+            {
+                grand_total+=quantity;
+            }
+
+        });
+        var grand_cogs_total=0;
+        $('.cogs_total_principle').each(function(i, obj)
+        {
+            var total_cogs=parseFloat($(obj).html().replace(/,/g,''));
+            if(total_cogs>0)
+            {
+                grand_cogs_total+=total_cogs;
+            }
+
+        });
+        //cogs_total_principle
+        $('#quantity_grand').html(grand_total);
+        $('#cogs_total_grand').html(get_string_amount(grand_cogs_total));
+        var grand_cogs=0;
+        if(grand_total>0)
+        {
+            grand_cogs=grand_cogs_total/grand_total;
         }
-
-        /*console.log('A-->> ' + A);
-        console.log('B-->> ' + B);
-        console.log('C-->> ' + C);
-        console.log('COGS= ' + (A + B + C));*/
-
-        // Return COGS = (A + B + C) for each Principal
-        return parseFloat(A + B + C);
+        $('#cogs_grand').html(get_string_amount(grand_cogs));
     }
-
-    /* Set Functions */
-    function set_principle_cogs(principal_id, cogs){
-        $('#quantity_total_'+principal_id).text(cogs);
-    }
-
-
 </script>
