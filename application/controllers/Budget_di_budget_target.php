@@ -2650,7 +2650,7 @@ class Budget_di_budget_target extends Root_Controller
             {
                 $data['areas'][]=array('value'=>$result['zone_id'],'text'=>$result['zone_name']);
             }
-            $data['sub_column_group_name']='Showrooms';
+            $data['sub_column_group_name']='Zones';
             $data['fiscal_years_next_predictions']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id >'.$fiscal_year_id),Budget_helper::$NUM_FISCAL_YEAR_NEXT_BUDGET_TARGET,0);
             $data['system_preference_items']= System_helper::get_preference($user->user_id,$this->controller_url,$method,$this->get_preference_headers($method));
             //jqx grid section end
@@ -2671,13 +2671,13 @@ class Budget_di_budget_target extends Root_Controller
             {
                 $user_ids[$budget_target['user_budget_forwarded']]=$budget_target['user_budget_forwarded'];
             }
-            if($budget_target['status_target_zi_forward']>0)
+            if($budget_target['user_target_zi_forwarded']>0)
             {
-                $user_ids[$budget_target['status_target_zi_forward']]=$budget_target['status_target_zi_forward'];
+                $user_ids[$budget_target['user_target_zi_forwarded']]=$budget_target['user_target_zi_forwarded'];
             }
-            if($budget_target['status_target_zi_next_year_forward']>0)
+            if($budget_target['user_target_zi_next_year_forwarded']>0)
             {
-                $user_ids[$budget_target['status_target_zi_next_year_forward']]=$budget_target['status_target_zi_next_year_forward'];
+                $user_ids[$budget_target['user_target_zi_next_year_forwarded']]=$budget_target['user_target_zi_next_year_forwarded'];
             }
             $budget_target_superior=$this->get_info_target_hom($fiscal_year_id);
             if($budget_target_superior)
