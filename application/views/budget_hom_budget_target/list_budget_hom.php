@@ -18,7 +18,25 @@ if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(is
 
     );
 }
-
+if(isset($CI->permissions['action4']) && ($CI->permissions['action4']==1))
+{
+    $action_buttons[]=array(
+        'type'=>'button',
+        'label'=>$CI->lang->line("ACTION_PRINT"),
+        'class'=>'button_action_download',
+        'data-title'=>"Print",
+        'data-print'=>true
+    );
+}
+if(isset($CI->permissions['action5']) && ($CI->permissions['action5']==1))
+{
+    $action_buttons[]=array(
+        'type'=>'button',
+        'label'=>$CI->lang->line("ACTION_DOWNLOAD"),
+        'class'=>'button_action_download',
+        'data-title'=>"Download"
+    );
+}
 $action_buttons[]=array
 (
     'label'=>$CI->lang->line("ACTION_REFRESH"),
@@ -61,42 +79,73 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 <?php
                  foreach($system_preference_items as $key=>$item)
                  {
-                    ?>
-                { name: '<?php echo $key ?>', type: 'string' },
-                <?php
-             }
-            ?>
+                   if($key=='id' ||(substr($key, 0, 10)=='number_of_'))
+                    {
+                        ?>
+                        { name: '<?php echo $key ?>', type: 'number' },
+                        <?php
+                    }
+                    else
+                    {
+                        ?>
+                        { name: '<?php echo $key ?>', type: 'string' },
+                        <?php
+                    }
+                 }
+                ?>
             ],
-            id: 'id',
             type: 'POST',
             url: url,
             data:JSON.parse('<?php echo json_encode($options);?>')
         };
-
+        var cellsrenderer = function(row, column, value, defaultHtml, columnSettings, record)
+        {
+            var element = $(defaultHtml);
+            if(column.substr(0,10)=='number_of_')
+            {
+                if(value==0)
+                {
+                    element.html('');
+                }
+                else if(value>0)
+                {
+                    element.html(get_string_quantity(value));
+                }
+            }
+            element.css({'margin': '0px','width': '100%', 'height': '100%',padding:'5px','line-height':'25px'});
+            return element[0].outerHTML;
+        };
         var dataAdapter = new $.jqx.dataAdapter(source);
         // create jqxgrid.
         $("#system_jqx_container").jqxGrid(
             {
-                width: '100%',
                 source: dataAdapter,
-                pageable: true,
+                width: '100%',
+                height: '350px',
                 filterable: true,
                 sortable: true,
                 showfilterrow: true,
                 columnsresize: true,
+                pageable: true,
                 pagesize:50,
                 pagesizeoptions: ['50', '100', '200','300','500','1000','5000'],
                 selectionmode: 'singlerow',
                 altrows: true,
-                height: '350px',
+                rowsheight: 35,
                 columnsreorder: true,
                 enablebrowserselection: true,
                 columns:
-                [
-                    { text: '<?php echo $CI->lang->line('LABEL_ID'); ?>', dataField: 'crop_id',width:'50',cellsAlign:'right'},
-                    { text: '<?php echo $CI->lang->line('LABEL_CROP_NAME'); ?>', dataField: 'crop_name', width:100},
-                    { text: '<?php echo $CI->lang->line('LABEL_REVISION_COUNT_BUDGET'); ?>', dataField: 'revision_count_budget', width:'100',filtertype: 'list',cellsAlign:'right'}
-                ]
+                    [
+                        { text: '<?php echo $CI->lang->line('LABEL_ID'); ?>', dataField: 'crop_id',width:'50',cellsAlign:'right'},
+                        { text: '<?php echo $CI->lang->line('LABEL_CROP_NAME'); ?>', dataField: 'crop_name', width:100},
+                        { columngroup: 'number_of_variety',text: 'Active', dataField: 'number_of_variety_active',width:'70', cellsalign:'right', align:'right',cellsrenderer: cellsrenderer},
+                        { columngroup: 'number_of_variety',text: 'Budgeted', dataField: 'number_of_variety_budgeted',width:'70', cellsalign:'right', align:'right',cellsrenderer: cellsrenderer},
+                        { columngroup: 'number_of_variety',text: 'Due Budget', dataField: 'number_of_variety_budget_due',width:'70', cellsalign:'right', align:'right',cellsrenderer: cellsrenderer}
+                    ],
+                columngroups:
+                    [
+                        { text: 'Number of Variety', align: 'center', name: 'number_of_variety' }
+                    ]
             });
     });
 </script>

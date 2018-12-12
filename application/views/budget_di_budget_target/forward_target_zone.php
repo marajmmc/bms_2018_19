@@ -297,7 +297,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                         <?php
                     }
                     ?>
-                    { text: 'Total ZI Target', dataField: 'quantity_target_zi_total',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg}
+                    { text: 'Total ZSC Target', dataField: 'quantity_target_zi_total',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg}
                 ],
                 columngroups:
                 [

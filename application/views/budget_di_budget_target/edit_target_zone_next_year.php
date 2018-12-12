@@ -269,7 +269,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                         for($i=sizeof($fiscal_years_previous_sales)-1;$i>=0;$i--)
                         {
                             ?>
-                            {columngroup: 'previous_years',text: '<?php echo $fiscal_years_previous_sales[$i]['name']; ?>', dataField: 'quantity_sale_<?php echo $fiscal_years_previous_sales[$i]['id']; ?>',width:'100',filterable: false,cellsrenderer: cellsrenderer,align:'center',cellsAlign:'right',editable:false,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
+                            {columngroup: 'previous_years',text: '<?php echo $fiscal_years_previous_sales[$i]['name']; ?>', dataField: 'quantity_sale_<?php echo $fiscal_years_previous_sales[$i]['id']; ?>',width:'100',filterable: false,align:'center',cellsAlign:'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
                             <?php
                         }
                     ?>
@@ -321,7 +321,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                         <?php
                     }
                     ?>
-                    { text: 'Total ZI Target', dataField: 'quantity_prediction_total_zi',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg}
+                    { text: 'Total ZSC Target', dataField: 'quantity_prediction_total_zi',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg}
                 ],
                 columngroups:
                 [

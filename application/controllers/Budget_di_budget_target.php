@@ -1111,7 +1111,7 @@ class Budget_di_budget_target extends Root_Controller
         }
     }
 
-    // for ZI Assign target
+    // for ZSC Assign target
     private function system_list_target_zone($fiscal_year_id=0,$division_id=0)
     {
         //$user = User_helper::get_user();
@@ -1149,7 +1149,7 @@ class Budget_di_budget_target extends Root_Controller
                 if(($info_target['status_target_zi_forward']==$this->config->item('system_status_forwarded')))
                 {
                     $ajax['status']=false;
-                    $ajax['system_message']='ZI Target Already Assigned.';
+                    $ajax['system_message']='ZSC Target Already Assigned.';
                     $this->json_return($ajax);
                 }
                 // validation hom assign target to di forward status
@@ -1166,7 +1166,7 @@ class Budget_di_budget_target extends Root_Controller
             $data['system_preference_items']= $this->get_preference_headers($method);
             $data['fiscal_year']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id ='.$fiscal_year_id),1);
             $data['division']=Query_helper::get_info($this->config->item('table_login_setup_location_divisions'),'*',array('id ='.$division_id),1);
-            $data['title']="Assign ZI Target :: Crop list";
+            $data['title']="Assign ZSC Target :: Crop list";
             $data['options']['fiscal_year_id']=$fiscal_year_id;
             $data['options']['division_id']=$division_id;
             $ajax['status']=true;
@@ -1284,14 +1284,14 @@ class Budget_di_budget_target extends Root_Controller
                 $ajax['system_message']='Wrong crop id.';
                 $this->json_return($ajax);
             }
-            //validation DI Budget & ZI Target forward status
+            //validation DI Budget & ZSC Target forward status
             $info_target=$this->get_info_budget_target($fiscal_year_id,$division_id);
             if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
             {
                 if(($info_target['status_target_zi_forward']==$this->config->item('system_status_forwarded')))
                 {
                     $ajax['status']=false;
-                    $ajax['system_message']='ZI Target Already Assigned.';
+                    $ajax['system_message']='ZSC Target Already Assigned.';
                     $this->json_return($ajax);
                 }
                 // validation hom assign target to di forward status
@@ -1312,7 +1312,7 @@ class Budget_di_budget_target extends Root_Controller
             $data['acres']=$this->get_acres($division_id,$crop_id);
 
             $data['system_preference_items']= $this->get_preference_headers($method);
-            $data['title']="DI Yearly Target Assign To ZI for (".$data['crop']['name'].')';
+            $data['title']="DI Yearly Target Assign To ZSC for (".$data['crop']['name'].')';
             $data['options']['fiscal_year_id']=$fiscal_year_id;
             $data['options']['division_id']=$division_id;
             $data['options']['crop_id']=$crop_id;
@@ -1448,14 +1448,14 @@ class Budget_di_budget_target extends Root_Controller
             $ajax['system_message']='Invalid Division.';
             $this->json_return($ajax);
         }
-        //validation DI Budget & ZI Target forward status
+        //validation DI Budget & ZSC Target forward status
         $info_target=$this->get_info_budget_target($item_head['fiscal_year_id'],$item_head['division_id']);
         if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
         {
             if(($info_target['status_target_zi_forward']==$this->config->item('system_status_forwarded')))
             {
                 $ajax['status']=false;
-                $ajax['system_message']='ZI Target Already Assigned.';
+                $ajax['system_message']='ZSC Target Already Assigned.';
                 $this->json_return($ajax);
             }
             // validation hom assign target to di forward status
@@ -1539,7 +1539,7 @@ class Budget_di_budget_target extends Root_Controller
         }
     }
 
-    // for ZI assign target forward
+    // for ZSC assign target forward
     private function system_forward_target_zone($fiscal_year_id=0,$division_id)
     {
         //$user = User_helper::get_user();
@@ -1571,12 +1571,12 @@ class Budget_di_budget_target extends Root_Controller
                 $ajax['system_message']='Invalid Division.';
                 $this->json_return($ajax);
             }
-            //validation DI Budget & ZI Target forward status
+            //validation DI Budget & ZSC Target forward status
             $info_target=$this->get_info_budget_target($fiscal_year_id,$division_id);
             if(($info_target['status_target_zi_forward']==$this->config->item('system_status_forwarded')))
             {
                 $ajax['status']=false;
-                $ajax['system_message']='ZI Target Already Assigned.';
+                $ajax['system_message']='ZSC Target Already Assigned.';
                 $this->json_return($ajax);
             }
             // validation hom assign target to di forward status
@@ -1597,7 +1597,7 @@ class Budget_di_budget_target extends Root_Controller
             $data['acres']=$this->get_acres($division_id);
 
             $data['system_preference_items']= $this->get_preference_headers($method);
-            $data['title']='DI Yearly Assign Target Forward To ZI';
+            $data['title']='DI Yearly Assign Target Forward To ZSC';
             $data['options']['fiscal_year_id']=$fiscal_year_id;
             $data['options']['division_id']=$division_id;
             $ajax['status']=true;
@@ -1786,12 +1786,12 @@ class Budget_di_budget_target extends Root_Controller
             $ajax['system_message']='Invalid Division.';
             $this->json_return($ajax);
         }
-        //validation DI Budget & ZI Target forward status
+        //validation DI Budget & ZSC Target forward status
         $info_target=$this->get_info_budget_target($item_head['fiscal_year_id'],$item_head['division_id']);
         if(($info_target['status_target_zi_forward']==$this->config->item('system_status_forwarded')))
         {
             $ajax['status']=false;
-            $ajax['system_message']='ZI Target Already Assigned.';
+            $ajax['system_message']='ZSC Target Already Assigned.';
             $this->json_return($ajax);
         }
         // validation hom assign target to di forward status
@@ -1829,7 +1829,7 @@ class Budget_di_budget_target extends Root_Controller
         }
     }
 
-    // ZI Next 3 years target
+    // ZSC Next 3 years target
     private function system_list_target_zone_next_year($fiscal_year_id=0,$division_id=0)
     {
         //$user = User_helper::get_user();
@@ -1867,7 +1867,7 @@ class Budget_di_budget_target extends Root_Controller
                 if(($info_target['status_target_zi_next_year_forward']==$this->config->item('system_status_forwarded')))
                 {
                     $ajax['status']=false;
-                    $ajax['system_message']='ZI Next Years Target Already Assigned.';
+                    $ajax['system_message']='ZSC Next Years Target Already Assigned.';
                     $this->json_return($ajax);
                 }
                 // validation hom assign target to di forward status
@@ -1884,7 +1884,7 @@ class Budget_di_budget_target extends Root_Controller
             $data['system_preference_items']= $this->get_preference_headers($method);
             $data['fiscal_year']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id ='.$fiscal_year_id),1);
             $data['division']=Query_helper::get_info($this->config->item('table_login_setup_location_divisions'),'*',array('id ='.$division_id),1);
-            $data['title']="Next 3 Years ZI Assign Target :: Crop list";
+            $data['title']="Next 3 Years ZSC Assign Target :: Crop list";
             $data['options']['fiscal_year_id']=$fiscal_year_id;
             $data['options']['division_id']=$division_id;
             $ajax['status']=true;
@@ -2002,14 +2002,14 @@ class Budget_di_budget_target extends Root_Controller
                 $ajax['system_message']='Wrong crop id.';
                 $this->json_return($ajax);
             }
-            //validation DI Budget & ZI Target forward status
+            //validation DI Budget & ZSC Target forward status
             $info_target=$this->get_info_budget_target($fiscal_year_id,$division_id);
             if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
             {
                 if(($info_target['status_target_zi_next_year_forward']==$this->config->item('system_status_forwarded')))
                 {
                     $ajax['status']=false;
-                    $ajax['system_message']='ZI Next 3 Years Target Already Forwarded.';
+                    $ajax['system_message']='ZSC Next 3 Years Target Already Forwarded.';
                     $this->json_return($ajax);
                 }
                 // validation hom assign target to di forward status
@@ -2031,7 +2031,7 @@ class Budget_di_budget_target extends Root_Controller
             $data['acres']=$this->get_acres($division_id,$crop_id);
 
             $data['system_preference_items']= $this->get_preference_headers($method);
-            $data['title']="DI Next 3 Years Target Assign To ZI for (".$data['crop']['name'].')';
+            $data['title']="DI Next 3 Years Target Assign To ZSC for (".$data['crop']['name'].')';
             $data['options']['fiscal_year_id']=$fiscal_year_id;
             $data['options']['division_id']=$division_id;
             $data['options']['crop_id']=$crop_id;
@@ -2197,14 +2197,14 @@ class Budget_di_budget_target extends Root_Controller
             $ajax['system_message']='Invalid Division.';
             $this->json_return($ajax);
         }
-        //validation DI Budget & ZI Target forward status
+        //validation DI Budget & ZSC Target forward status
         $info_target=$this->get_info_budget_target($item_head['fiscal_year_id'],$item_head['division_id']);
         if(!(isset($this->permissions['action3']) && ($this->permissions['action3']==1)))
         {
             if(($info_target['status_target_zi_next_year_forward']==$this->config->item('system_status_forwarded')))
             {
                 $ajax['status']=false;
-                $ajax['system_message']='ZI Next 3 Years Target Already Assigned.';
+                $ajax['system_message']='ZSC Next 3 Years Target Already Assigned.';
                 $this->json_return($ajax);
             }
             // validation hom assign target to di forward status
@@ -2302,7 +2302,7 @@ class Budget_di_budget_target extends Root_Controller
         }
     }
 
-    // ZI Next 3 years target forward
+    // ZSC Next 3 years target forward
     private function system_forward_target_zone_next_year($fiscal_year_id=0,$division_id)
     {
         //$user = User_helper::get_user();
@@ -2333,12 +2333,12 @@ class Budget_di_budget_target extends Root_Controller
                 $ajax['system_message']='Invalid Division.';
                 $this->json_return($ajax);
             }
-            //validation DI Budget & ZI Target forward status
+            //validation DI Budget & ZSC Target forward status
             $info_target=$this->get_info_budget_target($fiscal_year_id,$division_id);
             if(($info_target['status_target_zi_next_year_forward']==$this->config->item('system_status_forwarded')))
             {
                 $ajax['status']=false;
-                $ajax['system_message']='ZI Next 3 Years Target Already Forwarded.';
+                $ajax['system_message']='ZSC Next 3 Years Target Already Forwarded.';
                 $this->json_return($ajax);
             }
             // validation hom assign target to di forward status
@@ -2361,7 +2361,7 @@ class Budget_di_budget_target extends Root_Controller
             $data['acres']=$this->get_acres($division_id);
 
             $data['system_preference_items']= $this->get_preference_headers($method);
-            $data['title']='DI Next 3 Years Assign Target Forward To ZI';
+            $data['title']='DI Next 3 Years Assign Target Forward To ZSC';
             $data['options']['fiscal_year_id']=$fiscal_year_id;
             $data['options']['division_id']=$division_id;
             $ajax['status']=true;
@@ -2580,12 +2580,12 @@ class Budget_di_budget_target extends Root_Controller
             $ajax['system_message']='Invalid Division.';
             $this->json_return($ajax);
         }
-        //validation DI Budget & ZI Target forward status
+        //validation DI Budget & ZSC Target forward status
         $info_target=$this->get_info_budget_target($item_head['fiscal_year_id'],$item_head['division_id']);
         if(($info_target['status_target_zi_next_year_forward']==$this->config->item('system_status_forwarded')))
         {
             $ajax['status']=false;
-            $ajax['system_message']='ZI Next 3 Years Target Already Assigned.';
+            $ajax['system_message']='ZSC Next 3 Years Target Already Assigned.';
             $this->json_return($ajax);
         }
         // validation hom assign target to di forward status
@@ -2732,7 +2732,7 @@ class Budget_di_budget_target extends Root_Controller
                 $result['value_2']=System_helper::display_date_time($budget_target_superior['date_target_di_forwarded']);
                 $data['info_basic'][]=$result;
             }
-            //target forward sub area(to outlets from ZI)
+            //target forward sub area(to outlets from ZSC)
             $result=array();
             $result['label_1']=$this->lang->line('LABEL_STATUS_TARGET_FORWARD_AREA_SUB').' Status';
             $result['value_1']=$budget_target['status_target_zi_forward'];
@@ -2748,7 +2748,7 @@ class Budget_di_budget_target extends Root_Controller
                 $result['value_2']=System_helper::display_date_time($budget_target['date_target_zi_forwarded']);
                 $data['info_basic'][]=$result;
             }
-            //target forward area 3yr(to ZI from DI)
+            //target forward area 3yr(to ZSC from DI)
             $result=array();
             $result['label_1']=$this->lang->line('LABEL_STATUS_TARGET_FORWARD_AREA_NEXT_YEAR').' Status';
             $result['value_1']=$this->config->item('system_status_pending');
@@ -2769,7 +2769,7 @@ class Budget_di_budget_target extends Root_Controller
                 $result['value_2']=System_helper::display_date_time($budget_target_superior['date_target_di_next_year_forwarded']);
                 $data['info_basic'][]=$result;
             }
-            //target forward sub area 3yr(to outlets from ZI)
+            //target forward sub area 3yr(to outlets from ZSC)
             $result=array();
             $result['label_1']=$this->lang->line('LABEL_STATUS_TARGET_FORWARD_AREA_SUB_NEXT_YEAR').' Status';
             $result['value_1']=$budget_target['status_target_zi_next_year_forward'];

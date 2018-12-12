@@ -105,7 +105,7 @@ echo '</pre>';*/
             }
         });
 
-        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_assign_target_di');?>";
+        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_edit_target_di');?>";
 
         // prepare the data
         var source =
@@ -113,26 +113,35 @@ echo '</pre>';*/
             dataType: "json",
             dataFields: [
                 <?php
-                 foreach($system_preference_items as $key=>$item)
-                 {
-                    ?>
-                { name: '<?php echo $key ?>', type: 'string' },
-                <?php
-            }
-            foreach($divisions as $division)
-            {
-                    ?>
-                { name: 'quantity_target_division_<?php echo $division['division_id']?>', type: 'string' },
-                <?php
-            }
-            ?>
+                foreach($system_preference_items as $key=>$item)
+                {
+                    if(($key=='crop_type_name') || ($key=='variety_name'))
+                    {
+                        ?>
+                        { name: '<?php echo $key ?>', type: 'string' },
+                        <?php
+                    }
+                    else
+                    {
+                        ?>
+                        { name: '<?php echo $key ?>', type: 'number' },
+                        <?php
+                    }
+                }
+                foreach($divisions as $division)
+                {
+                ?>
+                    { name: 'quantity_budget_division_<?php echo $division['division_id']?>', type: 'number' },
+                    { name: 'quantity_target_division_<?php echo $division['division_id']?>', type: 'number' },
+                    <?php
+                }
+                ?>
             ],
-            id: 'id',
             type: 'POST',
             url: url,
             data:JSON.parse('<?php echo json_encode($options);?>')
         };
-        var header_render=function (text, align)
+        /*var header_render=function (text, align)
         {
             var words = text.split(" ");
             var label=words[0];
@@ -152,22 +161,11 @@ echo '</pre>';*/
 
             }
             return '<div style="margin: 5px;">'+label+'</div>';
-        };
+        };*/
         var cellsrenderer = function(row, column, value, defaultHtml, columnSettings, record)
         {
             var element = $(defaultHtml);
-            if(column=='quantity_target')
-            {
-                if(value==0)
-                {
-                    element.html('');
-                }
-                else if(value>0)
-                {
-                    element.html(get_string_kg(value));
-                }
-            }
-            else if(column=='quantity_target_division_total')
+            if(column=='quantity_target_division_total')
             {
                 var quantity_target_division_total=0;
                 <?php
@@ -205,10 +203,37 @@ echo '</pre>';*/
                 }
                 element.html('<div class="jqxgrid_input">'+value+'</div>');
             }
+            else if(column.substr(0,9)=='quantity_')
+            {
+                if(value==0)
+                {
+                    element.html('');
+                }
+                else if(value>0)
+                {
+                    element.html(get_string_kg(value));
+                }
+            }
+
+
             element.css({'margin': '0px','width': '100%', 'height': '100%',padding:'5px','line-height':'25px'});
             return element[0].outerHTML;
         };
+        var aggregatesrenderer=function (aggregates)
+        {
+            //console.log('here');
+            return '<div style="position: relative; margin: 0px;padding: 5px;width: 100%;height: 100%; overflow: hidden;background-color:'+system_report_color_grand+';">' +aggregates['sum']+'</div>';
 
+        };
+        var aggregatesrenderer_kg=function (aggregates)
+        {
+            var text='';
+            if(!((aggregates['sum']=='0.000')||(aggregates['sum']=='')))
+            {
+                text=get_string_kg(aggregates['sum']);
+            }
+            return '<div style="position: relative; margin: 0px;padding: 5px;width: 100%;height: 100%; overflow: hidden;background-color:'+system_report_color_grand+';">' +text+'</div>';
+        };
         var dataAdapter = new $.jqx.dataAdapter(source);
         // create jqxgrid.
         $("#system_jqx_container").jqxGrid(
@@ -224,45 +249,71 @@ echo '</pre>';*/
                 enablebrowserselection: true,
                 selectionmode: 'singlerow',
                 altrows: true,
+                showaggregates: true,
+                showstatusbar: true,
                 rowsheight: 35,
+                /*columnsheight: 40,*/
                 editable:true,
                 columns:
                 [
                     { text: '<?php echo $CI->lang->line('LABEL_CROP_TYPE_NAME'); ?>', dataField: 'crop_type_name',width:'100', filtertype:'list',pinned:true,editable:false},
                     { text: '<?php echo $CI->lang->line('LABEL_VARIETY_NAME'); ?>', dataField: 'variety_name',width:'150',pinned:true,editable:false},
-                    { text: 'Total Target', dataField: 'quantity_target',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
+                    { columngroup:'hom_budget_target',text: 'Budget', dataField: 'quantity_budget',width:'100',filterable:false, align: 'center',cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
+                    { columngroup:'hom_budget_target',text: 'Target', dataField: 'quantity_target',width:'100',filterable:false, align: 'center',cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
+                    <?php
+                    $serial=0;
+                    foreach($divisions as $division)
+                    {
+                        ++$serial;
+                        ?>
+                        { columngroup:'division_<?php echo $division['division_id']?>',text: 'Budget',dataField: 'quantity_budget_division_<?php echo $division['division_id']?>', width:100,filterable:false, align: 'center',cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
+                        { columngroup:'division_<?php echo $division['division_id']?>',text: 'Target',datafield: 'quantity_target_division_<?php echo $division['division_id']?>', width:100,filterable:false, align: 'center',cellsalign: 'right',cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg,columntype: 'custom',
+                            cellbeginedit: function (row)
+                            {
+                                var selectedRowData = $('#system_jqx_container').jqxGrid('getrowdata', row);//only last selected
+                                return selectedRowData['editable_<?php echo $serial; ?>'];
+                            },
+                            initeditor: function (row, cellvalue, editor, celltext, pressedkey)
+                            {
+                                editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');
+                            },
+                            geteditorvalue: function (row, cellvalue, editor)
+                            {
+                                // return the editor's value.
+                                var value=editor.find('input').val();
+                                var selectedRowData = $('#system_jqx_container').jqxGrid('getrowdata', row);
+                                return editor.find('input').val();
+                            },
+                            cellvaluechanging: function (row, datafield, columntype, oldvalue, newvalue)
+                            {
+                                if (newvalue != oldvalue)
+                                {
+                                    var selectedRowData = $('#system_jqx_container').jqxGrid('getrowdata', row);//only last selected
+                                    var quantity_target_division_total=parseFloat(selectedRowData['quantity_target_division_total'])-parseFloat(oldvalue)+parseFloat(newvalue);
+                                    //console.log(selectedRowData);
+                                    $("#system_jqx_container").jqxGrid('setcellvalue', row, 'quantity_target_division_total', quantity_target_division_total);
+
+                                }
+                            }
+                        },
+                        <?php
+                    }
+                    ?>
+                    { text: 'Total DI Target', dataField: 'quantity_target_division_total',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg}
+                ],
+                columngroups:
+                [
                     <?php
                     $serial=0;
                     foreach($divisions as $division)
                     {
                     ++$serial;
-                    ?>
-                    { columngroup: 'assign_targeted_division',text: '<?php echo $serial.'. '.$division['division_name']?>',datafield: 'quantity_target_division_<?php echo $division['division_id']?>', width: 100,filterable: false,cellsalign: 'right',cellsrenderer: cellsrenderer,columntype: 'custom',
-                        cellbeginedit: function (row)
-                        {
-                            var selectedRowData = $('#system_jqx_container').jqxGrid('getrowdata', row);//only last selected
-                            return selectedRowData['editable_<?php echo $serial; ?>'];
-                        },
-                        initeditor: function (row, cellvalue, editor, celltext, pressedkey)
-                        {
-                            editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');
-                        },
-                        geteditorvalue: function (row, cellvalue, editor)
-                        {
-                            // return the editor's value.
-                            var value=editor.find('input').val();
-                            var selectedRowData = $('#system_jqx_container').jqxGrid('getrowdata', row);
-                            return editor.find('input').val();
-                        }
-                    },
-                    <?php
+                        ?>
+                        { text: '<?php echo $serial.'. '.$division['division_name']?>', align: 'center', name: 'division_<?php echo $division['division_id']?>' },
+                        <?php
                     }
                     ?>
-                    { text: 'Total DI Target', dataField: 'quantity_target_division_total',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer}
-                ],
-                columngroups:
-                [
-                    { text: 'Assign Target Division List', align: 'center', name: 'assign_targeted_division' }
+                    { text: 'Total HOM', align: 'center', name: 'hom_budget_target' }
                 ]
             });
     });

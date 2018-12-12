@@ -987,17 +987,11 @@ class Budget_zi_budget_target extends Root_Controller
                 if(isset($sales_previous[$fy['id']][$result['variety_id']]))
                 {
                     $info['quantity_sale_'.$fy['id']]=$sales_previous[$fy['id']][$result['variety_id']]/1000;
-                    /*$type_total['quantity_sale_'.$fy['id']]+=$info['quantity_sale_'.$fy['id']];
-                    $crop_total['quantity_sale_'.$fy['id']]+=$info['quantity_sale_'.$fy['id']];
-                    $grand_total['quantity_sale_'.$fy['id']]+=$info['quantity_sale_'.$fy['id']];*/
                 }
             }
             if(isset($items_old[$result['variety_id']]))
             {
                 $info['quantity_budget_zone']=$items_old[$result['variety_id']]['quantity_budget'];
-                /*$type_total['quantity_budget_zone']+=$info['quantity_budget_zone'];
-                $crop_total['quantity_budget_zone']+=$info['quantity_budget_zone'];
-                $grand_total['quantity_budget_zone']+=$info['quantity_budget_zone'];*/
             }
             $quantity_budget_outlet_total=0;
             foreach($outlet_ids as $outlet_id)
@@ -1006,17 +1000,10 @@ class Budget_zi_budget_target extends Root_Controller
                 {
                     $info['quantity_budget_outlet_'.$outlet_id]=$budgeted_outlets[$outlet_id][$result['variety_id']]['quantity_budget'];
                     $quantity_budget_outlet_total+=$info['quantity_budget_outlet_'.$outlet_id];
-                    /*$type_total['quantity_budget_outlet_'.$outlet_id]+=$info['quantity_budget_outlet_'.$outlet_id];
-                    $crop_total['quantity_budget_outlet_'.$outlet_id]+=$info['quantity_budget_outlet_'.$outlet_id];
-                    $grand_total['quantity_budget_outlet_'.$outlet_id]+=$info['quantity_budget_outlet_'.$outlet_id];*/
-
                 }
             }
 
             $info['quantity_budget_outlet_total']=$quantity_budget_outlet_total;
-            /*$type_total['quantity_budget_outlet_total']+=$quantity_budget_outlet_total;
-            $crop_total['quantity_budget_outlet_total']+=$quantity_budget_outlet_total;
-            $grand_total['quantity_budget_outlet_total']+=$quantity_budget_outlet_total;*/
 
             foreach($info as $key=>$r)
             {

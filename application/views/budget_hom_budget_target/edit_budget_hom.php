@@ -91,7 +91,7 @@ echo '</pre>';*/
                 $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+'][quantity_budget]" value="'+data[i]['quantity_budget']+'">');
                 <?php 
                 $serial=0;
-                foreach($fiscal_years_next_budgets as $budget)
+                foreach($fiscal_years_next_budgets as $fy)
                 {
                     ++$serial;
                         ?>
@@ -115,35 +115,43 @@ echo '</pre>';*/
             dataType: "json",
             dataFields: [
                 <?php
-                 foreach($system_preference_items as $key=>$item)
-                 {
-                    ?>
-                { name: '<?php echo $key ?>', type: 'string' },
-                <?php
-            }
-            foreach($divisions as $division)
-            {
-                    ?>
-                { name: 'quantity_budget_division_<?php echo $division['division_id']?>', type: 'string' },
-                <?php
-            }
-            foreach($fiscal_years_previous_sales as $fy)
-            {
-                    ?>
-                { name: 'quantity_sale_<?php echo $fy['id']; ?>', type: 'string' },
-                <?php
-            }
-            $serial=0;
-            foreach($fiscal_years_next_budgets as $budget)
-            {
-                ++$serial;
-                    ?>
-                { name: 'quantity_prediction_<?php echo $serial; ?>', type: 'string' },
-                <?php
-            }
-            ?>
+                foreach($system_preference_items as $key=>$item)
+                {
+                    if(($key=='id')||(substr($key, 0, 9)=='quantity_'))
+                    {
+                        ?>
+                        { name: '<?php echo $key ?>', type: 'number' },
+                        <?php
+                    }
+                    else
+                    {
+                        ?>
+                        { name: '<?php echo $key ?>', type: 'string' },
+                        <?php
+                    }
+                }
+                foreach($divisions as $division)
+                {
+                ?>
+                    { name: 'quantity_budget_division_<?php echo $division['division_id']?>', type: 'number' },
+                    <?php
+                }
+                foreach($fiscal_years_previous_sales as $fy)
+                {
+                        ?>
+                    { name: 'quantity_sale_<?php echo $fy['id']; ?>', type: 'number' },
+                    <?php
+                }
+                $serial=0;
+                foreach($fiscal_years_next_budgets as $budget)
+                {
+                    ++$serial;
+                        ?>
+                    { name: 'quantity_prediction_<?php echo $serial; ?>', type: 'number' },
+                    <?php
+                }
+                ?>
             ],
-            id: 'id',
             type: 'POST',
             url: url,
             data:JSON.parse('<?php echo json_encode($options);?>')
@@ -172,18 +180,7 @@ echo '</pre>';*/
         var cellsrenderer = function(row, column, value, defaultHtml, columnSettings, record)
         {
             var element = $(defaultHtml);
-            if(column.substr(0,25)=='quantity_budget_division_')
-            {
-                if(value==0)
-                {
-                    element.html('');
-                }
-                else if(value>0)
-                {
-                    element.html(get_string_kg(value));
-                }
-            }
-            else if(column=='quantity_budget_division_total' || column=='quantity_budget' || column=='quantity_prediction_1' || column=='quantity_prediction_2' || column=='quantity_prediction_3')
+            if(column=='quantity_budget' || column.substr(0,20)=='quantity_prediction_')
             {
                 if(value==0)
                 {
@@ -191,7 +188,7 @@ echo '</pre>';*/
                 }
                 element.html('<div class="jqxgrid_input">'+value+'</div>');
             }
-            else if(column.substr(0,14)=='quantity_sale_')
+            else if(column.substr(0,9)=='quantity_')
             {
                 if(value==0)
                 {
@@ -199,13 +196,43 @@ echo '</pre>';*/
                 }
                 else
                 {
-                    element.html(get_string_kg(value));
+                    if(typeof value == 'number')
+                    {
+                        element.html(get_string_kg(value));
+                    }
+                    else
+                    {
+                        element.html(value);
+                    }
+                    /*if(value=='N/D' || value=='N/F')
+                     {
+                     element.html(value);
+                     }
+                     else
+                     {
+                     element.html(get_string_kg(value));
+                     }*/
                 }
             }
+
             element.css({'margin': '0px','width': '100%', 'height': '100%',padding:'5px','line-height':'25px'});
             return element[0].outerHTML;
         };
+        var aggregatesrenderer=function (aggregates)
+        {
+            //console.log('here');
+            return '<div style="position: relative; margin: 0px;padding: 5px;width: 100%;height: 100%; overflow: hidden;background-color:'+system_report_color_grand+';">' +aggregates['sum']+'</div>';
 
+        };
+        var aggregatesrenderer_kg=function (aggregates)
+        {
+            var text='';
+            if(!((aggregates['sum']=='0.000')||(aggregates['sum']=='')))
+            {
+                text=get_string_kg(aggregates['sum']);
+            }
+            return '<div style="position: relative; margin: 0px;padding: 5px;width: 100%;height: 100%; overflow: hidden;background-color:'+system_report_color_grand+';">' +text+'</div>';
+        };
         var dataAdapter = new $.jqx.dataAdapter(source);
         // create jqxgrid.
         $("#system_jqx_container").jqxGrid(
@@ -221,7 +248,10 @@ echo '</pre>';*/
                 enablebrowserselection: true,
                 selectionmode: 'singlerow',
                 altrows: true,
+                showaggregates: true,
+                showstatusbar: true,
                 rowsheight: 35,
+                /*columnsheight: 40,*/
                 editable:true,
                 columns:
                 [
@@ -230,11 +260,11 @@ echo '</pre>';*/
                     <?php
                         for($i=sizeof($fiscal_years_previous_sales)-1;$i>=0;$i--)
                             //foreach($fiscal_years_previous_sales as $fy)
-                            {?>{columngroup: 'previous_years',text: '<?php echo $fiscal_years_previous_sales[$i]['name']; ?>', dataField: 'quantity_sale_<?php echo $fiscal_years_previous_sales[$i]['id']; ?>',width:'100',filterable: false,cellsrenderer: cellsrenderer,align:'center',cellsAlign:'right',editable:false},
+                            {?>{columngroup: 'previous_years',text: '<?php echo $fiscal_years_previous_sales[$i]['name']; ?>', dataField: 'quantity_sale_<?php echo $fiscal_years_previous_sales[$i]['id']; ?>',width:'100',filterable: false,align:'center',cellsAlign:'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
                         <?php
                         }
                     ?>
-                    { text: '<?php echo $CI->lang->line('LABEL_QUANTITY_BUDGET_KG'); ?><?php echo "<br>".$fiscal_year['name'];?>',datafield: 'quantity_budget', width: 100,filterable: false,cellsrenderer: cellsrenderer,cellsalign: 'right',columntype: 'custom',
+                    { text: '<?php echo $CI->lang->line('LABEL_QUANTITY_BUDGET_KG'); ?><?php echo "<br>".$fiscal_year['name'];?>',datafield: 'quantity_budget', width: 100,filterable: false,cellsalign: 'right',cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg,columntype: 'custom',
                         initeditor: function (row, cellvalue, editor, celltext, pressedkey)
                         {
                             editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');
@@ -247,42 +277,39 @@ echo '</pre>';*/
                             return editor.find('input').val();
                         }
                     },
-                    { text: 'Total</br>Budget', dataField: 'quantity_budget_division_total',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
+                    { text: 'Total DI</br>Budget', dataField: 'quantity_budget_division_total',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
                     <?php
                     $serial=0;
                     foreach($divisions as $division)
                     {
                     ++$serial;
-                    ?>
-                    { text: '<?php echo $serial.'. '.$division['division_name']?>',dataField: 'quantity_budget_division_<?php echo $division['division_id']?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer},
-                    <?php
+                        ?>
+                        { text: '<?php echo $serial.'. '.$division['division_name']?>',dataField: 'quantity_budget_division_<?php echo $division['division_id']?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
+                        <?php
                     }
                     ?>
                     <?php
                     $serial=0;
                     foreach ($fiscal_years_next_budgets as $budget)
                     {
-                    ++$serial;
-                    ?>
-                    { columngroup: 'next_years',text: '<?php echo $budget['name']; ?>',datafield: 'quantity_prediction_<?php echo $serial; ?>', width: 100,filterable: false,cellsalign: 'right',cellsrenderer: cellsrenderer,columntype: 'custom',
-                        initeditor: function (row, cellvalue, editor, celltext, pressedkey)
-                        {
-                            editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');
+                        ++$serial;
+                        ?>
+                        { columngroup: 'next_years',text: '<?php echo $budget['name']; ?>',datafield: 'quantity_prediction_<?php echo $serial; ?>', width: 100,filterable: false,cellsalign: 'right',cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg,columntype: 'custom',
+                            initeditor: function (row, cellvalue, editor, celltext, pressedkey)
+                            {
+                                editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');
+                            },
+                            geteditorvalue: function (row, cellvalue, editor)
+                            {
+                                // return the editor's value.
+                                var value=editor.find('input').val();
+                                var selectedRowData = $('#system_jqx_container').jqxGrid('getrowdata', row);
+                                return editor.find('input').val();
+                            }
                         },
-                        geteditorvalue: function (row, cellvalue, editor)
-                        {
-                            // return the editor's value.
-                            var value=editor.find('input').val();
-                            var selectedRowData = $('#system_jqx_container').jqxGrid('getrowdata', row);
-                            return editor.find('input').val();
-                        }
-                    },
-                    <?php
+                        <?php
                     }
                      ?>
-                    
-
-
                 ],
                 columngroups:
                 [

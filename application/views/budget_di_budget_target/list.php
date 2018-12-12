@@ -28,7 +28,7 @@ if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(is
     $action_buttons[]=array
     (
         'type'=>'button',
-        'label'=>' Assign ZI Target',
+        'label'=>' Assign ZSC Target',
         'class'=>'button_jqx_action',
         'data-action-link'=>site_url($CI->controller_url.'/index/list_target_zone')
 
@@ -39,7 +39,7 @@ if((isset($CI->permissions['action7']) && ($CI->permissions['action7']==1)))
     $action_buttons[]=array
     (
         'type'=>'button',
-        'label'=>'Forward ZI Target',
+        'label'=>'Forward ZSC Target',
         'class'=>'button_jqx_action',
         'data-action-link'=>site_url($CI->controller_url.'/index/forward_target_zone')
     );
@@ -49,7 +49,7 @@ if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(is
     $action_buttons[]=array
     (
         'type'=>'button',
-        'label'=>' Next 3Y ZI Target',
+        'label'=>' Next 3Y ZSC Target',
         'class'=>'button_jqx_action',
         'data-action-link'=>site_url($CI->controller_url.'/index/list_target_zone_next_year')
 
@@ -60,7 +60,7 @@ if((isset($CI->permissions['action7']) && ($CI->permissions['action7']==1)))
     $action_buttons[]=array
     (
         'type'=>'button',
-        'label'=>'Forward Next 3Y ZI Target',
+        'label'=>'Forward Next 3Y ZSC Target',
         'class'=>'button_jqx_action',
         'data-action-link'=>site_url($CI->controller_url.'/index/forward_target_zone_next_year')
     );
@@ -192,8 +192,8 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 { text: '<?php echo $CI->lang->line('LABEL_FISCAL_YEAR'); ?>', dataField: 'fiscal_year',width:'80',filtertype: 'list',renderer: header_render},
                 { text: '<?php echo $CI->lang->line('LABEL_DIVISION_NAME'); ?>', dataField: 'division_name',width:'200',filtertype: 'list',renderer: header_render},
                 { text: '<?php echo $CI->lang->line('LABEL_STATUS_BUDGET_FORWARD'); ?>', dataField: 'status_budget_forward', width:'80',filtertype: 'list',renderer: header_render},
-                { text: '(DI) Target', dataField: 'status_target_di_forward', width:'80',filtertype: 'list',renderer: header_render},
-                { text: '(ZI) <?php echo $CI->lang->line('LABEL_STATUS_TARGET_FORWARD'); ?>', dataField: 'status_target_zi_forward', width:'80',filtertype: 'list',renderer: header_render},
+                { text: '(DI) Target From HOM', dataField: 'status_target_di_forward', width:'80',filtertype: 'list',renderer: header_render},
+                { text: '(ZSC) <?php echo $CI->lang->line('LABEL_STATUS_TARGET_FORWARD'); ?>', dataField: 'status_target_zi_forward', width:'80',filtertype: 'list',renderer: header_render},
                 { text: '(DI NXT 3Y) <?php echo $CI->lang->line('LABEL_STATUS_TARGET_FORWARD'); ?>', dataField: 'status_target_di_next_year_forward', width:'80',filtertype: 'list',renderer: header_render},
                 { text: '(ZI NXT 3Y) <?php echo $CI->lang->line('LABEL_STATUS_TARGET_FORWARD'); ?>', dataField: 'status_target_zi_next_year_forward', width:'80',filtertype: 'list',renderer: header_render}
             ]

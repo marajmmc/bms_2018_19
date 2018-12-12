@@ -106,7 +106,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             url: url,
             data:JSON.parse('<?php echo json_encode($options);?>')
         };
-        var header_render=function (text, align)
+        /*var header_render=function (text, align)
         {
             var words = text.split(" ");
             var label=words[0];
@@ -126,7 +126,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
 
             }
             return '<div style="margin: 5px;">'+label+'</div>';
-        };
+        };*/
         var cellsrenderer = function(row, column, value, defaultHtml, columnSettings, record)
         {
             var element = $(defaultHtml);

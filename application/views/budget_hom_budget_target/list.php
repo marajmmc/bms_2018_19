@@ -20,7 +20,7 @@ if((isset($CI->permissions['action7']) && ($CI->permissions['action7']==1)))
         'type'=>'button',
         'label'=>'Forward Budget',
         'class'=>'button_jqx_action',
-        'data-action-link'=>site_url($CI->controller_url.'/index/budget_forward')
+        'data-action-link'=>site_url($CI->controller_url.'/index/forward_budget_hom')
     );
 }
 if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(isset($CI->permissions['action2']) && ($CI->permissions['action2']==1)))
@@ -41,7 +41,7 @@ if((isset($CI->permissions['action7']) && ($CI->permissions['action7']==1)))
         'type'=>'button',
         'label'=>'Forward DI Target',
         'class'=>'button_jqx_action',
-        'data-action-link'=>site_url($CI->controller_url.'/index/assign_target_di_forward')
+        'data-action-link'=>site_url($CI->controller_url.'/index/forward_target_di')
     );
 }
 if((isset($CI->permissions['action1']) && ($CI->permissions['action1']==1))||(isset($CI->permissions['action2']) && ($CI->permissions['action2']==1)))
@@ -62,7 +62,7 @@ if((isset($CI->permissions['action7']) && ($CI->permissions['action7']==1)))
         'type'=>'button',
         'label'=>'Forward Next 3Y DI Target',
         'class'=>'button_jqx_action',
-        'data-action-link'=>site_url($CI->controller_url.'/index/assign_target_di_forward_next_year')
+        'data-action-link'=>site_url($CI->controller_url.'/index/forward_target_di_next_year')
     );
 }
 if(isset($CI->permissions['action0']) && ($CI->permissions['action0']==1))
@@ -73,6 +73,25 @@ if(isset($CI->permissions['action0']) && ($CI->permissions['action0']==1))
         'label'=>$CI->lang->line('ACTION_DETAILS'),
         'class'=>'button_jqx_action',
         'data-action-link'=>site_url($CI->controller_url.'/index/details')
+    );
+}
+if(isset($CI->permissions['action4']) && ($CI->permissions['action4']==1))
+{
+    $action_buttons[]=array(
+        'type'=>'button',
+        'label'=>$CI->lang->line("ACTION_PRINT"),
+        'class'=>'button_action_download',
+        'data-title'=>"Print",
+        'data-print'=>true
+    );
+}
+if(isset($CI->permissions['action5']) && ($CI->permissions['action5']==1))
+{
+    $action_buttons[]=array(
+        'type'=>'button',
+        'label'=>$CI->lang->line("ACTION_DOWNLOAD"),
+        'class'=>'button_action_download',
+        'data-title'=>"Download"
     );
 }
 $action_buttons[]=array
@@ -109,13 +128,21 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 <?php
                  foreach($system_preference_items as $key=>$item)
                  {
-                    ?>
-                { name: '<?php echo $key ?>', type: 'string' },
-                <?php
-             }
-            ?>
+                    if(($key=='id'))
+                    {
+                        ?>
+                        { name: '<?php echo $key ?>', type: 'number' },
+                        <?php
+                    }
+                    else
+                    {
+                        ?>
+                        { name: '<?php echo $key ?>', type: 'string' },
+                        <?php
+                    }
+                 }
+                ?>
             ],
-            id: 'id',
             type: 'POST',
             url: url
         };
@@ -125,6 +152,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
         $("#system_jqx_container").jqxGrid(
             {
                 width: '100%',
+                height: '250px',
                 source: dataAdapter,
                 filterable: true,
                 sortable: true,
@@ -132,7 +160,6 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 columnsresize: true,
                 selectionmode: 'singlerow',
                 altrows: true,
-                height: '250px',
                 columnsreorder: true,
                 enablebrowserselection: true,
                 columns:

@@ -261,7 +261,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 [
                     { text: '<?php echo $CI->lang->line('LABEL_CROP_TYPE_NAME'); ?>', dataField: 'crop_type_name',width:'100', filtertype:'list',pinned:true,editable:false},
                     { text: '<?php echo $CI->lang->line('LABEL_VARIETY_NAME'); ?>', dataField: 'variety_name',width:'150',pinned:true,editable:false},
-                    { columngroup:'di_budget_target',text: 'Target', dataField: 'quantity_budget_di',width:'100',filterable:false, align: 'center',cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
+                    { columngroup:'di_budget_target',text: 'Budget', dataField: 'quantity_budget_di',width:'100',filterable:false, align: 'center',cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
                     { columngroup:'di_budget_target',text: 'Target', dataField: 'quantity_target_di',width:'100',filterable:false, align: 'center',cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
                     <?php
                    $serial=0;
@@ -298,7 +298,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                     <?php
                     }
                     ?>
-                    { text: 'Total ZI <br /> Target', dataField: 'quantity_target_zi_total',width:'100',filterable:false, align: 'center',cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg}
+                    { text: 'Total ZSC <br /> Target', dataField: 'quantity_target_zi_total',width:'100',filterable:false, align: 'center',cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg}
                 ],
                 columngroups:
                 [
