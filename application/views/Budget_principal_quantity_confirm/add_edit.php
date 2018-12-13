@@ -6,7 +6,7 @@ $action_buttons = array();
 $action_buttons[] = array
 (
     'label' => $CI->lang->line("ACTION_BACK"),
-    'href' => site_url($CI->controller_url)
+    'href'=>site_url($CI->controller_url.'/index/list_variety/'.$item['fiscal_year_id'])
 );
 if ((isset($CI->permissions['action1']) && ($CI->permissions['action1'] == 1)) || (isset($CI->permissions['action2']) && ($CI->permissions['action2'] == 1)))
 {
@@ -18,11 +18,15 @@ if ((isset($CI->permissions['action1']) && ($CI->permissions['action1'] == 1)) |
         'data-form' => '#save_form'
     );
 }
-
+$action_buttons[]=array
+(
+    'label'=>$CI->lang->line("ACTION_REFRESH"),
+    'href'=>site_url($CI->controller_url.'/index/add_edit/'.$item['fiscal_year_id'].'/'.$item['variety_id'])
+);
 $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
 ?>
 <form id="save_form" action="<?php echo site_url($CI->controller_url . '/index/save'); ?>" method="post">
-<input type="hidden" name="item[fiscal_year_id]" value="<?php echo $fiscal_year_data['fiscal_year_id'] ?>"/>
+<input type="hidden" name="item[fiscal_year_id]" value="<?php echo $item['fiscal_year_id'] ?>"/>
 <input type="hidden" name="item[variety_id]" value="<?php echo $item['variety_id'] ?>"/>
 
 <div class="row widget">
@@ -34,7 +38,7 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
     <div class="clearfix"></div>
 </div>
 
-<?php if ($config_warning['status'])
+<?php if ($message_warning_config)
 {
     ?>
     <div class="row show-grid bg-warning text-warning" style="padding:10px 0 0">
@@ -44,9 +48,11 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
         <div class="col-xs-8">
             <ul style="padding:0;list-style:none">
                 <?php
-                foreach ($config_warning['messages'] as $message)
+                foreach ($message_warning_config as $message)
                 {
-                    echo '<li>' . $message . '</li>';
+                    ?>
+                    <li><?php echo $message ?></li>
+                    <?php
                 }
                 ?>
             </ul>
@@ -54,19 +60,22 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
     </div>
 <?php } ?>
 
-<?php if ($changes_warning['status'])
+<?php if ($message_warning_changes)
 {
     ?>
     <div class="row show-grid bg-danger text-danger" style="padding:10px 0 0">
         <div class="col-xs-4">
-            <label class="control-label pull-right" style="font-size:1.2em">Warning :</label>
+            <label class="control-label pull-right" style="font-size:1.2em">Attention :</label>
         </div>
         <div class="col-xs-8">
             <ul style="padding:0;list-style:none">
+                <li><b>Please save this Quantity setup again because</b></li>
                 <?php
-                foreach ($changes_warning['messages'] as $message)
+                foreach ($message_warning_changes as $message)
                 {
-                    echo '<li>' . $message . '</li>';
+                    ?>
+                    <li><?php echo $message ?></li>
+                    <?php
                 }
                 ?>
             </ul>
@@ -79,7 +88,7 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
         <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_FISCAL_YEAR'); ?> :</label>
     </div>
     <div class="col-xs-4">
-        <label class="control-label"><?php echo $fiscal_year_data['fiscal_year_name'] ?></label>
+        <label class="control-label"><?php echo $item['fiscal_year_name'] ?></label>
     </div>
 </div>
 
@@ -115,7 +124,7 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
         <label class="control-label pull-right">Total Direct Cost Percentage :</label>
     </div>
     <div class="col-xs-4">
-        <label class="control-label" id="percentage_direct_cost"><?php echo $item['total_direct_cost_percentage'] ?></label>
+        <label class="control-label" id="percentage_direct_cost"><?php echo $item['percentage_direct_cost'] ?></label>%
     </div>
 </div>
 
@@ -124,7 +133,7 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
         <label class="control-label pull-right">Total Packing Cost Percentage :</label>
     </div>
     <div class="col-xs-4">
-        <label class="control-label" id="percentage_packing_cost"><?php echo $item['total_packing_cost_percentage'] ?></label>
+        <label class="control-label" id="percentage_packing_cost"><?php echo $item['percentage_packing_cost'] ?></label>%
     </div>
 </div>
 
@@ -143,7 +152,7 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                 ?>
                 <tr>
                     <td><?php echo $currency['name']; ?></td>
-                    <td id="currency_rate_<?php echo $currency_id; ?>"><?php echo $currency['currency_rate']; ?></td>
+                    <td id="amount_currency_rate_<?php echo $currency_id; ?>"><?php echo $currency['amount_currency_rate']; ?></td>
                 </tr>
             <?php
             }
@@ -157,7 +166,7 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
         <label class="control-label pull-right">Quantity Confirm : <br>(At HOM Target)</label>
     </div>
     <div class="col-xs-4">
-        <label class="control-label"><?php echo 0.0 ?></label>
+        <label class="control-label"><?php echo $item['quantity_total_hom_target'];?></label>
     </div>
 </div>
 
@@ -166,16 +175,7 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
         <label class="control-label pull-right">Quantity Confirm :</label>
     </div>
     <div class="col-xs-4">
-        <label class="control-label" id="quantity_grand"><?php echo 0.0 ?></label>
-    </div>
-</div>
-
-<div class="row show-grid">
-    <div class="col-xs-4">
-        <label class="control-label pull-right">Total COGS :</label>
-    </div>
-    <div class="col-xs-4">
-        <label class="control-label" id="cogs_total_grand"><?php echo 0.0 ?></label>
+        <label class="control-label" id="quantity_total">--</label>
     </div>
 </div>
 
@@ -184,10 +184,18 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
         <label class="control-label pull-right">Average COGS :</label>
     </div>
     <div class="col-xs-4">
-        <label class="control-label" id="cogs_grand"><?php echo 0.0 ?></label>
+        <label class="control-label" id="cogs">--</label>
     </div>
 </div>
 
+<div class="row show-grid">
+    <div class="col-xs-4">
+        <label class="control-label pull-right">Total COGS :</label>
+    </div>
+    <div class="col-xs-4">
+        <label class="control-label" id="cogs_total">--</label>
+    </div>
+</div>
 <div class="row show-grid">
     <div class="col-xs-4">
         <label class="control-label pull-right" style="text-decoration:underline">Month-wise Budget Allocation :</label>
@@ -224,13 +232,12 @@ foreach ($item['principals'] as $principal)
                         <table>
                             <tr>
                                 <?php
-                                $sub_total = 0.0;
                                 for ($i = 1; $i <= 12; $i++)
                                 {
                                     ?>
                                     <td style="width:130px;text-align:right;font-weight:bold;padding:0 5px 10px 0"><?php echo $CI->lang->line('LABEL_MONTH_' . $i); ?> :</td>
                                     <td style="padding-bottom:10px">
-                                        <input type="text" name="items[<?php echo $principal['id']; ?>][quantities][<?php echo $i; ?>]" class="form-control float_type_positive quantity_month" id="quantity_<?php echo $i . '_' . $principal['id']; ?>" data-principal-id="<?php echo $principal['id']; ?>" value=""/>
+                                        <input type="text" name="items[<?php echo $principal['id']; ?>][quantities][<?php echo $i; ?>]" class="form-control float_type_positive quantity" id="quantity_<?php echo $i . '_' . $principal['id']; ?>" data-principal-id="<?php echo $principal['id']; ?>" value="<?php echo $principal['quantity_'.$i]; ?>"/>
                                     </td>
                                     <?php
                                     if (($i % 3 == 0) && ($i != 12))
@@ -252,7 +259,7 @@ foreach ($item['principals'] as $principal)
             </div>
             <div class="col-xs-6">
                 <div class="row show-grid">
-                    <label class="control-label quantity_total_principal" id="quantity_total_<?php echo $principal['id']; ?>"><?php echo $sub_total; ?></label>
+                    <label class="control-label quantity_total" id="quantity_total_<?php echo $principal['id']; ?>">--</label>
                 </div>
             </div>
         </div>
@@ -263,17 +270,17 @@ foreach ($item['principals'] as $principal)
             </div>
             <div class="col-xs-2">
                 <div class="row show-grid">
-                    <input type="text" name="items[<?php echo $principal['id']; ?>][unit_price]" class="form-control float_type_positive unit_price" id="amount_unit_price_<?php echo $principal['id']; ?>" data-principal-id="<?php echo $principal['id']; ?>" value=""/>
+                    <input type="text" name="items[<?php echo $principal['id']; ?>][amount_unit_price_currency]" class="form-control float_type_positive amount_unit_price_currency" id="amount_unit_price_currency_<?php echo $principal['id']; ?>" data-principal-id="<?php echo $principal['id']; ?>" value="<?php echo $principal['amount_unit_price_currency']; ?>"/>
                 </div>
             </div>
             <div class="col-xs-2">
                 <div class="row show-grid">
-                    <select name="items[<?php echo $principal['id']; ?>][currency_id]" class="form-control currency_dropdown" id="currency_dropdown_<?php echo $principal['id']; ?>" data-principal-id="<?php echo $principal['id']; ?>">
+                    <select name="items[<?php echo $principal['id']; ?>][currency_id]" class="form-control currency_id" id="currency_id_<?php echo $principal['id']; ?>" data-principal-id="<?php echo $principal['id']; ?>">
                         <?php
                         foreach ($currencies as $currency_id => $currency)
                         {
                             ?>
-                            <option value="<?php echo $currency_id; ?>"><?php echo $currency['name']; ?></option>
+                            <option value="<?php echo $currency_id;?>" <?php if($principal['currency_id']==$currency_id){echo 'selected';} ?>><?php echo $currency['name'];?></option>
                         <?php
                         }
                         ?>
@@ -288,7 +295,7 @@ foreach ($item['principals'] as $principal)
             </div>
             <div class="col-xs-6">
                 <div class="row show-grid">
-                    <label class="control-label" id="cogs_<?php echo $principal['id']; ?>"><?php echo 0.0; ?></label>
+                    <label class="control-label" id="cogs_<?php echo $principal['id']; ?>">--</label>
                 </div>
             </div>
         </div>
@@ -299,7 +306,7 @@ foreach ($item['principals'] as $principal)
             </div>
             <div class="col-xs-6">
                 <div class="row show-grid">
-                    <label class="control-label cogs_total_principal" id="cogs_total_<?php echo $principal['id']; ?>"><?php echo 0.0; ?></label>
+                    <label class="control-label cogs_total" id="cogs_total_<?php echo $principal['id']; ?>">--</label>
                 </div>
             </div>
         </div>
@@ -311,84 +318,116 @@ foreach ($item['principals'] as $principal)
 </div>
 </form>
 <script type="text/javascript">
-    jQuery(document).ready(function ($) {
+    jQuery(document).ready(function ($)
+    {
         system_off_events();
-        $(document).off('input', '.quantity_month');
-        $(document).on('input', '.quantity_month', function () {
+        <?php
+        foreach ($item['principals'] as $principal)
+        {
+        ?>
+        calculate_principal(<?php echo $principal['id']; ?>);
+        <?php
+        }
+        ?>
+        calculate_grand();
+        $(document).off('input', '.quantity');
+        $(document).on('input', '.quantity', function ()
+        {
             var principal_id = $(this).attr('data-principal-id');
             calculate_principal(principal_id);
             calculate_grand();
         });
-        $(document).off('input', '.unit_price');
-        $(document).on('input', '.unit_price', function () {
+        $(document).off('input', '.amount_unit_price_currency');
+        $(document).on('input', '.amount_unit_price_currency', function ()
+        {
             var principal_id = $(this).attr('data-principal-id');
             calculate_principal(principal_id);
             calculate_grand();
         });
-        $(document).off('change', '.currency_dropdown');
-        $(document).on('change', '.currency_dropdown', function () {
+        $(document).off('change', '.currency_id');
+        $(document).on('change', '.currency_id', function ()
+        {
             var principal_id = $(this).attr('data-principal-id');
             calculate_principal(principal_id);
             calculate_grand();
         });
     });
-    function calculate_principal(principal_id) {
+    function calculate_principal(principal_id)
+    {
         var percentage_direct_cost = parseFloat($('#percentage_direct_cost').html().replace(/,/g, ''));
 
         var percentage_packing_cost = parseFloat($('#percentage_packing_cost').html().replace(/,/g, ''));
 
-        var currency_id = $('#currency_dropdown_' + principal_id).val();
+        var currency_id = $('#currency_id_' + principal_id).val();
 
-        var unit_price = parseFloat($('#amount_unit_price_' + principal_id).val().replace(/,/g, ''));
-        var currency_rate = parseFloat($('#currency_rate_' + currency_id).html().replace(/,/g, ''));
-        var total_quantity = 0;
-        for (i = 1; i < 13; i++) {
+        var amount_unit_price_currency = parseFloat($('#amount_unit_price_currency_' + principal_id).val().replace(/,/g, ''));
+        var amount_currency_rate = parseFloat($('#amount_currency_rate_' + currency_id).html().replace(/,/g, ''));
+        var quantity_total = 0;
+        for (var i = 1; i < 13; i++) {
             var quantity = parseFloat($('#quantity_' + i + '_' + principal_id).val().replace(/,/g, ''));
-            if (quantity > 0) {
-                total_quantity += quantity;
+            if (quantity > 0)
+            {
+                quantity_total += quantity;
             }
         }
-        $('#quantity_total_' + principal_id).html(total_quantity);
-        if ((unit_price > 0) && (currency_id > 0)) {
-            var a = unit_price * currency_rate;
-            var b = a * percentage_direct_cost / 100;
-            var c = a * percentage_packing_cost / 100;
-            var cogs = a + b + c;
-            var total_cogs = cogs * total_quantity;
+        $('#quantity_total_' + principal_id).html(quantity_total);
+        if ((amount_unit_price_currency > 0) && (currency_id > 0))
+        {
+            var amount_unit_price_taka = amount_unit_price_currency * amount_currency_rate;
+            var direct_cost = amount_unit_price_taka * percentage_direct_cost / 100;
+            var packing_cost = amount_unit_price_taka * percentage_packing_cost / 100;
+            var cogs = amount_unit_price_taka + direct_cost + packing_cost;
+            var total_cogs = cogs * quantity_total;
             $('#cogs_' + principal_id).html(get_string_amount(cogs));
             $('#cogs_total_' + principal_id).html(get_string_amount(total_cogs));
 
         }
-        else {
-            $('#cogs_' + principal_id).html('0');
-            $('#cogs_total_' + principal_id).html('0');
+        else
+        {
+            $('#cogs_' + principal_id).html('--');
+            $('#cogs_total_' + principal_id).html('--');
         }
     }
-    function calculate_grand() {
+    function calculate_grand()
+    {
 
-        var grand_total = 0;
-        $('.quantity_total_principal').each(function (i, obj) {
-            var quantity = parseFloat($(obj).html().replace(/,/g, ''));
-            if (quantity > 0) {
-                grand_total += quantity;
+        var quantity_total = 0;
+        $('.quantity_total').each(function (i, obj)
+        {
+            var principle_quantity_total = parseFloat($(obj).html().replace(/,/g, ''));
+            if (principle_quantity_total > 0)
+            {
+                quantity_total += principle_quantity_total;
             }
 
         });
-        var grand_cogs_total = 0;
-        $('.cogs_total_principal').each(function (i, obj) {
-            var total_cogs = parseFloat($(obj).html().replace(/,/g, ''));
-            if (total_cogs > 0) {
-                grand_cogs_total += total_cogs;
+        var cogs_total = 0;
+        $('.cogs_total').each(function (i, obj)
+        {
+            var principle_cogs_total = parseFloat($(obj).html().replace(/,/g, ''));
+            if (principle_cogs_total > 0)
+            {
+                cogs_total += principle_cogs_total;
             }
-
         });
-        //cogs_total_principal
-        $('#quantity_grand').html(grand_total);
-        $('#cogs_total_grand').html(get_string_amount(grand_cogs_total));
-        var grand_cogs = 0;
-        if (grand_total > 0) {
-            grand_cogs = grand_cogs_total / grand_total;
+        $('#quantity_total').html(quantity_total);
+        if(cogs_total>0)
+        {
+            $('#cogs_total').html(get_string_amount(cogs_total));
         }
-        $('#cogs_grand').html(get_string_amount(grand_cogs));
+        else
+        {
+            $('#cogs_total').html('--');
+        }
+        if ((quantity_total > 0)&&(cogs_total > 0))
+        {
+            var cogs = cogs_total / quantity_total;
+            $('#cogs').html(get_string_amount(cogs));
+        }
+        else
+        {
+            $('#cogs').html('--');
+        }
+
     }
 </script>

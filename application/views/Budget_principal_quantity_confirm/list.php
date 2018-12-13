@@ -10,7 +10,7 @@ if ((isset($CI->permissions['action1']) && ($CI->permissions['action1'] == 1)) |
         'type' => 'button',
         'label' => 'Edit',
         'class' => 'button_jqx_action',
-        'data-action-link' => site_url($CI->controller_url . '/index/variety_list')
+        'data-action-link' => site_url($CI->controller_url . '/index/list_variety')
     );
 }
 $action_buttons[] = array

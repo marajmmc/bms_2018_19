@@ -37,6 +37,11 @@ if (isset($CI->permissions['action5']) && ($CI->permissions['action5'] == 1))
     );
 }
 
+$action_buttons[]=array
+(
+    'label'=>$CI->lang->line("ACTION_REFRESH"),
+    'href'=>site_url($CI->controller_url.'/index/list_variety/'.$fiscal_year['id'])
+);
 $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
 ?>
 
@@ -70,7 +75,7 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
     $(document).ready(function () {
         system_off_events();
         system_preset({controller: '<?php echo $CI->router->class; ?>'});
-        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_variety_list');?>";
+        var url = "<?php echo site_url($CI->controller_url.'/index/get_items_list_variety');?>";
         // prepare the data
         var source =
         {

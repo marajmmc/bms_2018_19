@@ -32,13 +32,13 @@ class Budget_principal_quantity_confirm extends Root_Controller
         {
             $this->system_get_items();
         }
-        elseif ($action == "variety_list")
+        elseif ($action == "list_variety")
         {
-            $this->system_variety_list($id);
+            $this->system_list_variety($id);
         }
-        elseif ($action == "get_items_variety_list")
+        elseif ($action == "get_items_list_variety")
         {
-            $this->system_get_items_variety_list();
+            $this->system_get_items_list_variety();
         }
         elseif ($action == "add_edit")
         {
@@ -62,7 +62,7 @@ class Budget_principal_quantity_confirm extends Root_Controller
             /*$data['fiscal_year_id'] = 1;
             $data['fiscal_year'] = 1;*/
         }
-        else if ($method == 'variety_list')
+        else if ($method == 'list_variety')
         {
             /*$data['fiscal_year_id'] = 1;
             $data['crop_name'] = 1;
@@ -111,9 +111,9 @@ class Budget_principal_quantity_confirm extends Root_Controller
         $this->json_return($items);
     }
 
-    private function system_variety_list($fiscal_year_id = 0)
+    private function system_list_variety($fiscal_year_id = 0)
     {
-        $method = 'variety_list';
+        $method = 'list_variety';
         if ((isset($this->permissions['action1']) && ($this->permissions['action1'] == 1)) || (isset($this->permissions['action2']) && ($this->permissions['action2'] == 1)))
         {
             if (!($fiscal_year_id > 0))
@@ -134,12 +134,12 @@ class Budget_principal_quantity_confirm extends Root_Controller
             $data['title'] = 'Variety Principal Quantity Setup for (' . $data['fiscal_year']['name'] . ') Fiscal Year';
             $data['options']['fiscal_year_id'] = $fiscal_year_id;
             $ajax['status'] = true;
-            $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->controller_url . "/variety_list", $data, true));
+            $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->controller_url . "/list_variety", $data, true));
             if ($this->message)
             {
                 $ajax['system_message'] = $this->message;
             }
-            $ajax['system_page_url'] = site_url($this->controller_url . '/index/variety_list/' . $fiscal_year_id);
+            $ajax['system_page_url'] = site_url($this->controller_url . '/index/list_variety/' . $fiscal_year_id);
             $this->json_return($ajax);
         }
         else
@@ -150,7 +150,7 @@ class Budget_principal_quantity_confirm extends Root_Controller
         }
     }
 
-    private function system_get_items_variety_list()
+    private function system_get_items_list_variety()
     {
         $fiscal_year_id = $this->input->post('fiscal_year_id');
         if (!Budget_helper::check_validation_fiscal_year($fiscal_year_id))
@@ -180,134 +180,124 @@ class Budget_principal_quantity_confirm extends Root_Controller
 
             $data = array();
 
+            $data['message_warning_config']=array();//for configuration not set
+            $data['message_warning_changes']=array();//for edit configuration change message
+
+
+
+
             $this->db->from($this->config->item('table_login_basic_setup_fiscal_year') . ' fiscal_year');
-            $this->db->select('fiscal_year.name AS fiscal_year_name');
+            $this->db->select('fiscal_year.name fiscal_year_name');
 
             $this->db->join($this->config->item('table_bms_setup_budget_config') . ' budget_config', 'budget_config.fiscal_year_id = fiscal_year.id', 'LEFT');
             $this->db->select('budget_config.*');
 
             $this->db->where('fiscal_year.id', $fiscal_year_id);
-            $data['fiscal_year_data'] = $this->db->get()->row_array();
+            $fiscal_year_info = $this->db->get()->row_array();
 
-            // --------Fiscal year Config Checking-------
-            $data['config_warning'] = array('status' => false, 'messages' => array());
-            if (trim($data['fiscal_year_data']['amount_currency_rate']) == '') // Currency Rate - is NOT Configured
-            {
-                $data['config_warning']['status'] = true;
-                $data['config_warning']['messages'][] = '<b>Currency Rate</b> - NOT Configured for this Fiscal Year';
-            }
-            if (trim($data['fiscal_year_data']['percentage_direct_cost']) == '') // DC Percentage - is NOT Configured
-            {
-                $data['config_warning']['status'] = true;
-                $data['config_warning']['messages'][] = '<b>Direct Cost Percentage</b> - NOT Configured for this Fiscal Year';
-            }
-            if (trim($data['fiscal_year_data']['percentage_packing_cost']) == '') // Packing Percentage - is NOT Configured
-            {
-                $data['config_warning']['status'] = true;
-                $data['config_warning']['messages'][] = '<b>Packing Cost Percentage</b> - NOT Configured for this Fiscal Year';
-            }
-            //-------------------------------------------
+            $data['item']=array();
+            $data['item']['fiscal_year_id'] = $fiscal_year_id;
+            $data['item']['fiscal_year_name'] = $fiscal_year_info['fiscal_year_name'];
 
+            $results = Budget_helper::get_crop_type_varieties(array(), array(), array($variety_id));
+            $data['item']['crop_name'] = $results[0]['crop_name'];
+            $data['item']['crop_type_name'] = $results[0]['crop_type_name'];
+            $data['item']['variety_name'] = $results[0]['variety_name'];
+            $data['item']['variety_id'] = $variety_id;
 
-            $items = Budget_helper::get_crop_type_varieties(array(), array(), array($variety_id));
-            $data['item'] = $items[0];
-
-            $data['item']['total_direct_cost_percentage'] = 0;
-            if ($data['fiscal_year_data']['percentage_direct_cost'])
+            $data['item']['percentage_direct_cost'] = 0;
+            if ($fiscal_year_info['revision_count_percentage_direct_cost']>0)
             {
-                $sum = 0;
-                $direct_cost_items = json_decode($data['fiscal_year_data']['percentage_direct_cost'], true);
-                foreach ($direct_cost_items as $value)
+                $results = json_decode($fiscal_year_info['percentage_direct_cost'], true);
+                foreach ($results as $value)
                 {
-                    $sum += $value;
+                    $data['item']['percentage_direct_cost'] += $value;
                 }
-                $data['item']['total_direct_cost_percentage'] = $sum;
             }
-
-            $data['item']['total_packing_cost_percentage'] = 0;
-            if ($data['fiscal_year_data']['percentage_packing_cost'])
+            else
             {
-                $sum = 0;
-                $packing_cost_items = json_decode($data['fiscal_year_data']['percentage_packing_cost'], true);
-                foreach ($packing_cost_items as $value)
-                {
-                    $sum += $value;
-                }
-                $data['item']['total_packing_cost_percentage'] = $sum;
+                $data['message_warning_config'][]='<b>Direct Cost Percentage</b> - NOT Configured for this Fiscal Year';
             }
 
-            $currency_items = json_decode($data['fiscal_year_data']['amount_currency_rate'], true); // From 'bms_setup_budget_config' table
+            $data['item']['percentage_packing_cost'] = 0;
+            if ($fiscal_year_info['revision_count_percentage_packing_cost']>0)
+            {
+                $results = json_decode($fiscal_year_info['percentage_packing_cost'], true);
+                foreach ($results as $value)
+                {
+                    $data['item']['percentage_packing_cost'] += $value;
+                }
+            }
+            else
+            {
+                $data['message_warning_config'][]='<b>Packing Cost Percentage</b> - NOT Configured for this Fiscal Year';
+            }
+            $currency_rates=array();
+            if ($fiscal_year_info['revision_count_percentage_packing_cost']>0)
+            {
+                $currency_rates = json_decode($fiscal_year_info['amount_currency_rate'], true);
+            }
+            else
+            {
+                $data['message_warning_config'][]='<b>Currency Rate</b> - NOT Configured for this Fiscal Year';
+            }
+            $data['currencies'] =array();
+            $results=Query_helper::get_info($this->config->item('table_login_setup_currency'), array('id','name'), array('status !="' . $this->config->item('system_status_delete') . '"'));
 
-            $data['currencies'] = array();
-            $currencies = Query_helper::get_info($this->config->item('table_login_setup_currency'), '*', array('status !="' . $this->config->item('system_status_delete') . '"'));
-            foreach ($currencies as $currency)
+            foreach($results as $currency)
             {
                 $data['currencies'][$currency['id']] = array(
                     'name' => $currency['name'],
-                    'symbol' => $currency['symbol'],
-                    'currency_rate' => (isset($currency_items[$currency['id']])) ? $currency_items[$currency['id']] : 0,
-                    'description' => $currency['description']
+                    'amount_currency_rate' => (isset($currency_rates[$currency['id']])) ? $currency_rates[$currency['id']] : 0
                 );
             }
+            $data['item']['quantity_total_hom_target']='Need to calculate';//calculate from National target task
+            //$data['item']['cogs'];//will auto calculate
+            //$data['item']['cogs_total'];//will auto calculate
+
+            //get main value
+            $old_item=array();
+            //check validation
+            $old_item_principles=array();
+
+            //get values of previous principles value
+            //check validations
+            //$data['message_warning_changes'][]='<b>Currency Rate</b> has been Changed.';
+            //$data['message_warning_changes'][]='<b>Direct Cost Percentage</b> has been Changed.';
+            //$data['message_warning_changes'][]='<b>Packing Cost Percentage</b> has been Changed.';
+            //$data['message_warning_changes'][]='<b>Principle</b> has been added/removed.';
 
             // Variety Principles
             $this->db->from($this->config->item('table_login_setup_classification_variety_principals') . ' variety_principals');
 
-            $this->db->join($this->config->item('table_login_basic_setup_principal') . ' principal', 'principal.id = variety_principals.principal_id', 'LEFT');
+            $this->db->join($this->config->item('table_login_basic_setup_principal') . ' principal', 'principal.id = variety_principals.principal_id', 'INNER');
             $this->db->select('principal.id, principal.name');
 
             $this->db->where('variety_principals.variety_id', $variety_id);
             $this->db->where('variety_principals.revision', 1);
             $this->db->where('principal.status', $this->config->item('system_status_active'));
-            $data['item']['principals'] = $this->db->get()->result_array();
-
-
-            // --------Currency Rate, DC percentage, PC percentage, No. of Principle Checking-------
-            $data['changes_warning'] = array('status' => false, 'messages' => array());
-
-            // ADD, EDIT Data Prepare
-            $result = Query_helper::get_info($this->config->item('table_bms_principal_quantity'), '*', array('fiscal_year_id =' . $fiscal_year_id, 'variety_id =' . $variety_id));
-            if ($result) // EDIT
+            $results=$this->db->get()->result_array();
+            if(sizeof($results)==0)
             {
-                $principal_data = Query_helper::get_info($this->config->item('table_bms_principal_quantity_principal'), '*', array('fiscal_year_id =' . $fiscal_year_id, 'variety_id =' . $variety_id, 'revision =1'));
-
-//                echo '<pre>';
-//                print_r($principal_data);
-//                print_r($data['item']);
-//                var_dump($principal_data);
-//                var_dump($data['item']);
-//                echo '</pre>'; die();
-
-                foreach ($principal_data as $row)
+                $ajax['status'] = false;
+                $ajax['system_message'] = 'Please Assign a principle';
+                $this->json_return($ajax);
+            }
+            $data['item']['principals'] =array();
+            foreach($results as $result)
+            {
+                $info=array();
+                $info['id']=$result['id'];
+                $info['name']=$result['name'];
+                for($i=1;$i<13;$i++)
                 {
-                    // --------Currency Rate, DC percentage, PC percentage, No. of Principle Checking-------
-                    /*if ($data['currencies'][$row['currency_id']]['currency_rate'] != $row['currency_rate'])
-                    {
-                        $data['changes_warning']['status'] = true;
-                        $data['changes_warning']['messages'][0] = '<b>Currency Rate</b> has been Changed.';
-                    }*/
-
-                    if ($data['item']['total_direct_cost_percentage'] != $row['direct_cost_percentage_total'])
-                    {
-                        $data['changes_warning']['status'] = true;
-                        $data['changes_warning']['messages'][1] =    $data['item']['total_direct_cost_percentage'] ." -- ".  $row['direct_cost_percentage_total'];         //'<b>Direct Cost Percentage</b> has been Changed.';
-                    }
-
-                    /*if ($data['item']['total_packing_cost_percentage'] != $row['packing_cost_percentage_total'])
-                    {
-                        $data['changes_warning']['status'] = true;
-                        $data['changes_warning']['messages'][2] = '<b>Packing Cost Percentage</b> has been Changed.';
-                    }*/
-                    // ------------------------------------------------------------------------------------
-
-
+                    $info['quantity_'.$i]=isset($old_item_principles[$result['id']]['quantity_'.$i])?$old_item_principles[$result['id']]['quantity_'.$i]:1;
+                    $info['amount_unit_price_currency']=isset($old_item_principles[$result['id']]['amount_unit_price_currency'])?$old_item_principles[$result['id']]['amount_unit_price_currency']:1;
+                    $info['currency_id']=isset($old_item_principles[$result['id']]['currency_id'])?$old_item_principles[$result['id']]['currency_id']:0;
                 }
+                $data['item']['principals'][]=$info;
 
             }
-            else // ADD
-            {
-            }
-
 
             $data['title'] = "Edit Principal Quantity Confirmation";
             $ajax['status'] = true;
@@ -333,7 +323,10 @@ class Budget_principal_quantity_confirm extends Root_Controller
         $time = time();
         $item_head = $this->input->post('item');
         $items = $this->input->post('items');
-
+echo '<pre>';
+print_r($this->input->post());
+echo '</pre>';
+        die();
         if (!((isset($this->permissions['action1']) && ($this->permissions['action1'] == 1)) || (isset($this->permissions['action2']) && ($this->permissions['action2'] == 1))))
         {
             $ajax['status'] = false;
