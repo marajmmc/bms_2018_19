@@ -2384,57 +2384,84 @@ class Budget_hom_budget_target extends Root_Controller
             $users=System_helper::get_users_info($user_ids);
 
             $data['info_basic']=array();
-            //budget forward area(Hom)
             $result=array();
-            $result['label_prefix']=$this->lang->line('LABEL_STATUS_BUDGET_FORWARD_AREA');
-            $result['status']=$budget_target['status_budget_forward'];
-            $result['by']='';
-            $result['time']='';
+            $result['label_1']=$this->lang->line('LABEL_STATUS_BUDGET_FORWARD_AREA').' Status';
+            $result['value_1']=$budget_target['status_budget_forward'];
+            $result['label_2']='';
+            $result['value_2']='';
+            $data['info_basic'][]=$result;
             if($budget_target['status_budget_forward']==$this->config->item('system_status_forwarded'))
             {
-                $result['by']=$users[$budget_target['user_budget_forwarded']]['name'];
-                $result['time']=System_helper::display_date_time($budget_target['date_budget_forwarded']);
+                $result=array();
+                $result['label_1']=$this->lang->line('LABEL_STATUS_BUDGET_FORWARD_AREA').' By';
+                $result['value_1']=$users[$budget_target['user_budget_forwarded']]['name'];
+                $result['label_2']=$this->lang->line('LABEL_STATUS_BUDGET_FORWARD_AREA').' Time';
+                $result['value_2']=System_helper::display_date_time($budget_target['date_budget_forwarded']);
+                $data['info_basic'][]=$result;
             }
-            $data['info_basic'][]=$result;
-
-            //target forward area(to Hom from MGT)
+            //target forward area(to HOM from National Target)
             $result=array();
-            $result['label_prefix']=$this->lang->line('LABEL_STATUS_TARGET_FORWARD_AREA');
-            $result['status']=$budget_target['status_target_forward'];
-            $result['by']='';
-            $result['time']='';
+            $result['label_1']=$this->lang->line('LABEL_STATUS_TARGET_FORWARD_AREA').' Status';
+            $result['value_1']=$this->config->item('system_status_pending');
             if($budget_target['status_target_forward']==$this->config->item('system_status_forwarded'))
             {
-                $result['by']=$users[$budget_target['user_target_forwarded']]['name'];
-                $result['time']=System_helper::display_date_time($budget_target['date_target_forwarded']);
+                $result['value_1']=$this->config->item('system_status_forwarded');
             }
+            $result['label_2']='';
+            $result['value_2']='';
             $data['info_basic'][]=$result;
-            //target forward sub area(to DI from HOM)
+
+            if($budget_target['status_target_forward']==$this->config->item('system_status_forwarded'))
+            {
+                $result=array();
+                $result['label_1']=$this->lang->line('LABEL_STATUS_TARGET_FORWARD_AREA').' By';
+                $result['value_1']=$users[$budget_target['user_target_forwarded']]['name'];
+                $result['label_2']=$this->lang->line('LABEL_STATUS_TARGET_FORWARD_AREA').' Time';
+                $result['value_2']=System_helper::display_date_time($budget_target['date_target_forwarded']);
+                $data['info_basic'][]=$result;
+            }
+            //target forward area(to di from hom)
             $result=array();
-            $result['label_prefix']=$this->lang->line('LABEL_STATUS_TARGET_FORWARD_AREA_SUB');
-            $result['status']=$budget_target['status_target_di_forward'];
-            $result['by']='';
-            $result['time']='';
+            $result['label_1']=$this->lang->line('LABEL_STATUS_TARGET_FORWARD_AREA_SUB').' Status';
+            $result['value_1']=$this->config->item('system_status_pending');
             if($budget_target['status_target_di_forward']==$this->config->item('system_status_forwarded'))
             {
-                $result['by']=$users[$budget_target['user_target_di_forwarded']]['name'];
-                $result['time']=System_helper::display_date_time($budget_target['date_target_di_forwarded']);
+                $result['value_1']=$this->config->item('system_status_forwarded');
             }
+            $result['label_2']='';
+            $result['value_2']='';
             $data['info_basic'][]=$result;
-            //target forward 3yr area(to HOM from MGT) no need
 
-            //target forward sub area 3yr(to outlets from ZI)
+            if($budget_target['status_target_di_forward']==$this->config->item('system_status_forwarded'))
+            {
+                $result=array();
+                $result['label_1']=$this->lang->line('LABEL_STATUS_TARGET_FORWARD_AREA_SUB').' By';
+                $result['value_1']=$users[$budget_target['user_target_di_forwarded']]['name'];
+                $result['label_2']=$this->lang->line('LABEL_STATUS_TARGET_FORWARD_AREA_SUB').' Time';
+                $result['value_2']=System_helper::display_date_time($budget_target['date_target_di_forwarded']);
+                $data['info_basic'][]=$result;
+            }
+            //target forward area 3yr(to DI from HOM)
             $result=array();
-            $result['label_prefix']=$this->lang->line('LABEL_STATUS_TARGET_FORWARD_AREA_SUB_NEXT_YEAR');
-            $result['status']=$budget_target['status_target_di_next_year_forward'];
-            $result['by']='';
-            $result['time']='';
+            $result['label_1']=$this->lang->line('LABEL_STATUS_TARGET_FORWARD_AREA_SUB_NEXT_YEAR').' Status';
+            $result['value_1']=$this->config->item('system_status_pending');
             if($budget_target['status_target_di_next_year_forward']==$this->config->item('system_status_forwarded'))
             {
-                $result['by']=$users[$budget_target['user_target_di_next_year_forwarded']]['name'];
-                $result['time']=System_helper::display_date_time($budget_target['date_target_di_next_year_forwarded']);
+                $result['value_1']=$this->config->item('system_status_forwarded');
             }
+            $result['label_2']='';
+            $result['value_2']='';
             $data['info_basic'][]=$result;
+
+            if($budget_target['status_target_di_next_year_forward']==$this->config->item('system_status_forwarded'))
+            {
+                $result=array();
+                $result['label_1']=$this->lang->line('LABEL_STATUS_TARGET_FORWARD_AREA_SUB_NEXT_YEAR').' By';
+                $result['value_1']=$users[$budget_target['user_target_di_next_year_forwarded']]['name'];
+                $result['label_2']=$this->lang->line('LABEL_STATUS_TARGET_FORWARD_AREA_SUB_NEXT_YEAR').' Time';
+                $result['value_2']=System_helper::display_date_time($budget_target['date_target_di_next_year_forwarded']);
+                $data['info_basic'][]=$result;
+            }
 
             $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->common_view_location."/details",$data,true));
 
