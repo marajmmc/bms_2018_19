@@ -119,9 +119,9 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                     { text: '<?php echo $CI->lang->line('LABEL_FISCAL_YEAR'); ?>', dataField: 'fiscal_year',width:'80',filtertype: 'list'},
                     { text: 'Pricing Time(s)', dataField: 'revision_count_pricing', width:'150',cellsAlign:'right'},
                     { text: 'Currency Rate Time(s)', dataField: 'revision_count_currency_rate', width:'150',cellsAlign:'right'},
-                    { text: 'Direct Cost Percentage Time(s)', dataField: 'revision_count_direct_cost_percentage', width:'150',cellsAlign:'right'},
-                    { text: 'Packing Cost Percentage Time(s)', dataField: 'revision_count_packing_cost_percentage', width:'150',cellsAlign:'right'},
-                    { text: 'Indirect Cost Time(s)', dataField: 'revision_count_indirect_cost_percentage', width:'150',cellsAlign:'right'}
+                    { text: 'Direct Cost Percentage Time(s)', dataField: 'revision_count_percentage_direct_cost', width:'150',cellsAlign:'right'},
+                    { text: 'Packing Cost Percentage Time(s)', dataField: 'revision_count_percentage_packing_cost', width:'150',cellsAlign:'right'},
+                    { text: 'Indirect Cost Time(s)', dataField: 'revision_count_percentage_indirect_cost', width:'150',cellsAlign:'right'}
                 ]
             });
     });

@@ -44,10 +44,10 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                     </thead>
                     <tbody>
                     <?php
-                    $amount_packing_cost_percentage = array();
-                    if ($item['amount_packing_cost_percentage'])
+                    $percentage_packing_cost = array();
+                    if ($item['percentage_packing_cost'])
                     {
-                        $amount_packing_cost_percentage = json_decode($item['amount_packing_cost_percentage'], true);
+                        $percentage_packing_cost = json_decode($item['percentage_packing_cost'], true);
                     }
                     foreach ($packing_cost_items as $items)
                     {
@@ -66,7 +66,7 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                                 ?>
                             </td>
                             <td>
-                                <input type="text" name="items[<?php echo $items['id'] ?>]" id="row_per_page" class="form-control float_type_positive" value="<?php echo isset($amount_packing_cost_percentage[$items['id']]) ? $amount_packing_cost_percentage[$items['id']] : ''; ?>"/>
+                                <input type="text" name="items[<?php echo $items['id'] ?>]" id="row_per_page" class="form-control float_type_positive" value="<?php echo isset($percentage_packing_cost[$items['id']]) ? $percentage_packing_cost[$items['id']] : ''; ?>"/>
                             </td>
                         </tr>
                     <?php

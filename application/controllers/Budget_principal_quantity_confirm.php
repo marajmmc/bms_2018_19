@@ -196,12 +196,12 @@ class Budget_principal_quantity_confirm extends Root_Controller
                 $data['config_warning']['status'] = true;
                 $data['config_warning']['messages'][] = '<b>Currency Rate</b> - NOT Configured for this Fiscal Year';
             }
-            if (trim($data['fiscal_year_data']['amount_direct_cost_percentage']) == '') // DC Percentage - is NOT Configured
+            if (trim($data['fiscal_year_data']['percentage_direct_cost']) == '') // DC Percentage - is NOT Configured
             {
                 $data['config_warning']['status'] = true;
                 $data['config_warning']['messages'][] = '<b>Direct Cost Percentage</b> - NOT Configured for this Fiscal Year';
             }
-            if (trim($data['fiscal_year_data']['amount_packing_cost_percentage']) == '') // Packing Percentage - is NOT Configured
+            if (trim($data['fiscal_year_data']['percentage_packing_cost']) == '') // Packing Percentage - is NOT Configured
             {
                 $data['config_warning']['status'] = true;
                 $data['config_warning']['messages'][] = '<b>Packing Cost Percentage</b> - NOT Configured for this Fiscal Year';
@@ -213,10 +213,10 @@ class Budget_principal_quantity_confirm extends Root_Controller
             $data['item'] = $items[0];
 
             $data['item']['total_direct_cost_percentage'] = 0;
-            if ($data['fiscal_year_data']['amount_direct_cost_percentage'])
+            if ($data['fiscal_year_data']['percentage_direct_cost'])
             {
                 $sum = 0;
-                $direct_cost_items = json_decode($data['fiscal_year_data']['amount_direct_cost_percentage'], true);
+                $direct_cost_items = json_decode($data['fiscal_year_data']['percentage_direct_cost'], true);
                 foreach ($direct_cost_items as $value)
                 {
                     $sum += $value;
@@ -225,10 +225,10 @@ class Budget_principal_quantity_confirm extends Root_Controller
             }
 
             $data['item']['total_packing_cost_percentage'] = 0;
-            if ($data['fiscal_year_data']['amount_packing_cost_percentage'])
+            if ($data['fiscal_year_data']['percentage_packing_cost'])
             {
                 $sum = 0;
-                $packing_cost_items = json_decode($data['fiscal_year_data']['amount_packing_cost_percentage'], true);
+                $packing_cost_items = json_decode($data['fiscal_year_data']['percentage_packing_cost'], true);
                 foreach ($packing_cost_items as $value)
                 {
                     $sum += $value;
@@ -355,7 +355,7 @@ class Budget_principal_quantity_confirm extends Root_Controller
             $this->json_return($ajax);
         }
 
-        $fiscal_year_config = Query_helper::get_info($this->config->item('table_bms_setup_budget_config'), 'amount_currency_rate, amount_direct_cost_percentage, amount_packing_cost_percentage', array('fiscal_year_id=' . $item_head['fiscal_year_id']), 1);
+        $fiscal_year_config = Query_helper::get_info($this->config->item('table_bms_setup_budget_config'), 'amount_currency_rate, percentage_direct_cost, percentage_packing_cost', array('fiscal_year_id=' . $item_head['fiscal_year_id']), 1);
         $fiscal_year_currencies = json_decode($fiscal_year_config['amount_currency_rate'], true);
 
         // Total direct_cost_percentage
@@ -368,7 +368,7 @@ class Budget_principal_quantity_confirm extends Root_Controller
 
         // Total packing_cost_percentage
         $total_packing_cost_percentage = 0.0;
-        $fiscal_year_packing_cost_percentage = json_decode($fiscal_year_config['amount_packing_cost_percentage'], true);
+        $fiscal_year_packing_cost_percentage = json_decode($fiscal_year_config['percentage_packing_cost'], true);
         foreach ($fiscal_year_packing_cost_percentage as $value)
         {
             $total_packing_cost_percentage += $value;

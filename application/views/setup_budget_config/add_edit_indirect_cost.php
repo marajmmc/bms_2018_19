@@ -39,7 +39,7 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                 <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_GENERAL_EXPENSE'); ?> (%) <span style="color:#FF0000">*</span></label>
             </div>
             <div class="col-sm-4 col-xs-8">
-                <input type="text" name="items[amount_general_percentage]" id="amount_general_percentage" class="form-control float_type_positive" value="<?php echo $item['amount_general_percentage']; ?>"/>
+                <input type="text" name="items[percentage_general]" id="percentage_general" class="form-control float_type_positive" value="<?php echo $item['percentage_general']; ?>"/>
             </div>
         </div>
 
@@ -48,7 +48,7 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                 <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_MARKETING_EXPENSE'); ?> (%) <span style="color:#FF0000">*</span></label>
             </div>
             <div class="col-sm-4 col-xs-8">
-                <input type="text" name="items[amount_marketing_percentage]" id="amount_marketing_percentage" class="form-control float_type_positive" value="<?php echo $item['amount_marketing_percentage']; ?>"/>
+                <input type="text" name="items[percentage_marketing]" id="percentage_marketing" class="form-control float_type_positive" value="<?php echo $item['percentage_marketing']; ?>"/>
             </div>
         </div>
 
@@ -57,7 +57,7 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                 <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_FINANCIAL_EXPENSE'); ?> (%) <span style="color:#FF0000">*</span></label>
             </div>
             <div class="col-sm-4 col-xs-8">
-                <input type="text" name="items[amount_finance_percentage]" id="amount_finance_percentage" class="form-control float_type_positive" value="<?php echo $item['amount_finance_percentage']; ?>"/>
+                <input type="text" name="items[percentage_finance]" id="percentage_finance" class="form-control float_type_positive" value="<?php echo $item['percentage_finance']; ?>"/>
             </div>
         </div>
 
@@ -66,7 +66,7 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                 <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_INCENTIVE'); ?> (%) <span style="color:#FF0000">*</span></label>
             </div>
             <div class="col-sm-4 col-xs-8">
-                <input type="text" name="items[amount_incentive_percentage]" id="amount_incentive_percentage" class="form-control float_type_positive" value="<?php echo $item['amount_incentive_percentage']; ?>"/>
+                <input type="text" name="items[percentage_incentive]" id="percentage_incentive" class="form-control float_type_positive" value="<?php echo $item['percentage_incentive']; ?>"/>
             </div>
         </div>
 
@@ -77,7 +77,7 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                 <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_PROFIT'); ?> (%) <span style="color:#FF0000">*</span></label>
             </div>
             <div class="col-sm-4 col-xs-8">
-                <input type="text" name="items[amount_profit_percentage]" id="amount_profit_percentage" class="form-control float_type_positive" value="<?php echo $item['amount_profit_percentage']; ?>"/>
+                <input type="text" name="items[percentage_profit]" id="percentage_profit" class="form-control float_type_positive" value="<?php echo $item['percentage_profit']; ?>"/>
             </div>
         </div>
 
@@ -88,7 +88,7 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                 <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_SALES_COMMISSION'); ?> (%) <span style="color:#FF0000">*</span></label>
             </div>
             <div class="col-sm-4 col-xs-8">
-                <input type="text" name="items[amount_sales_commission_percentage]" id="amount_sales_commission_percentage" class="form-control float_type_positive" value="<?php echo $item['amount_sales_commission_percentage']; ?>"/>
+                <input type="text" name="items[percentage_sales_commission]" id="percentage_sales_commission" class="form-control float_type_positive" value="<?php echo $item['percentage_sales_commission']; ?>"/>
             </div>
         </div>
 

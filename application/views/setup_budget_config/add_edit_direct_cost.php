@@ -42,10 +42,10 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                     </thead>
                     <tbody>
                     <?php
-                    $amount_direct_cost_percentage=array();
-                    if($item['amount_direct_cost_percentage'])
+                    $percentage_direct_cost=array();
+                    if($item['percentage_direct_cost'])
                     {
-                        $amount_direct_cost_percentage=json_decode($item['amount_direct_cost_percentage'],true);
+                        $percentage_direct_cost=json_decode($item['percentage_direct_cost'],true);
                     }
                     foreach($direct_cost_items as $items)
                     {
@@ -63,7 +63,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                                 }
                                 ?>
                             </td>
-                            <td><input type="text" name="items[<?php echo $items['id']?>]" id="row_per_page" class="form-control float_type_positive" value="<?php echo isset($amount_direct_cost_percentage[$items['id']])?$amount_direct_cost_percentage[$items['id']]:'';?>" /></td>
+                            <td><input type="text" name="items[<?php echo $items['id']?>]" id="row_per_page" class="form-control float_type_positive" value="<?php echo isset($percentage_direct_cost[$items['id']])?$percentage_direct_cost[$items['id']]:'';?>" /></td>
                         </tr>
                     <?php
                     }
