@@ -34,6 +34,46 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
     <div class="clearfix"></div>
 </div>
 
+<?php if ($config_warning['status'])
+{
+    ?>
+    <div class="row show-grid bg-warning text-warning" style="padding:10px 0 0">
+        <div class="col-xs-4">
+            <label class="control-label pull-right" style="font-size:1.2em">Warning :</label>
+        </div>
+        <div class="col-xs-8">
+            <ul style="padding:0;list-style:none">
+                <?php
+                foreach ($config_warning['messages'] as $message)
+                {
+                    echo '<li>' . $message . '</li>';
+                }
+                ?>
+            </ul>
+        </div>
+    </div>
+<?php } ?>
+
+<?php if ($changes_warning['status'])
+{
+    ?>
+    <div class="row show-grid bg-danger text-danger" style="padding:10px 0 0">
+        <div class="col-xs-4">
+            <label class="control-label pull-right" style="font-size:1.2em">Warning :</label>
+        </div>
+        <div class="col-xs-8">
+            <ul style="padding:0;list-style:none">
+                <?php
+                foreach ($changes_warning['messages'] as $message)
+                {
+                    echo '<li>' . $message . '</li>';
+                }
+                ?>
+            </ul>
+        </div>
+    </div>
+<?php } ?>
+
 <div class="row show-grid">
     <div class="col-xs-4">
         <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_FISCAL_YEAR'); ?> :</label>
@@ -190,7 +230,7 @@ foreach ($item['principals'] as $principal)
                                     ?>
                                     <td style="width:130px;text-align:right;font-weight:bold;padding:0 5px 10px 0"><?php echo $CI->lang->line('LABEL_MONTH_' . $i); ?> :</td>
                                     <td style="padding-bottom:10px">
-                                        <input type="text" name="items[<?php echo $principal['id']; ?>][monthly_principal_quantity][Q_<?php echo $i; ?>]" class="form-control float_type_positive quantity_month" id="quantity_<?php echo $i . '_' . $principal['id']; ?>" data-principal-id="<?php echo $principal['id']; ?>" value=""/>
+                                        <input type="text" name="items[<?php echo $principal['id']; ?>][quantities][<?php echo $i; ?>]" class="form-control float_type_positive quantity_month" id="quantity_<?php echo $i . '_' . $principal['id']; ?>" data-principal-id="<?php echo $principal['id']; ?>" value=""/>
                                     </td>
                                     <?php
                                     if (($i % 3 == 0) && ($i != 12))
@@ -219,7 +259,7 @@ foreach ($item['principals'] as $principal)
 
         <div class="row show-grid">
             <div class="col-xs-4">
-                <label class="control-label pull-right">Price per Kg :</label>
+                <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_UNIT_PRICE'); ?> :</label>
             </div>
             <div class="col-xs-2">
                 <div class="row show-grid">
@@ -273,95 +313,81 @@ foreach ($item['principals'] as $principal)
 <script type="text/javascript">
     jQuery(document).ready(function ($) {
         system_off_events();
-        $(document).off('input','.quantity_month');
-        $(document).on('input', '.quantity_month', function ()
-        {
+        $(document).off('input', '.quantity_month');
+        $(document).on('input', '.quantity_month', function () {
             var principal_id = $(this).attr('data-principal-id');
             calculate_principal(principal_id);
             calculate_grand();
         });
-        $(document).off('input','.unit_price');
-        $(document).on('input', '.unit_price', function ()
-        {
+        $(document).off('input', '.unit_price');
+        $(document).on('input', '.unit_price', function () {
             var principal_id = $(this).attr('data-principal-id');
             calculate_principal(principal_id);
             calculate_grand();
         });
-        $(document).off('change','.currency_dropdown');
-        $(document).on('change', '.currency_dropdown', function ()
-        {
+        $(document).off('change', '.currency_dropdown');
+        $(document).on('change', '.currency_dropdown', function () {
             var principal_id = $(this).attr('data-principal-id');
             calculate_principal(principal_id);
             calculate_grand();
         });
     });
-    function calculate_principal(principal_id)
-    {
-        var percentage_direct_cost=parseFloat($('#percentage_direct_cost').html().replace(/,/g,''));
+    function calculate_principal(principal_id) {
+        var percentage_direct_cost = parseFloat($('#percentage_direct_cost').html().replace(/,/g, ''));
 
-        var percentage_packing_cost=parseFloat($('#percentage_packing_cost').html().replace(/,/g,''));
+        var percentage_packing_cost = parseFloat($('#percentage_packing_cost').html().replace(/,/g, ''));
 
-        var currency_id= $('#currency_dropdown_' + principal_id).val();
+        var currency_id = $('#currency_dropdown_' + principal_id).val();
 
-        var unit_price = parseFloat($('#amount_unit_price_' + principal_id).val().replace(/,/g,''));
-        var currency_rate=parseFloat($('#currency_rate_'+currency_id).html().replace(/,/g,''));
-        var total_quantity=0;
-        for(i=1;i<13;i++)
-        {
-            var quantity=parseFloat($('#quantity_'+i+'_'+ principal_id).val().replace(/,/g,''));
-            if(quantity>0)
-            {
-                total_quantity+=quantity;
+        var unit_price = parseFloat($('#amount_unit_price_' + principal_id).val().replace(/,/g, ''));
+        var currency_rate = parseFloat($('#currency_rate_' + currency_id).html().replace(/,/g, ''));
+        var total_quantity = 0;
+        for (i = 1; i < 13; i++) {
+            var quantity = parseFloat($('#quantity_' + i + '_' + principal_id).val().replace(/,/g, ''));
+            if (quantity > 0) {
+                total_quantity += quantity;
             }
         }
         $('#quantity_total_' + principal_id).html(total_quantity);
-        if((unit_price>0)&&(currency_id>0))
-        {
-            var a=unit_price*currency_rate;
-            var b=a*percentage_direct_cost/100;
-            var c=a*percentage_packing_cost/100;
-            var cogs=a+b+c;
-            var total_cogs=cogs*total_quantity;
+        if ((unit_price > 0) && (currency_id > 0)) {
+            var a = unit_price * currency_rate;
+            var b = a * percentage_direct_cost / 100;
+            var c = a * percentage_packing_cost / 100;
+            var cogs = a + b + c;
+            var total_cogs = cogs * total_quantity;
             $('#cogs_' + principal_id).html(get_string_amount(cogs));
             $('#cogs_total_' + principal_id).html(get_string_amount(total_cogs));
 
         }
-        else
-        {
+        else {
             $('#cogs_' + principal_id).html('0');
             $('#cogs_total_' + principal_id).html('0');
         }
     }
-    function calculate_grand()
-    {
+    function calculate_grand() {
 
-        var grand_total=0;
-        $('.quantity_total_principal').each(function(i, obj)
-        {
-            var quantity=parseFloat($(obj).html().replace(/,/g,''));
-            if(quantity>0)
-            {
-                grand_total+=quantity;
+        var grand_total = 0;
+        $('.quantity_total_principal').each(function (i, obj) {
+            var quantity = parseFloat($(obj).html().replace(/,/g, ''));
+            if (quantity > 0) {
+                grand_total += quantity;
             }
 
         });
-        var grand_cogs_total=0;
-        $('.cogs_total_principal').each(function(i, obj)
-        {
-            var total_cogs=parseFloat($(obj).html().replace(/,/g,''));
-            if(total_cogs>0)
-            {
-                grand_cogs_total+=total_cogs;
+        var grand_cogs_total = 0;
+        $('.cogs_total_principal').each(function (i, obj) {
+            var total_cogs = parseFloat($(obj).html().replace(/,/g, ''));
+            if (total_cogs > 0) {
+                grand_cogs_total += total_cogs;
             }
 
         });
         //cogs_total_principal
         $('#quantity_grand').html(grand_total);
         $('#cogs_total_grand').html(get_string_amount(grand_cogs_total));
-        var grand_cogs=0;
-        if(grand_total>0)
-        {
-            grand_cogs=grand_cogs_total/grand_total;
+        var grand_cogs = 0;
+        if (grand_total > 0) {
+            grand_cogs = grand_cogs_total / grand_total;
         }
         $('#cogs_grand').html(get_string_amount(grand_cogs));
     }
