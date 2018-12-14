@@ -363,23 +363,25 @@ foreach ($item['principals'] as $principal)
         var amount_unit_price_currency = parseFloat($('#amount_unit_price_currency_' + principal_id).val().replace(/,/g, ''));
         var amount_currency_rate = parseFloat($('#amount_currency_rate_' + currency_id).html().replace(/,/g, ''));
         var quantity_total = 0;
-        for (var i = 1; i < 13; i++) {
+        for (var i = 1; i < 13; i++)
+        {
             var quantity = parseFloat($('#quantity_' + i + '_' + principal_id).val().replace(/,/g, ''));
             if (quantity > 0)
             {
                 quantity_total += quantity;
             }
         }
-        $('#quantity_total_' + principal_id).html(quantity_total);
+        $('#quantity_total_' + principal_id).html(get_string_kg(quantity_total));
         if ((amount_unit_price_currency > 0) && (currency_id > 0))
         {
-            var amount_unit_price_taka = amount_unit_price_currency * amount_currency_rate;
-            var direct_cost = amount_unit_price_taka * percentage_direct_cost / 100;
-            var packing_cost = amount_unit_price_taka * percentage_packing_cost / 100;
-            var cogs = amount_unit_price_taka + direct_cost + packing_cost;
+            var amount_unit_price_taka = (amount_unit_price_currency * amount_currency_rate).toFixed(12);
+            var direct_cost = (amount_unit_price_taka * percentage_direct_cost / 100).toFixed(12);
+            var packing_cost = (amount_unit_price_taka * percentage_packing_cost / 100).toFixed(12);
+            var cogs = parseFloat(amount_unit_price_taka) + parseFloat(direct_cost) + parseFloat(packing_cost);
+
             var total_cogs = cogs * quantity_total;
-            $('#cogs_' + principal_id).html(get_string_amount(cogs));
-            $('#cogs_total_' + principal_id).html(get_string_amount(total_cogs));
+            $('#cogs_' + principal_id).html(cogs.toFixed(4));
+            $('#cogs_total_' + principal_id).html(total_cogs.toFixed(4));
 
         }
         else
@@ -410,10 +412,10 @@ foreach ($item['principals'] as $principal)
                 cogs_total += principle_cogs_total;
             }
         });
-        $('#quantity_total').html(quantity_total);
+        $('#quantity_total').html(get_string_kg(quantity_total));
         if(cogs_total>0)
         {
-            $('#cogs_total').html(get_string_amount(cogs_total));
+            $('#cogs_total').html(cogs_total.toFixed(4));
         }
         else
         {
@@ -422,7 +424,7 @@ foreach ($item['principals'] as $principal)
         if ((quantity_total > 0)&&(cogs_total > 0))
         {
             var cogs = cogs_total / quantity_total;
-            $('#cogs').html(get_string_amount(cogs));
+            $('#cogs').html(cogs.toFixed(4));
         }
         else
         {
