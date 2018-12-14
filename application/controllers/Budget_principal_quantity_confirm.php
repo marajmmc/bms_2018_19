@@ -258,7 +258,13 @@ class Budget_principal_quantity_confirm extends Root_Controller
             //get main value
             $old_item=array();
             //check validation
+            $results=Query_helper::get_info($this->config->item('table_bms_principal_quantity_principal'), '*', array('fiscal_year_id=' . $fiscal_year_id, 'variety_id =' . $variety_id));
             $old_item_principles=array();
+            foreach($results as $result)
+            {
+                $old_item_principles[$result['principal_id']]=$result;
+            }
+
 
             //get values of previous principles value
             //check validations
@@ -291,8 +297,8 @@ class Budget_principal_quantity_confirm extends Root_Controller
                 $info['name']=$result['name'];
                 for($i=1;$i<13;$i++)
                 {
-                    $info['quantity_'.$i]=isset($old_item_principles[$result['id']]['quantity_'.$i])?$old_item_principles[$result['id']]['quantity_'.$i]:1;
-                    $info['amount_unit_price_currency']=isset($old_item_principles[$result['id']]['amount_unit_price_currency'])?$old_item_principles[$result['id']]['amount_unit_price_currency']:1;
+                    $info['quantity_'.$i]=isset($old_item_principles[$result['id']]['quantity_'.$i])?$old_item_principles[$result['id']]['quantity_'.$i]:0;
+                    $info['amount_unit_price_currency']=isset($old_item_principles[$result['id']]['amount_unit_price_currency'])?$old_item_principles[$result['id']]['amount_unit_price_currency']:0;
                     $info['currency_id']=isset($old_item_principles[$result['id']]['currency_id'])?$old_item_principles[$result['id']]['currency_id']:0;
                 }
                 $data['item']['principals'][]=$info;
@@ -323,10 +329,6 @@ class Budget_principal_quantity_confirm extends Root_Controller
         $time = time();
         $item_head = $this->input->post('item');
         $items = $this->input->post('items');
-echo '<pre>';
-print_r($this->input->post());
-echo '</pre>';
-        die();
         if (!((isset($this->permissions['action1']) && ($this->permissions['action1'] == 1)) || (isset($this->permissions['action2']) && ($this->permissions['action2'] == 1))))
         {
             $ajax['status'] = false;
@@ -347,113 +349,122 @@ echo '</pre>';
             $ajax['system_message'] = $this->message;
             $this->json_return($ajax);
         }
+        $fiscal_year_info = Query_helper::get_info($this->config->item('table_bms_setup_budget_config'), '*', array('fiscal_year_id=' . $item_head['fiscal_year_id']), 1);
 
-        $fiscal_year_config = Query_helper::get_info($this->config->item('table_bms_setup_budget_config'), 'amount_currency_rate, percentage_direct_cost, percentage_packing_cost', array('fiscal_year_id=' . $item_head['fiscal_year_id']), 1);
-        $fiscal_year_currencies = json_decode($fiscal_year_config['amount_currency_rate'], true);
 
-        // Total direct_cost_percentage
-        $total_direct_cost_percentage = 0.0;
-        $fiscal_year_direct_cost_percentage = json_decode($fiscal_year_config['amount_direct_cost_percentage'], true);
-        foreach ($fiscal_year_direct_cost_percentage as $value)
+        $percentage_direct_cost = 0;
+        if ($fiscal_year_info['revision_count_percentage_direct_cost']>0)
         {
-            $total_direct_cost_percentage += $value;
-        }
-
-        // Total packing_cost_percentage
-        $total_packing_cost_percentage = 0.0;
-        $fiscal_year_packing_cost_percentage = json_decode($fiscal_year_config['percentage_packing_cost'], true);
-        foreach ($fiscal_year_packing_cost_percentage as $value)
-        {
-            $total_packing_cost_percentage += $value;
-        }
-
-        $item_head['direct_cost_percentage_total'] = $total_direct_cost_percentage;
-        $item_head['packing_cost_percentage_total'] = $total_packing_cost_percentage;
-
-        $item_head['quantity_grand_total'] = 0.0;
-        $item_head['unit_price'] = 0.0;
-        $item_head['cogs_grand_total'] = 0.0;
-        $item_head['cogs_average'] = 0.0;
-
-        $item_details = array();
-
-        foreach ($items as $principal_id => $principal_item)
-        {
-            $row = array();
-
-            // Details Table Data
-            $row['fiscal_year_id'] = $item_head['fiscal_year_id'];
-            $row['variety_id'] = $item_head['variety_id'];
-            $row['direct_cost_percentage_total'] = $total_direct_cost_percentage;
-            $row['packing_cost_percentage_total'] = $total_packing_cost_percentage;
-            $row['currency_id'] = $principal_item['currency_id'];
-            $row['principal_id'] = $principal_id;
-
-            // Monthly total quantity
-            $principal_quantity_total = 0.0;
-            foreach ($principal_item['quantities'] as $month_number => $quantity)
+            $results = json_decode($fiscal_year_info['percentage_direct_cost'], true);
+            foreach ($results as $value)
             {
-                if ($quantity > 0)
-                {
-                    $row['quantity_' . $month_number] = $quantity;
-                    $principal_quantity_total += $quantity;
-                }
+                $percentage_direct_cost += $value;
             }
-
-            $row['quantity_total'] = $principal_quantity_total; // Sub Total Quantity
-            $row['unit_price_currency'] = $principal_item['unit_price'];
-            $row['currency_rate'] = $fiscal_year_currencies[$principal_item['currency_id']];
-            $row['unit_price_taka'] = $principal_item['unit_price'] * $fiscal_year_currencies[$principal_item['currency_id']];
-
-            // Principal COGS Calculation
-            $A = $principal_item['unit_price'] * $fiscal_year_currencies[$principal_item['currency_id']];
-            $B = $A * ($total_direct_cost_percentage / 100);
-            $C = $A * ($total_packing_cost_percentage / 100);
-
-            $row['cogs'] = ($A + $B + $C);
-            $row['cogs_total'] = ($A + $B + $C) * $principal_quantity_total;
-            $row['revision'] = 1;
-            $row['date_created'] = $time;
-            $row['user_created'] = $user->user_id;
-
-            $item_details[] = $row; //Assign into Final Array
-
-            // Main Table Data
-            $item_head['quantity_grand_total'] += $principal_quantity_total; // Grand Total Quantity -> Main Table
-            $item_head['cogs_grand_total'] += $row['cogs_total']; // Grand Total COGS -> Main Table
-            $item_head['unit_price'] += $A;
         }
 
-        // Main Table Data
-        $item_head['unit_price'] = $item_head['unit_price'] / sizeof($items); // Main Table -> unit_price_average = ( $A / No. of Principals )
-        $item_head['cogs_average'] = ($item_head['cogs_grand_total'] / $item_head['quantity_grand_total']);
-        $item_head['date_created'] = $time;
-        $item_head['user_created'] = $user->user_id;
-
-        /*echo '<pre>';
-        print_r($item_head); // Main Table Data for Insert
-        print_r($item_details); // Details Table Data for Insert
-        echo '</pre>'; die();*/
-
-        $this->db->trans_start(); //DB Transaction Handle START
-
-        $data = Query_helper::get_info($this->config->item('table_bms_principal_quantity'), '*', array('fiscal_year_id =' . $item_head['fiscal_year_id'], 'variety_id =' . $item_head['variety_id']));
-        if ($data) // EDIT Main Table
+        $percentage_packing_cost = 0;
+        if ($fiscal_year_info['revision_count_percentage_packing_cost']>0)
         {
-
+            $results = json_decode($fiscal_year_info['percentage_packing_cost'], true);
+            foreach ($results as $value)
+            {
+                $percentage_packing_cost += $value;
+            }
         }
-        else // ADD Main Table
+        $currency_rates=array();
+        if ($fiscal_year_info['revision_count_percentage_packing_cost']>0)
         {
-            Query_helper::add($this->config->item('table_bms_principal_quantity'), $item_head, false);
+            $currency_rates = json_decode($fiscal_year_info['amount_currency_rate'], true);
         }
+        //$item_head['amount_unit_price_taka']; calculate bellow
+        $item_head['percentage_direct_cost'] = $percentage_direct_cost;
+        $item_head['percentage_packing_cost'] = $percentage_packing_cost;
+        $item_head['cogs']=0; //calculate bellow
+        $item_head['cogs_total']=0;//calculate bellow//441
+        $item_head['quantity_total'] =0;//428-432
+        $item_head['quantity_1'] =0;
+        $item_head['quantity_2'] =0;
+        $item_head['quantity_3'] =0;
+        $item_head['quantity_4'] =0;
+        $item_head['quantity_5'] =0;
+        $item_head['quantity_6'] =0;
+        $item_head['quantity_7'] =0;
+        $item_head['quantity_8'] =0;
+        $item_head['quantity_9'] =0;
+        $item_head['quantity_10'] =0;
+        $item_head['quantity_11'] =0;
+        $item_head['quantity_12'] =0;
+        //$item_head['date_created']; calculate bellow
+        //$item_head['user_created']; calculate bellow
+        //$item_head['date_updated']; calculate bellow
+        //$item_head['user_updated']; calculate bellow
 
-        // Principal Details revision - UPDATE
+        $item_head_old=Query_helper::get_info($this->config->item('table_bms_principal_quantity'), '*', array('fiscal_year_id=' . $item_head['fiscal_year_id'], 'variety_id =' . $item_head['variety_id']), 1);
+
+        $this->db->trans_start();  //DB Transaction Handle START
+        //revision increase
+        $revision_history_data=array();
+        $revision_history_data['date_updated']=$time;
+        $revision_history_data['user_updated']=$user->user_id;
+        Query_helper::update($this->config->item('table_bms_principal_quantity_principal'),$revision_history_data,array('revision=1','fiscal_year_id='.$item_head['fiscal_year_id'],'variety_id='.$item_head['variety_id']),false);
         $this->db->set('revision', 'revision+1', false);
         Query_helper::update($this->config->item('table_bms_principal_quantity_principal'), array(), array('fiscal_year_id =' . $item_head['fiscal_year_id'], 'variety_id =' . $item_head['variety_id']), false);
-        // Principal Details - INSERT
-        foreach ($item_details as $principal_data)
+        //revision end
+        foreach ($items as $principal_id => $principal_info)
         {
-            Query_helper::add($this->config->item('table_bms_principal_quantity_principal'), $principal_data, false);
+            $data = array();
+            $data['fiscal_year_id'] = $item_head['fiscal_year_id'];
+            $data['variety_id'] = $item_head['variety_id'];
+            $data['principal_id'] = $principal_id;
+            $data['revision'] = 1;
+            $data['amount_unit_price_currency'] = $principal_info['amount_unit_price_currency'];
+            $data['currency_id'] = $principal_info['currency_id'];
+            $data['amount_currency_rate'] = (isset($currency_rates[$principal_info['currency_id']])) ? $currency_rates[$principal_info['currency_id']] : 0;
+            $data['amount_unit_price_taka'] = $data['amount_unit_price_currency']*$data['amount_currency_rate'];
+
+            $data['percentage_direct_cost'] = $percentage_direct_cost;
+            $data['percentage_packing_cost'] = $percentage_packing_cost;
+            //$data['cogs'];//later--439
+            //$data['cogs_total'];//later--440
+            $data['quantity_total'] = 0;
+            foreach($principal_info['quantities'] as $month_index=>$quantity)
+            {
+                if($quantity>0)
+                {
+                    $data['quantity_'.$month_index]=$quantity;
+                    $item_head['quantity_'.$month_index]+=$quantity;
+
+                    $data['quantity_total']+=$quantity;
+                    $item_head['quantity_total']+=$quantity;
+                }
+                else
+                {
+                    $data['quantity_'.$month_index]=0;
+                }
+            }
+            $data['cogs']=$data['amount_unit_price_taka']+($data['amount_unit_price_taka']*$percentage_direct_cost/100)+($data['amount_unit_price_taka']*$percentage_packing_cost/100);
+            $data['cogs_total']=$data['cogs']*$data['quantity_total'];
+            $item_head['cogs_total']+=$data['cogs_total'];
+            $data['date_created']=$time;
+            $data['user_created']=$user->user_id;
+            Query_helper::add($this->config->item('table_bms_principal_quantity_principal'),$data,false);
+
+        }
+        if($item_head['quantity_total']>0)
+        {
+            $item_head['cogs']=$item_head['cogs_total']/$item_head['quantity_total'];
+        }
+        if($item_head_old)
+        {
+            $item_head['date_updated']=$time;
+            $item_head['user_updated']=$user->user_id;
+            Query_helper::update($this->config->item('table_bms_principal_quantity'), $item_head, array('id =' . $item_head_old['id']));
+        }
+        else
+        {
+            $item_head['date_created']=$time;
+            $item_head['user_created']=$user->user_id;
+            Query_helper::add($this->config->item('table_bms_principal_quantity'),$item_head);
         }
 
         $this->db->trans_complete(); //DB Transaction Handle END
@@ -461,7 +472,7 @@ echo '</pre>';
         if ($this->db->trans_status() === TRUE)
         {
             $this->message = $this->lang->line("MSG_SAVED_SUCCESS");
-            $this->system_list();
+            $this->system_list_variety($item_head['fiscal_year_id']);
         }
         else
         {
@@ -497,12 +508,12 @@ echo '</pre>';
         $items = $this->input->post('items');
         foreach ($items as $principal_item)
         {
-            if (!($principal_item['unit_price']) > 0) // Unit Price Validation
+            if (!($principal_item['amount_unit_price_currency'] > 0)) // Unit Price Validation
             {
                 $this->message = $this->lang->line('LABEL_UNIT_PRICE') . ' fields cannot be Empty';
                 return false;
             }
-            if (!($principal_item['currency_id']) > 0) // Currency DropDown Validation
+            if (!($principal_item['currency_id'] > 0)) // Currency DropDown Validation
             {
                 $this->message = $this->lang->line('LABEL_CURRENCY') . ' fields must be Selected';
                 return false;
