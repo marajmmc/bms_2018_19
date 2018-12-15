@@ -82,7 +82,10 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                 columnsreorder: true,
                 enablebrowserselection: true,
                 columns: [
-                    { text: '<?php echo $CI->lang->line('LABEL_FISCAL_YEAR'); ?>', dataField: 'fiscal_year', width: '150', filtertype: 'list'}
+                    { text: '<?php echo $CI->lang->line('LABEL_FISCAL_YEAR'); ?>', dataField: 'fiscal_year', width: '150', filtertype: 'list'},
+                    { text: 'No. of variety', dataField: 'number_of_variety', width: '120'},
+                    { text: 'Active Variety', dataField: 'active_variety', width: '120'},
+                    { text: 'Due Variety', dataField: 'due_variety', width: '120'}
                 ]
             });
     });
