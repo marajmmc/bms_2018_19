@@ -321,14 +321,15 @@ class Budget_principal_quantity_confirm extends Root_Controller
             {
                 $old_item_principles[$result['principal_id']] = $result;
                 $principle_ids_old[$result['principal_id']] = $result['principal_id']; // Storing Principal Id's for Comparison
-                if($result['percentage_direct_cost'] != $data['item']['percentage_direct_cost'])
+
+
+                //if(abs($a-$b) < $epsilon)
+
+                if((abs($result['percentage_direct_cost'] - $data['item']['percentage_direct_cost']))>=EPSILON)//because of calculated value
                 {
-                    $msg=$result['percentage_direct_cost'].'--'.$data['item']['percentage_direct_cost'];
-                    $msg.='--'.strlen($result['percentage_direct_cost']).'--'.strlen($data['item']['percentage_direct_cost']);
-                    $data['message_warning_changes'][] =$msg;
                     $change_dc=true;
                 }
-                if($result['percentage_packing_cost'] != $data['item']['percentage_packing_cost'])
+                if((abs($result['percentage_packing_cost'] - $data['item']['percentage_packing_cost']))>=EPSILON)//because of calculated value
                 {
                     $change_packing=true;
                 }
