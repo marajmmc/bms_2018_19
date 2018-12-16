@@ -284,7 +284,7 @@ class Budget_principal_quantity_confirm extends Root_Controller
                 $data['message_warning_config'][] = '<b>Packing Cost Percentage</b> - NOT Configured for this Fiscal Year';
             }
             $currency_rates = array();
-            if ($fiscal_year_info['revision_count_percentage_packing_cost'] > 0)
+            if ($fiscal_year_info['revision_count_currency_rate'] > 0)
             {
                 $currency_rates = json_decode($fiscal_year_info['amount_currency_rate'], true);
             }
@@ -461,7 +461,7 @@ class Budget_principal_quantity_confirm extends Root_Controller
             }
         }
         $currency_rates = array();
-        if ($fiscal_year_info['revision_count_percentage_packing_cost'] > 0)
+        if ($fiscal_year_info['revision_count_currency_rate'] > 0)
         {
             $currency_rates = json_decode($fiscal_year_info['amount_currency_rate'], true);
         }
