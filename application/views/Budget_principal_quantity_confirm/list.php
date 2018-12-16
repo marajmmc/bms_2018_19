@@ -8,7 +8,7 @@ if ((isset($CI->permissions['action1']) && ($CI->permissions['action1'] == 1)) |
     $action_buttons[] = array
     (
         'type' => 'button',
-        'label' => 'Edit',
+        'label' => 'Edit quantity',
         'class' => 'button_jqx_action',
         'data-action-link' => site_url($CI->controller_url . '/index/list_variety')
     );
@@ -83,10 +83,14 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                 enablebrowserselection: true,
                 columns: [
                     { text: '<?php echo $CI->lang->line('LABEL_FISCAL_YEAR'); ?>', dataField: 'fiscal_year', width: '150', filtertype: 'list'},
-                    { text: 'No. of variety', dataField: 'number_of_variety', width: '120'},
-                    { text: 'Active Variety', dataField: 'active_variety', width: '120'},
-                    { text: 'Due Variety', dataField: 'due_variety', width: '120'}
-                ]
+                    { columngroup: 'number_of_variety',text: 'Active', dataField: 'number_of_variety_active',width:'70', cellsalign:'right', align:'right'},
+                    { columngroup: 'number_of_variety',text: 'Completed', dataField: 'number_of_variety_done',width:'70', cellsalign:'right', align:'right'},
+                    { columngroup: 'number_of_variety',text: 'Remaining', dataField: 'number_of_variety_due',width:'70', cellsalign:'right', align:'right'}
+                ],
+                columngroups:
+                    [
+                        { text: 'Number of Variety', align: 'center', name: 'number_of_variety' }
+                    ]
             });
     });
 </script>

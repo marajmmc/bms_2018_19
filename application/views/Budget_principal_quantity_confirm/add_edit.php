@@ -181,6 +181,14 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
 
 <div class="row show-grid">
     <div class="col-xs-4">
+        <label class="control-label pull-right">Average Unit Price:</label>
+    </div>
+    <div class="col-xs-4">
+        <label class="control-label" id="amount_unit_price_taka">--</label>
+    </div>
+</div>
+<div class="row show-grid">
+    <div class="col-xs-4">
         <label class="control-label pull-right">Average COGS :</label>
     </div>
     <div class="col-xs-4">
@@ -423,8 +431,13 @@ foreach ($item['principals'] as $principal)
         }
         if ((quantity_total > 0)&&(cogs_total > 0))
         {
-            var cogs = cogs_total / quantity_total;
+            var cogs = (cogs_total / quantity_total);
             $('#cogs').html(cogs.toFixed(4));
+            var percentage_direct_cost = parseFloat($('#percentage_direct_cost').html().replace(/,/g, ''));
+            var percentage_packing_cost = parseFloat($('#percentage_packing_cost').html().replace(/,/g, ''));
+
+            var amount_unit_price_taka=((cogs*100)/(100+percentage_direct_cost+percentage_packing_cost));
+            $('#amount_unit_price_taka').html(amount_unit_price_taka.toFixed(4));
         }
         else
         {
