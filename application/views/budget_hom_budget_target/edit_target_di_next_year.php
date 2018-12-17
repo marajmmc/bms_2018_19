@@ -189,7 +189,7 @@ echo "</pre>";*/
         var cellsrenderer = function(row, column, value, defaultHtml, columnSettings, record)
         {
             var element = $(defaultHtml);
-            if(column=='quantity_prediction_division_total')
+            if(column=='quantity_prediction_division_total' )
             {
                 if(value==0)
                 {
@@ -200,7 +200,34 @@ echo "</pre>";*/
                     element.html(get_string_kg(value));
                 }
             }
-            else if(column.substr(0,29)=='quantity_prediction_division_')
+            else if(column.substr(0,39)=='quantity_prediction_sub_total_division_')
+            {
+                var serial=column.replace('quantity_prediction_sub_total_division_','');
+                //element.html(serial);
+                var difference = (value-record['quantity_prediction_'+serial]);
+                if(difference>0)
+                {
+                    element.css({ 'background-color': 'purple','color': '#ffffff','margin': '0px','width': '100%', 'height': '100%',padding:'5px','line-height':'25px'});
+                }
+                else if(difference<0)
+                {
+                    element.css({ 'background-color': 'red','color': '#ffffff','margin': '0px','width': '100%', 'height': '100%',padding:'5px','line-height':'25px'});
+                }
+                else
+                {
+                    element.css({ 'background-color': 'lightgreen','margin': '0px','width': '100%', 'height': '100%',padding:'5px','line-height':'25px'});
+                }
+
+                if(value==0)
+                {
+                    element.html('');
+                }
+                else
+                {
+                    element.html(get_string_kg(value));
+                }
+            }
+            else if(column.substr(0,29)=='quantity_prediction_division_' || column.substr(0,20)=='quantity_prediction_')
             {
                 if(value==0)
                 {
@@ -276,7 +303,20 @@ echo "</pre>";*/
                     {
                         ++$serial;
                         ?>
-                        { columngroup: 'next_years_<?php echo $serial;?>', text: 'Prediction', dataField: 'quantity_prediction_<?php echo $serial;?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
+                        //{ columngroup: 'next_years_<?php echo $serial;?>', text: 'Prediction', dataField: 'quantity_prediction_<?php echo $serial;?>',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
+                        {columngroup: 'next_years_<?php echo $serial;?>', text: 'Prediction', datafield: 'quantity_prediction_<?php echo $serial;?>', width: 100, filterable: false, cellsalign: 'right',cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg,columntype: 'custom',
+                            initeditor: function (row, cellvalue, editor, celltext, pressedkey)
+                            {
+                                editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');
+                            },
+                            geteditorvalue: function (row, cellvalue, editor)
+                            {
+                                // return the editor's value.
+                                var value=editor.find('input').val();
+                                var selectedRowData = $('#system_jqx_container').jqxGrid('getrowdata', row);
+                                return editor.find('input').val();
+                            }
+                        },
                         <?php
                         $division_sl=0;
                         foreach($divisions as $division)
@@ -285,11 +325,6 @@ echo "</pre>";*/
                             ?>
 
                             {columngroup: 'next_years_<?php echo $serial;?>', text: '<?php echo $division_sl.'. '.$division['division_name']?>', datafield: 'quantity_prediction_division_<?php echo $serial;?>_<?php echo $division['division_id']?>', width: 100, filterable: false, cellsalign: 'right',cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg,columntype: 'custom',
-                                cellbeginedit: function (row)
-                                {
-                                    var selectedRowData = $('#system_jqx_container').jqxGrid('getrowdata', row);//only last selected
-                                    return selectedRowData['editable_<?php echo $serial; ?>'];
-                                },
                                 initeditor: function (row, cellvalue, editor, celltext, pressedkey)
                                 {
                                     editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');
