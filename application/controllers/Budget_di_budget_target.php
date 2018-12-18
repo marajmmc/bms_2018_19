@@ -2996,15 +2996,42 @@ class Budget_di_budget_target extends Root_Controller
 
     private function get_info_budget_target($fiscal_year_id,$division_id)
     {
+        $user = User_helper::get_user();
+        $time=time();
+
+        $this->db->from($this->config->item('table_bms_zi_budget_target').' item');
+        $this->db->select('item.*');
+        $this->db->join($this->config->item('table_login_setup_location_zones').' zone','zone.id = item.zone_id','INNER');
+        $this->db->select('zone.division_id');
+        $this->db->where('item.fiscal_year_id',$fiscal_year_id);
+        $this->db->where('zone.division_id',$division_id);
+        $results=$this->db->get()->result_array();
+        $budget_target_zone=array();
+        foreach($results as $result)
+        {
+            $budget_target_zone[$result['zone_id']]=$result;
+        }
+        $zones=User_helper::get_assigned_zones($division_id);
+        foreach($zones as $zone)
+        {
+            if(!isset($budget_target_zone[$zone['zone_id']]))
+            {
+                $data=array();
+                $data['fiscal_year_id'] = $fiscal_year_id;
+                $data['zone_id'] = $zone['zone_id'];
+                $data['date_created'] = $time;
+                $data['user_created'] = $user->user_id;
+                Query_helper::add($this->config->item('table_bms_zi_budget_target'),$data,false);
+            }
+        }
 
         $info=Query_helper::get_info($this->config->item('table_bms_di_budget_target'),'*',array('fiscal_year_id ='.$fiscal_year_id,'division_id ='.$division_id),1);
         if(!$info)
         {
-            $user = User_helper::get_user();
             $data=array();
             $data['fiscal_year_id'] = $fiscal_year_id;
             $data['division_id'] = $division_id;
-            $data['date_created'] = time();
+            $data['date_created'] = $time;
             $data['user_created'] = $user->user_id;
             $id=Query_helper::add($this->config->item('table_bms_di_budget_target'),$data,false);
             $info=Query_helper::get_info($this->config->item('table_bms_di_budget_target'),'*',array('id ='.$id),1);

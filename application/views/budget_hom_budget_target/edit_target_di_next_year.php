@@ -36,11 +36,6 @@ if(isset($CI->permissions['action5']) && ($CI->permissions['action5']==1))
 }
 
 $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
-
-/*echo "<pre>";
-print_r($fiscal_years_next_budgets);
-echo "</pre>";*/
-
 ?>
 <div class="row widget">
     <div class="widget-header">
@@ -96,11 +91,14 @@ echo "</pre>";*/
                 foreach($fiscal_years_next_budgets as $fy)
                 {
                     ++$serial;
-                    foreach($divisions as $division)
-                    {
                     ?>
-                    $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+'][<?php echo $division['division_id'];?>][quantity_prediction_<?php echo $serial;?>]" value="'+data[i]['quantity_prediction_division_<?php echo $serial;?>_<?php echo $division['division_id']?>']+'">');
-                    <?php
+                    $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items[prediction_hom]['+data[i]['variety_id']+'][quantity_prediction_<?php echo $serial;?>]" value="'+data[i]['quantity_prediction_<?php echo $serial;?>']+'">');
+                        <?php
+                        foreach($divisions as $division)
+                        {
+                        ?>
+                        $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items[prediction_divisions]['+data[i]['variety_id']+'][<?php echo $division['division_id'];?>][quantity_prediction_division_<?php echo $serial;?>]" value="'+data[i]['quantity_prediction_division_<?php echo $serial;?>_<?php echo $division['division_id']?>']+'">');
+                        <?php
                     }
                 }
                 ?>

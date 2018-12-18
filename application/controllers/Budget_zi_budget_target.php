@@ -3043,6 +3043,37 @@ class Budget_zi_budget_target extends Root_Controller
     }
     private function get_info_budget_target($fiscal_year_id,$zone_id)
     {
+        $user = User_helper::get_user();
+        $time=time();
+
+        $this->db->from($this->config->item('table_pos_si_budget_target').' item');
+        $this->db->select('item.*');
+        $this->db->join($this->config->item('table_login_csetup_cus_info').' cus_info','cus_info.customer_id = item.outlet_id AND cus_info.revision = 1','INNER');
+        $this->db->join($this->config->item('table_login_setup_location_districts').' district','district.id = cus_info.district_id','INNER');
+        $this->db->join($this->config->item('table_login_setup_location_territories').' territory','territory.id = district.territory_id','INNER');
+        $this->db->select('territory.zone_id');
+        $this->db->where('item.fiscal_year_id',$fiscal_year_id);
+        $this->db->where('territory.zone_id',$zone_id);
+        $results=$this->db->get()->result_array();
+        $budget_target_si=array();
+        foreach($results as $result)
+        {
+            $budget_target_si[$result['outlet_id']]=$result;
+        }
+        $outlets=$this->get_outlets($zone_id);
+        foreach($outlets as $outlet)
+        {
+            if(!isset($budget_target_si[$outlet['outlet_id']]))
+            {
+                $data=array();
+                $data['fiscal_year_id'] = $fiscal_year_id;
+                $data['outlet_id'] = $outlet['outlet_id'];
+                $data['date_created'] = $time;
+                $data['user_created'] = $user->user_id;
+                Query_helper::add($this->config->item('table_pos_si_budget_target'),$data,false);
+            }
+        }
+
         //$info=Query_helper::get_info($this->config->item('table_bms_zi_budget_target'),'*',array('fiscal_year_id ='.$fiscal_year_id,'zone_id ='.$zone_id),1);
         $this->db->from($this->config->item('table_bms_zi_budget_target').' item');
         $this->db->select('item.*');
@@ -3053,11 +3084,10 @@ class Budget_zi_budget_target extends Root_Controller
         $info=$this->db->get()->row_array();
         if(!$info)
         {
-            $user = User_helper::get_user();
             $data=array();
             $data['fiscal_year_id'] = $fiscal_year_id;
             $data['zone_id'] = $zone_id;
-            $data['date_created'] = time();
+            $data['date_created'] = $time;
             $data['user_created'] = $user->user_id;
             $id=Query_helper::add($this->config->item('table_bms_zi_budget_target'),$data,false);
             //$info=Query_helper::get_info($this->config->item('table_bms_zi_budget_target'),'*',array('id ='.$id),1);\

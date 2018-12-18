@@ -89,16 +89,6 @@ echo '</pre>';*/
             for(var i=0;i<data.length;i++)
             {
                 $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+'][quantity_budget]" value="'+data[i]['quantity_budget']+'">');
-                <?php 
-                $serial=0;
-                foreach($fiscal_years_next_budgets as $fy)
-                {
-                    ++$serial;
-                        ?>
-                    $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+'][quantity_prediction_<?php echo $serial;?>]" value="'+data[i]['quantity_prediction_<?php echo $serial; ?>']+'">');
-                    <?php
-                }
-                ?>
             }
             var sure = confirm('<?php echo $CI->lang->line('MSG_CONFIRM_SAVE'); ?>');
             if(sure)
@@ -142,14 +132,6 @@ echo '</pre>';*/
                     { name: 'quantity_sale_<?php echo $fy['id']; ?>', type: 'number' },
                     <?php
                 }
-                $serial=0;
-                foreach($fiscal_years_next_budgets as $budget)
-                {
-                    ++$serial;
-                        ?>
-                    { name: 'quantity_prediction_<?php echo $serial; ?>', type: 'number' },
-                    <?php
-                }
                 ?>
             ],
             type: 'POST',
@@ -180,7 +162,7 @@ echo '</pre>';*/
         var cellsrenderer = function(row, column, value, defaultHtml, columnSettings, record)
         {
             var element = $(defaultHtml);
-            if(column=='quantity_budget' || column.substr(0,20)=='quantity_prediction_')
+            if(column=='quantity_budget')
             {
                 if(value==0)
                 {
@@ -288,33 +270,10 @@ echo '</pre>';*/
                         <?php
                     }
                     ?>
-                    <?php
-                    $serial=0;
-                    foreach ($fiscal_years_next_budgets as $budget)
-                    {
-                        ++$serial;
-                        ?>
-                        { columngroup: 'next_years',text: '<?php echo $budget['name']; ?>',datafield: 'quantity_prediction_<?php echo $serial; ?>', width: 100,filterable: false,cellsalign: 'right',cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg,columntype: 'custom',
-                            initeditor: function (row, cellvalue, editor, celltext, pressedkey)
-                            {
-                                editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');
-                            },
-                            geteditorvalue: function (row, cellvalue, editor)
-                            {
-                                // return the editor's value.
-                                var value=editor.find('input').val();
-                                var selectedRowData = $('#system_jqx_container').jqxGrid('getrowdata', row);
-                                return editor.find('input').val();
-                            }
-                        },
-                        <?php
-                    }
-                     ?>
                 ],
                 columngroups:
                 [
-                    { text: '<?php echo $CI->lang->line('LABEL_PREVIOUS_YEARS'); ?> Achieved', align: 'center', name: 'previous_years' },
-                    { text: 'Next Years Prediction', align: 'center', name: 'next_years' }
+                    { text: '<?php echo $CI->lang->line('LABEL_PREVIOUS_YEARS'); ?> Achieved', align: 'center', name: 'previous_years' }
                 ]
             });
     });

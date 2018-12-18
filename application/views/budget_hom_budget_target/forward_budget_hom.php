@@ -128,14 +128,6 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                 { name: 'quantity_sale_<?php echo $fy['id']; ?>', type: 'string' },
                 <?php
             }
-            $serial=0;
-            foreach($fiscal_years_next_budgets as $budget)
-            {
-                ++$serial;
-                    ?>
-                { name: 'quantity_prediction_<?php echo $serial; ?>', type: 'string' },
-                <?php
-            }
             ?>
             ],
             type: 'POST',
@@ -265,17 +257,6 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                             }
                         ?>
                         { text: 'Total</br>Budget', dataField: 'quantity_budget',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
-                        <?php
-                            $serial=0;
-                            foreach ($fiscal_years_next_budgets as $budget)
-                            {
-                                ++$serial;
-                                ?>
-                                {columngroup: 'next_years',text: '<?php echo $budget['name']; ?>', dataField: 'quantity_prediction_<?php echo $serial; ?>',width:'100',filterable: false,cellsrenderer: cellsrenderer,align:'center',cellsAlign:'right',editable:false,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg
-                                },
-                                <?php
-                            }
-                         ?>
                         { text: 'Total</br>Division Budget', dataField: 'quantity_budget_division_total',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: [{ 'total':aggregates}],aggregatesrenderer:aggregatesrenderer_kg},
                         <?php
                     $serial=0;
@@ -291,8 +272,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
                     ],
                 columngroups:
                     [
-                        { text: '<?php echo $CI->lang->line('LABEL_PREVIOUS_YEARS'); ?> Achieved', align: 'center', name: 'previous_years' },
-                        { text: 'Next Year Budget', align: 'center', name: 'next_years' }
+                        { text: '<?php echo $CI->lang->line('LABEL_PREVIOUS_YEARS'); ?> Achieved', align: 'center', name: 'previous_years' }
                     ]
             });
     });

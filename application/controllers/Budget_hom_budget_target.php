@@ -193,11 +193,7 @@ class Budget_hom_budget_target extends Root_Controller
             $data['crop_type_name']= 1;
             $data['variety_name']= 1;
             $data['variety_id']= 1;
-
             $data['quantity_budget']= 1;
-            $data['quantity_prediction_1']= 1;
-            $data['quantity_prediction_2']= 1;
-            $data['quantity_prediction_3']= 1;
             $data['quantity_budget_division_total']= 1;
         }
         else if($method=='forward_budget_hom')
@@ -207,9 +203,6 @@ class Budget_hom_budget_target extends Root_Controller
             $data['variety_name']= 1;
             $data['variety_id']= 1;
             $data['quantity_budget']= 1;
-            $data['quantity_prediction_1']= 1;
-            $data['quantity_prediction_2']= 1;
-            $data['quantity_prediction_3']= 1;
             $data['quantity_budget_division_total']= 1;
         }
         else if($method=='list_target_di')
@@ -603,9 +596,6 @@ class Budget_hom_budget_target extends Root_Controller
             if(isset($items_old[$result['variety_id']]))
             {
                 $info['quantity_budget']=$items_old[$result['variety_id']]['quantity_budget'];
-                $info['quantity_prediction_1']=$items_old[$result['variety_id']]['quantity_prediction_1'];
-                $info['quantity_prediction_2']=$items_old[$result['variety_id']]['quantity_prediction_2'];
-                $info['quantity_prediction_3']=$items_old[$result['variety_id']]['quantity_prediction_3'];
             }
             $items[]=$info;
         }
@@ -678,33 +668,11 @@ class Budget_hom_budget_target extends Root_Controller
         foreach($items as $variety_id=>$quantity_info)
         {
             $quantity_budget=$quantity_info['quantity_budget'];
-            $quantity_prediction_1=0;
-            $quantity_prediction_2=0;
-            $quantity_prediction_3=0;
-            if(isset($quantity_info['quantity_prediction_1']))
-            {
-                $quantity_prediction_1=$quantity_info['quantity_prediction_1'];
-            }
-            if(isset($quantity_info['quantity_prediction_2']))
-            {
-                $quantity_prediction_2=$quantity_info['quantity_prediction_2'];
-            }
-            if(isset($quantity_info['quantity_prediction_3']))
-            {
-                $quantity_prediction_3=$quantity_info['quantity_prediction_3'];
-            }
-
             if(isset($items_old[$variety_id]))
             {
-                if(($items_old[$variety_id]['quantity_budget'] != $quantity_budget)|| ($items_old[$variety_id]['quantity_prediction_1'] != $quantity_prediction_1) || ($items_old[$variety_id]['quantity_prediction_2'] != $quantity_prediction_2) || ($items_old[$variety_id]['quantity_prediction_3'] != $quantity_prediction_3))
+                if(($items_old[$variety_id]['quantity_budget'] != $quantity_budget))
                 {
-                    if($items_old[$variety_id]['quantity_budget']!=$quantity_budget)
-                    {
-                        $this->db->set('revision_count_budget','revision_count_budget+1',false);
-                    }
-                    $data['quantity_prediction_1']=$quantity_prediction_1;
-                    $data['quantity_prediction_2']=$quantity_prediction_2;
-                    $data['quantity_prediction_3']=$quantity_prediction_3;
+                    $this->db->set('revision_count_budget','revision_count_budget+1',false);
                     $data['quantity_budget']=$quantity_budget;
                     $data['date_updated_budget']=$time;
                     $data['user_updated_budget']=$user->user_id;
@@ -722,9 +690,6 @@ class Budget_hom_budget_target extends Root_Controller
                     $data['quantity_budget']=$quantity_budget;
                     $data['revision_count_budget']=1;
                 }
-                $data['quantity_prediction_1']=$quantity_prediction_1;
-                $data['quantity_prediction_2']=$quantity_prediction_2;
-                $data['quantity_prediction_3']=$quantity_prediction_3;
                 $data['date_updated_budget'] = $time;
                 $data['user_updated_budget'] = $user->user_id;
                 Query_helper::add($this->config->item('table_bms_hom_budget_target_hom'),$data,false);
@@ -896,9 +861,6 @@ class Budget_hom_budget_target extends Root_Controller
             if(isset($old_items[$result['variety_id']]))
             {
                 $info['quantity_budget']=$old_items[$result['variety_id']]['quantity_budget'];
-                $info['quantity_prediction_1']=$old_items[$result['variety_id']]['quantity_prediction_1'];
-                $info['quantity_prediction_2']=$old_items[$result['variety_id']]['quantity_prediction_2'];
-                $info['quantity_prediction_3']=$old_items[$result['variety_id']]['quantity_prediction_3'];
             }
             $quantity_budget_division_total=0;
             foreach($division_ids as $division_id)
@@ -1946,7 +1908,8 @@ class Budget_hom_budget_target extends Root_Controller
         $time=time();
         $item_head=$this->input->post('item');
         $items=$this->input->post('items');
-        //$items_quantity_target=$this->input->post('items_quantity_target');
+        $prediction_hom=$items['prediction_hom'];
+        $prediction_divisions=$items['prediction_divisions'];
 
         if(!((isset($this->permissions['action1']) && ($this->permissions['action1']==1))||(isset($this->permissions['action2']) && ($this->permissions['action2']==1))))
         {
@@ -1974,48 +1937,101 @@ class Budget_hom_budget_target extends Root_Controller
             }
         }
 
-        //old items
-        $results=Query_helper::get_info($this->config->item('table_bms_di_budget_target_division'),'*',array('fiscal_year_id ='.$item_head['fiscal_year_id']));
-        $items_old=array();
+        //old items hom
+        $results=Query_helper::get_info($this->config->item('table_bms_hom_budget_target_hom'),'*',array('fiscal_year_id ='.$item_head['fiscal_year_id']));
+        $items_old_hom=array();
         foreach($results as $result)
         {
-            $items_old[$result['variety_id']][$result['division_id']]=$result;
+            $items_old_hom[$result['variety_id']]=$result;
+        }
+
+        //old items division
+        $results=Query_helper::get_info($this->config->item('table_bms_di_budget_target_division'),'*',array('fiscal_year_id ='.$item_head['fiscal_year_id']));
+        $items_old_division=array();
+        foreach($results as $result)
+        {
+            $items_old_division[$result['variety_id']][$result['division_id']]=$result;
         }
 
         $this->db->trans_start();  //DB Transaction Handle START
-
-        foreach($items as $variety_id=>$variety_info)
+        /* for hom prediction*/
+        foreach($prediction_hom as $variety_id=>$quantity_info)
+        {
+            $quantity_prediction_1=0;
+            $quantity_prediction_2=0;
+            $quantity_prediction_3=0;
+            if(isset($quantity_info['quantity_prediction_1']))
+            {
+                $quantity_prediction_1=$quantity_info['quantity_prediction_1'];
+            }
+            if(isset($quantity_info['quantity_prediction_2']))
+            {
+                $quantity_prediction_2=$quantity_info['quantity_prediction_2'];
+            }
+            if(isset($quantity_info['quantity_prediction_3']))
+            {
+                $quantity_prediction_3=$quantity_info['quantity_prediction_3'];
+            }
+            if(isset($items_old_hom[$variety_id]))
+            {
+                if(($items_old_hom[$variety_id]['quantity_prediction_1']!=$quantity_prediction_1) || ($items_old_hom[$variety_id]['quantity_prediction_2']!=$quantity_prediction_2) || ($items_old_hom[$variety_id]['quantity_prediction_3']!=$quantity_prediction_3))
+                {
+                    $data['quantity_prediction_1']=$quantity_prediction_1;
+                    $data['quantity_prediction_2']=$quantity_prediction_2;
+                    $data['quantity_prediction_3']=$quantity_prediction_3;
+                    $data['date_updated_prediction_target']=$time;
+                    $data['user_updated_prediction_target']=$user->user_id;
+                    $this->db->set('revision_count_target_prediction','revision_count_target_prediction+1',false);
+                    Query_helper::update($this->config->item('table_bms_hom_budget_target_hom'),$data,array('id='.$items_old_hom[$variety_id]['id']),false);
+                }
+            }
+            else
+            {
+                $data=array();
+                $data['fiscal_year_id']=$item_head['fiscal_year_id'];
+                $data['variety_id']=$variety_id;
+                $data['quantity_prediction_1']=$quantity_prediction_1;
+                $data['quantity_prediction_2']=$quantity_prediction_2;
+                $data['quantity_prediction_3']=$quantity_prediction_3;
+                $data['revision_count_target_prediction']=1;
+                $data['date_updated_prediction_target']=$time;
+                $data['user_updated_prediction_target']=$user->user_id;
+                Query_helper::add($this->config->item('table_bms_hom_budget_target_hom'),$data,false);
+            }
+        }
+        /*for division prediction*/
+        foreach($prediction_divisions as $variety_id=>$variety_info)
         {
             foreach($variety_info as $division_id=>$quantity_info)
             {
-                $quantity_prediction_1=0;
-                $quantity_prediction_2=0;
-                $quantity_prediction_3=0;
-                if(isset($quantity_info['quantity_prediction_1']))
+                $quantity_prediction_division_1=0;
+                $quantity_prediction_division_2=0;
+                $quantity_prediction_division_3=0;
+                if(isset($quantity_info['quantity_prediction_division_1']))
                 {
-                    $quantity_prediction_1=$quantity_info['quantity_prediction_1'];
+                    $quantity_prediction_division_1=$quantity_info['quantity_prediction_division_1'];
                 }
-                if(isset($quantity_info['quantity_prediction_2']))
+                if(isset($quantity_info['quantity_prediction_division_2']))
                 {
-                    $quantity_prediction_2=$quantity_info['quantity_prediction_2'];
+                    $quantity_prediction_division_2=$quantity_info['quantity_prediction_division_2'];
                 }
-                if(isset($quantity_info['quantity_prediction_3']))
+                if(isset($quantity_info['quantity_prediction_division_3']))
                 {
-                    $quantity_prediction_3=$quantity_info['quantity_prediction_3'];
+                    $quantity_prediction_division_3=$quantity_info['quantity_prediction_division_3'];
                 }
 
-                if(isset($items_old[$variety_id][$division_id]))
+                if(isset($items_old_division[$variety_id][$division_id]))
                 {
-                    if(($items_old[$variety_id][$division_id]['quantity_prediction_1']!=$quantity_prediction_1) || ($items_old[$variety_id][$division_id]['quantity_prediction_2']!=$quantity_prediction_2) || ($items_old[$variety_id][$division_id]['quantity_prediction_3']!=$quantity_prediction_3))
+                    if(($items_old_division[$variety_id][$division_id]['quantity_prediction_1']!=$quantity_prediction_division_1) || ($items_old_division[$variety_id][$division_id]['quantity_prediction_2']!=$quantity_prediction_division_2) || ($items_old_division[$variety_id][$division_id]['quantity_prediction_3']!=$quantity_prediction_division_3))
                     {
                         $data=array();
-                        $data['quantity_prediction_1']=$quantity_prediction_1;
-                        $data['quantity_prediction_2']=$quantity_prediction_2;
-                        $data['quantity_prediction_3']=$quantity_prediction_3;
+                        $data['quantity_prediction_1']=$quantity_prediction_division_1;
+                        $data['quantity_prediction_2']=$quantity_prediction_division_2;
+                        $data['quantity_prediction_3']=$quantity_prediction_division_3;
                         $data['date_updated_prediction_target']=$time;
                         $data['user_updated_prediction_target']=$user->user_id;
                         $this->db->set('revision_count_target_prediction','revision_count_target_prediction+1',false);
-                        Query_helper::update($this->config->item('table_bms_di_budget_target_division'),$data,array('id='.$items_old[$variety_id][$division_id]['id']),false);
+                        Query_helper::update($this->config->item('table_bms_di_budget_target_division'),$data,array('id='.$items_old_division[$variety_id][$division_id]['id']),false);
                     }
                 }
                 else
@@ -2024,9 +2040,9 @@ class Budget_hom_budget_target extends Root_Controller
                     $data['fiscal_year_id']=$item_head['fiscal_year_id'];
                     $data['division_id']=$division_id;
                     $data['variety_id']=$variety_id;
-                    $data['quantity_prediction_1']=$quantity_prediction_1;
-                    $data['quantity_prediction_2']=$quantity_prediction_2;
-                    $data['quantity_prediction_3']=$quantity_prediction_3;
+                    $data['quantity_prediction_1']=$quantity_prediction_division_1;
+                    $data['quantity_prediction_2']=$quantity_prediction_division_2;
+                    $data['quantity_prediction_3']=$quantity_prediction_division_3;
                     $data['revision_count_target_prediction']=1;
                     $data['date_updated_prediction_target']=$time;
                     $data['user_updated_prediction_target']=$user->user_id;
@@ -2669,7 +2685,7 @@ class Budget_hom_budget_target extends Root_Controller
     }
     private function get_info_budget_target($fiscal_year_id)
     {
-
+        $this->set_info_budget_target_di($fiscal_year_id);
         $info=Query_helper::get_info($this->config->item('table_bms_hom_budget_target'),'*',array('fiscal_year_id ='.$fiscal_year_id),1);
         if(!$info)
         {
@@ -2682,6 +2698,34 @@ class Budget_hom_budget_target extends Root_Controller
             $info=Query_helper::get_info($this->config->item('table_bms_hom_budget_target'),'*',array('id ='.$id),1);
         }
         return $info;
+    }
+    private function set_info_budget_target_di($fiscal_year_id)
+    {
+        $user = User_helper::get_user();
+        $this->db->from($this->config->item('table_bms_di_budget_target').' item');
+        $this->db->select('item.*');
+        $this->db->where('item.fiscal_year_id',$fiscal_year_id);
+        $results=$this->db->get()->result_array();
+        $budget_target_division=array();
+        foreach($results as $result)
+        {
+            $budget_target_division[$result['division_id']]=$result;
+        }
+        //$division_ids[0]=0;
+        $divisions=User_helper::get_assigned_divisions();
+        foreach($divisions as $division)
+        {
+            if(!isset($budget_target_division[$division['division_id']]))
+            {
+                $data=array();
+                $data['fiscal_year_id'] = $fiscal_year_id;
+                $data['division_id'] = $division['division_id'];
+                $data['date_created'] = time();
+                $data['user_created'] = $user->user_id;
+                Query_helper::add($this->config->item('table_bms_di_budget_target'),$data,false);
+                //$division_ids[$division['division_id']]=$division['division_id'];
+            }
+        }
     }
     private function get_sales_previous_years_hom($fiscal_years)
     {
