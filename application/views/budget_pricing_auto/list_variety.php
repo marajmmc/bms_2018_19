@@ -62,58 +62,14 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
     </div>
     <div style="" class="row show-grid">
         <div class="col-xs-4">
-            <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_GENERAL'); ?></label>
-        </div>
-        <div class="col-sm-4 col-xs-8">
-            <label class="control-label"><?php echo (isset($budget_config['percentage_general'])?$budget_config['percentage_general']:0); ?>%</label>
-        </div>
-    </div>
-    <div style="" class="row show-grid">
-        <div class="col-xs-4">
-            <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_MARKETING'); ?></label>
-        </div>
-        <div class="col-sm-4 col-xs-8">
-            <label class="control-label"><?php echo (isset($budget_config['percentage_marketing'])?$budget_config['percentage_marketing']:0); ?>%</label>
-        </div>
-    </div>
-    <div style="" class="row show-grid">
-        <div class="col-xs-4">
-            <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_FINANCE'); ?></label>
-        </div>
-        <div class="col-sm-4 col-xs-8">
-            <label class="control-label"><?php echo (isset($budget_config['percentage_finance'])?$budget_config['percentage_finance']:0); ?>%</label>
-        </div>
-    </div>
-    <div style="" class="row show-grid">
-        <div class="col-xs-4">
-            <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_INCENTIVE'); ?></label>
-        </div>
-        <div class="col-sm-4 col-xs-8">
-            <label class="control-label"><?php echo (isset($budget_config['percentage_incentive'])?$budget_config['percentage_incentive']:0); ?>%</label>
-        </div>
-    </div>
-    <div style="" class="row show-grid">
-        <div class="col-xs-4">
-            <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_PROFIT'); ?></label>
-        </div>
-        <div class="col-sm-4 col-xs-8">
-            <label class="control-label"><?php echo (isset($budget_config['percentage_profit'])?$budget_config['percentage_profit']:0); ?>%</label>
-        </div>
-    </div>
-    <div style="" class="row show-grid">
-        <div class="col-xs-4">
             <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_PRICE_NET'); ?></label>
         </div>
         <div class="col-sm-4 col-xs-8">
-            <label class="control-label">= COGS + General + Marketing + Finance + Incentive + Profit</label>
-        </div>
-    </div>
-    <div style="" class="row show-grid">
-        <div class="col-xs-4">
-            <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_SALES_COMMISSION'); ?></label>
-        </div>
-        <div class="col-sm-4 col-xs-8">
-            <label class="control-label"><?php echo (isset($budget_config['percentage_sales_commission'])?$budget_config['percentage_sales_commission']:0); ?>%</label>
+            <label class="control-label">NP= COGS + General + Marketing + Finance + Incentive + Profit</label><br>
+            <label class="control-label">OR</label><br>
+            <label class="control-label">Incentive=(Np*Incentive%/100)</label><br>
+            <label class="control-label">NP= COGS + General + Marketing + Finance + (Np*Incentive%/100) + Profit</label><br>
+            <label class="control-label">NP=100*(COGS+General+Marketing+Finance+Profit)/(100-Incentive%)</label>
         </div>
     </div>
     <div style="" class="row show-grid">
@@ -121,8 +77,10 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
             <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_PRICE_TRADE'); ?></label>
         </div>
         <div class="col-sm-4 col-xs-8">
-            <label class="control-label">(Tp-Tp*C)/100=TN</label>
-            <label class="control-label">Tp=100*TN/(100-C)</label>
+            <label class="control-label">TP=NP+Commission</label>
+            <label class="control-label">Commission=TP*Commission%/100</label>
+            <label class="control-label">TP=100*NP/(100-Commission%)</label>
+
         </div>
     </div>
     <div style="" class="row show-grid">
@@ -177,6 +135,26 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
             url: url,
             data: JSON.parse('<?php echo json_encode($options);?>')
         };
+        var header_render=function (text, align)
+        {
+            var words = text.split(" ");
+            var label=words[0];
+            var count=words[0].length;
+            for (i = 1; i < words.length; i++)
+            {
+                if((count+words[i].length)>10)
+                {
+                    label=label+'</br>'+words[i];
+                    count=words[i].length;
+                }
+                else
+                {
+                    label=label+' '+words[i];
+                    count=count+words[i].length;
+                }
+            }
+            return '<div style="margin: 5px;">'+label+'</div>';
+        }
         var cellsrenderer = function(row, column, value, defaultHtml, columnSettings, record)
         {
             var element = $(defaultHtml);
@@ -243,21 +221,22 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                 showaggregates: true,
                 showstatusbar: true,
                 rowsheight: 35,
+                columnsheight: 60,
                 columns: [
                     { text: '<?php echo $CI->lang->line('LABEL_CROP_NAME'); ?>', dataField: 'crop_name', width: '100', filtertype: 'list', pinned: true},
-                    { text: '<?php echo $CI->lang->line('LABEL_CROP_TYPE_NAME'); ?>', dataField: 'crop_type_name', width: '100'},
-                    { text: '<?php echo $CI->lang->line('LABEL_VARIETY_NAME'); ?>', dataField: 'variety_name', width: '150'},
+                    { text: '<?php echo $CI->lang->line('LABEL_CROP_TYPE_NAME'); ?>', dataField: 'crop_type_name', width: '100', pinned: true},
+                    { text: '<?php echo $CI->lang->line('LABEL_VARIETY_NAME'); ?>', dataField: 'variety_name', width: '150', pinned: true},
                     { text: '<?php echo $CI->lang->line('LABEL_QUANTITY_TOTAL'); ?>', dataField: 'quantity_total', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
                     { text: '<?php echo $CI->lang->line('LABEL_COGS'); ?>', dataField: 'cogs', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer},
-                    { text: '<?php echo $CI->lang->line('LABEL_GENERAL'); ?>', dataField: 'general', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer},
-                    { text: '<?php echo $CI->lang->line('LABEL_MARKETING'); ?>', dataField: 'marketing', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer},
-                    { text: '<?php echo $CI->lang->line('LABEL_FINANCE'); ?>', dataField: 'finance', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer},
-                    { text: '<?php echo $CI->lang->line('LABEL_INCENTIVE'); ?>', dataField: 'incentive', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer},
-                    { text: '<?php echo $CI->lang->line('LABEL_PROFIT'); ?>', dataField: 'profit', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer},
+                    { text: '<?php echo $CI->lang->line('LABEL_GENERAL').' ('.(isset($budget_config['percentage_general'])?$budget_config['percentage_general']:0).'%)'; ?>', dataField: 'general', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer,renderer:header_render},
+                    { text: '<?php echo $CI->lang->line('LABEL_MARKETING').' ('.(isset($budget_config['percentage_marketing'])?$budget_config['percentage_marketing']:0).'%)'; ?>', dataField: 'marketing', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer,renderer:header_render},
+                    { text: '<?php echo $CI->lang->line('LABEL_FINANCE').' ('.(isset($budget_config['percentage_finance'])?$budget_config['percentage_finance']:0).'%)'; ?>', dataField: 'finance', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer,renderer:header_render},
+                    { text: '<?php echo $CI->lang->line('LABEL_PROFIT').' ('.(isset($budget_config['percentage_profit'])?$budget_config['percentage_profit']:0).'%)'; ?>', dataField: 'profit', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer,renderer:header_render},
+                    { text: '<?php echo $CI->lang->line('LABEL_INCENTIVE').' ('.(isset($budget_config['percentage_incentive'])?$budget_config['percentage_incentive']:0).'%)'; ?>', dataField: 'incentive', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer,renderer:header_render},
                     { text: '<?php echo $CI->lang->line('LABEL_PRICE_NET'); ?>', dataField: 'price_net', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer},
-                    { text: '<?php echo $CI->lang->line('LABEL_SALES_COMMISSION'); ?>', dataField: 'sales_commission', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer},
+                    { text: '<?php echo $CI->lang->line('LABEL_SALES_COMMISSION').' ('.(isset($budget_config['percentage_sales_commission'])?$budget_config['percentage_sales_commission']:0).'%)'; ?>', dataField: 'sales_commission', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer,renderer:header_render},
                     { text: '<?php echo $CI->lang->line('LABEL_PRICE_TRADE'); ?>', dataField: 'price_trade', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer},
-                    { text: '<?php echo $CI->lang->line('LABEL_PERCENTAGE_PROFIT'); ?>', dataField: 'percentage_profit', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer}
+                    { text: '<?php echo $CI->lang->line('LABEL_PERCENTAGE_PROFIT'); ?>', dataField: 'percentage_profit', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer,renderer:header_render}
                 ]
             });
     });

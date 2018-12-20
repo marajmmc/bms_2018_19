@@ -24,11 +24,11 @@ class Budget_pricing_auto extends Root_Controller
         $this->lang->language['LABEL_MARKETING'] = 'marketing';
         $this->lang->language['LABEL_FINANCE'] = 'finance';
         $this->lang->language['LABEL_INCENTIVE'] = 'incentive';
-        $this->lang->language['LABEL_PROFIT'] = 'profit';
+        $this->lang->language['LABEL_PROFIT'] = 'profit(Cogs)';
         $this->lang->language['LABEL_PRICE_NET'] = 'Net Price';
         $this->lang->language['LABEL_SALES_COMMISSION'] = 'Sales Commission';
         $this->lang->language['LABEL_PRICE_TRADE'] = 'Trade Price';
-        $this->lang->language['LABEL_PERCENTAGE_PROFIT'] = 'Profit %';
+        $this->lang->language['LABEL_PERCENTAGE_PROFIT'] = 'Profit %(NP)';
     }
 
     public function index($action = "list", $id = 0, $id1 = 0)
@@ -224,10 +224,15 @@ class Budget_pricing_auto extends Root_Controller
         $row['general']=($row['cogs']*(isset($budget_config['percentage_general'])?$budget_config['percentage_general']:0))/100;
         $row['marketing']=($row['cogs']*(isset($budget_config['percentage_marketing'])?$budget_config['percentage_marketing']:0))/100;
         $row['finance']=($row['cogs']*(isset($budget_config['percentage_finance'])?$budget_config['percentage_finance']:0))/100;
-        $row['incentive']=($row['cogs']*(isset($budget_config['percentage_incentive'])?$budget_config['percentage_incentive']:0))/100;
         $row['profit']=($row['cogs']*(isset($budget_config['percentage_profit'])?$budget_config['percentage_profit']:0))/100;
-        $row['price_net']=$row['cogs']+$row['general']+$row['marketing']+$row['finance']+$row['incentive']+$row['profit'];
-        $row['price_trade']=($row['price_net']*100)/(100-(isset($budget_config['percentage_sales_commission'])?$budget_config['percentage_sales_commission']:0));
+
+        $percentage_incentive=(isset($budget_config['percentage_incentive'])?$budget_config['percentage_incentive']:0);
+
+        $row['price_net']=100*($row['cogs']+$row['general']+$row['marketing']+$row['finance']+$row['profit'])/(100-$percentage_incentive);
+        $row['incentive']=$row['price_net']*$percentage_incentive/100;
+
+        $percentage_sales_commission=(isset($budget_config['percentage_sales_commission'])?$budget_config['percentage_sales_commission']:0);
+        $row['price_trade']=($row['price_net']*100)/(100-$percentage_sales_commission);
         $row['sales_commission']=$row['price_trade']-$row['price_net'];
         $row['percentage_profit']=0;
         if($row['price_net']>0)
