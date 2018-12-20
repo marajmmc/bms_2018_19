@@ -112,7 +112,7 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                 altrows: true,
                 rowsheight: 35,
                 columns: [
-                    { text: '<?php echo $CI->lang->line('LABEL_ID'); ?>', dataField: 'variety_id', width: '100', pinned: true},
+                    { text: '<?php echo $CI->lang->line('LABEL_ID'); ?>', dataField: 'variety_id', width: '50', cellsalign:'right', pinned: true},
                     { text: '<?php echo $CI->lang->line('LABEL_CROP_NAME'); ?>', dataField: 'crop_name', width: '100', filtertype: 'list', pinned: true},
                     { text: '<?php echo $CI->lang->line('LABEL_CROP_TYPE_NAME'); ?>', dataField: 'crop_type_name', width: '100'},
                     { text: '<?php echo $CI->lang->line('LABEL_VARIETY_NAME'); ?>', dataField: 'variety_name', width: '150'},

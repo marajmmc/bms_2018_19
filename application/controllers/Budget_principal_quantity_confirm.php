@@ -390,7 +390,7 @@ class Budget_principal_quantity_confirm extends Root_Controller
                     //$data['message_warning_changes'][] = '<b>Principle</b> not found';
                 }
             }
-            if($change_principal)
+            if($change_principal && sizeof($principle_ids_old)>0)
             {
                 $data['message_warning_changes'][] = '<b>Principle</b> added/removed.';
             }
