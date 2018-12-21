@@ -148,7 +148,7 @@ class Budget_pricing_auto extends Root_Controller
     private function system_list_variety($fiscal_year_id = 0)
     {
         $method = 'list_variety';
-        if ((isset($this->permissions['action1']) && ($this->permissions['action1'] == 1)) || (isset($this->permissions['action2']) && ($this->permissions['action2'] == 1)))
+        if ((isset($this->permissions['action0']) && ($this->permissions['action0'] == 1)))
         {
             if (!($fiscal_year_id > 0))
             {

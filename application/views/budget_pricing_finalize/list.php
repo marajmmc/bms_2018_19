@@ -3,14 +3,14 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 $CI =& get_instance();
 
 $action_buttons = array();
-if ((isset($CI->permissions['action0']) && ($CI->permissions['action0'] == 1)))
+if ((isset($CI->permissions['action1']) && ($CI->permissions['action1'] == 1)) || (isset($CI->permissions['action2']) && ($CI->permissions['action2'] == 1)))
 {
     $action_buttons[] = array
     (
         'type' => 'button',
-        'label' => 'View Calculation',
+        'label' => 'Edit',
         'class' => 'button_jqx_action',
-        'data-action-link' => site_url($CI->controller_url . '/index/list_variety')
+        'data-action-link' => site_url($CI->controller_url . '/index/edit')
     );
 }
 $action_buttons[] = array
@@ -89,7 +89,7 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                 ],
                 columngroups:
                     [
-                        { text: 'Principal quantity for Variety', align: 'center', name: 'number_of_variety' }
+                        { text: 'Pricing for Variety', align: 'center', name: 'number_of_variety' }
                     ]
             });
     });
