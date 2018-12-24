@@ -1801,10 +1801,10 @@ class Budget_hom_budget_target extends Root_Controller
         $this->db->where('budget_target_hom.fiscal_year_id',$fiscal_year_id);
         $this->db->where('crop_type.crop_id',$crop_id);
         $results=$this->db->get()->result_array();
-        $target_divisions=array();
+        $target_hom=array();
         foreach($results as $result)
         {
-            $target_divisions[$result['variety_id']]=$result;
+            $target_hom[$result['variety_id']]=$result;
         }
 
         $fiscal_years_previous_sales=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id <'.$fiscal_year_id),Budget_helper::$NUM_FISCAL_YEAR_PREVIOUS_SALE,0,array('id DESC'));
@@ -1869,12 +1869,12 @@ class Budget_hom_budget_target extends Root_Controller
 
             $info['quantity_prediction_division_total']= $quantity_prediction_division_total;
 
-            if(isset($target_divisions[$result['variety_id']]))
+            if(isset($target_hom[$result['variety_id']]))
             {
-                $info['quantity_target']=$target_divisions[$result['variety_id']]['quantity_target'];
-                $info['quantity_prediction_1']=$target_divisions[$result['variety_id']]['quantity_prediction_1'];
-                $info['quantity_prediction_2']=$target_divisions[$result['variety_id']]['quantity_prediction_2'];
-                $info['quantity_prediction_3']=$target_divisions[$result['variety_id']]['quantity_prediction_3'];
+                $info['quantity_target']=$target_hom[$result['variety_id']]['quantity_target'];
+                $info['quantity_prediction_1']=$target_hom[$result['variety_id']]['quantity_prediction_1'];
+                $info['quantity_prediction_2']=$target_hom[$result['variety_id']]['quantity_prediction_2'];
+                $info['quantity_prediction_3']=$target_hom[$result['variety_id']]['quantity_prediction_3'];
             }
             $items[]=$info;
         }
@@ -2147,10 +2147,10 @@ class Budget_hom_budget_target extends Root_Controller
 
         //old items
         $results=Query_helper::get_info($this->config->item('table_bms_hom_budget_target_hom'),'*',array('fiscal_year_id ='.$fiscal_year_id));
-        $target_divisions=array();
+        $target_hom=array();
         foreach($results as $result)
         {
-            $target_divisions[$result['variety_id']]=$result;
+            $target_hom[$result['variety_id']]=$result;
         }
 
         $fiscal_years_previous_sales=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id <'.$fiscal_year_id),Budget_helper::$NUM_FISCAL_YEAR_PREVIOUS_SALE,0,array('id DESC'));
@@ -2238,12 +2238,12 @@ class Budget_hom_budget_target extends Root_Controller
             }
             $info['quantity_prediction_division_total']= $quantity_prediction_division_total;
 
-            if(isset($target_divisions[$result['variety_id']]))
+            if(isset($target_hom[$result['variety_id']]))
             {
-                $info['quantity_target']=$target_divisions[$result['variety_id']]['quantity_target'];
-                $info['quantity_prediction_1']=$target_divisions[$result['variety_id']]['quantity_prediction_1'];
-                $info['quantity_prediction_2']=$target_divisions[$result['variety_id']]['quantity_prediction_2'];
-                $info['quantity_prediction_3']=$target_divisions[$result['variety_id']]['quantity_prediction_3'];
+                $info['quantity_target']=$target_hom[$result['variety_id']]['quantity_target'];
+                $info['quantity_prediction_1']=$target_hom[$result['variety_id']]['quantity_prediction_1'];
+                $info['quantity_prediction_2']=$target_hom[$result['variety_id']]['quantity_prediction_2'];
+                $info['quantity_prediction_3']=$target_hom[$result['variety_id']]['quantity_prediction_3'];
             }
 
             /*$type_total['quantity_target_division_total']+=$quantity_target_division_total;
