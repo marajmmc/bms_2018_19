@@ -13,22 +13,32 @@ class Transfer extends CI_Controller
     private function configs()
     {
         $source_tables=array(
-            'dc_percentage'=>'arm_ems.bms_mgt_direct_cost_percentage',
             'variety_price'=>'arm_login_2018_19.login_setup_classification_varieties'
         );
         $destination_tables=array(
             'budget_config'=>'arm_bms_2018_19.bms_setup_budget_config',
             'variety_pricing_packing'=>'arm_bms_2018_19.bms_setup_budget_config_variety_pricing'
         );
-        $currency_rates=array();
+        /*$currency_rates=array();
         $currency_rates[1]=85;
-        $currency_rates[2]=95;
-        $results=Query_helper::get_info($source_tables['dc_percentage'],'*',array('fiscal_year_id = 2'),0,0,array('item_id ASC'));
-        $dc_percentage=array();
-        foreach($results as $result)
-        {
-            $dc_percentage[$result['item_id']]=$result['percentage'];
-        }
+        $currency_rates[2]=95;*/
+        //$results=Query_helper::get_info($source_tables['dc_percentage'],'*',array('fiscal_year_id = 2'),0,0,array('item_id ASC'));
+        /*$percentage_direct_cost=array();
+        $percentage_direct_cost[1]=.6;
+        $percentage_direct_cost[2]=.4;
+        $percentage_direct_cost[3]=.1;
+        $percentage_direct_cost[4]=2.5;
+        $percentage_direct_cost[5]=.3;
+        $percentage_direct_cost[6]=3;
+        $percentage_direct_cost[7]=.2;
+        $percentage_direct_cost[8]=0;
+        $percentage_direct_cost[9]=.2;
+
+        $percentage_packing_cost=array();
+        $percentage_packing_cost[1]=.4;
+        $percentage_packing_cost[2]=.9;
+        $percentage_packing_cost[3]=1.8;*/
+
         $results=Query_helper::get_info($source_tables['variety_price'],'*',array('whose = "ARM"','price_kg >0','status ="Active"'),0,0,array('id ASC'));
         $variety_prices=array();
         foreach($results as $result)
@@ -45,14 +55,21 @@ class Transfer extends CI_Controller
         $data['revision_count_pricing'] =1;
         $data['date_pricing_updated'] = $time;
         $data['user_pricing_updated'] = 2;
-        $data['amount_currency_rate'] = json_encode($currency_rates);
-        $data['revision_count_currency_rate'] =1;
-        $data['date_currency_rate'] = $time;
-        $data['user_currency_rate'] = 2;
-        $data['percentage_direct_cost'] = json_encode($dc_percentage);
-        $data['revision_count_percentage_direct_cost'] =1;
-        $data['date_percentage_direct_cost'] = $time;
-        $data['user_percentage_direct_cost'] = 2;
+//        $data['amount_currency_rate'] = json_encode($currency_rates);
+//        $data['revision_count_currency_rate'] =1;
+//        $data['date_currency_rate'] = $time;
+//        $data['user_currency_rate'] = 2;
+//        $data['percentage_air_freight'] = 2.5;
+//        $data['percentage_direct_cost'] = json_encode($percentage_direct_cost);
+//        $data['revision_count_percentage_direct_cost'] =1;
+//        $data['date_percentage_direct_cost'] = $time;
+//        $data['user_percentage_direct_cost'] = 2;
+//
+//        $data['percentage_packing_cost'] = json_encode($percentage_packing_cost);
+//        $data['revision_count_percentage_packing_cost'] =1;
+//        $data['date_percentage_packing_cost'] = $time;
+//        $data['user_percentage_packing_cost'] = 2;
+
         Query_helper::add($destination_tables['budget_config'],$data,false);
         foreach($variety_prices as $result)
         {
