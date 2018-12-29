@@ -22,9 +22,9 @@ class Setup_budget_config extends Root_Controller
         $this->lang->language['LABEL_GENERAL_EXPENSE'] = 'General Expense';
         $this->lang->language['LABEL_MARKETING_EXPENSE'] = 'Marketing Expense';
         $this->lang->language['LABEL_FINANCIAL_EXPENSE'] = 'Financial Expense';
-        $this->lang->language['LABEL_INCENTIVE'] = 'Incentive';
-        $this->lang->language['LABEL_PROFIT'] = 'Profit';
-        $this->lang->language['LABEL_SALES_COMMISSION'] = 'Sales Commission';
+        $this->lang->language['LABEL_INCENTIVE'] = 'Incentive of NP';
+        $this->lang->language['LABEL_PROFIT'] = 'Profit cogs';
+        $this->lang->language['LABEL_SALES_COMMISSION'] = 'Sales Commission TP';
     }
     public function index($action="list", $id=0)
     {
@@ -44,9 +44,9 @@ class Setup_budget_config extends Root_Controller
         {
             $this->system_get_items_add_edit_pricing();
         }
-        elseif($action=="save_pricing_packing")
+        elseif($action=="save_pricing")
         {
-            $this->system_save_pricing_packing();
+            $this->system_save_pricing();
         }
         elseif($action=="add_edit_currency_rate")
         {
@@ -225,7 +225,6 @@ class Setup_budget_config extends Root_Controller
         {
             $results=Query_helper::get_info($this->config->item('table_bms_setup_budget_config_variety_pricing'),'*',array('fiscal_year_id ='.($fiscal_year_id-1)),0,1,array('fiscal_year_id DESC'));
         }
-
         $items_old=array();
         foreach($results as $result)
         {
@@ -236,7 +235,7 @@ class Setup_budget_config extends Root_Controller
 
         foreach($results as $result)
         {
-            $info=$this->initialize_row_add_edit_pricing_packing($result);
+            $info=$this->initialize_row_add_edit_pricing($result);
             if(isset($items_old[$result['variety_id']]))
             {
                 $info['amount_price_net']=$items_old[$result['variety_id']]['amount_price_net'];
@@ -247,7 +246,7 @@ class Setup_budget_config extends Root_Controller
 
         $this->json_return($items);
     }
-    private function initialize_row_add_edit_pricing_packing($info)
+    private function initialize_row_add_edit_pricing($info)
     {
         $method='add_edit_pricing';
         $row=$this->get_preference_headers($method);
@@ -261,7 +260,7 @@ class Setup_budget_config extends Root_Controller
         $row['variety_id']=$info['variety_id'];
         return $row;
     }
-    private function system_save_pricing_packing()
+    private function system_save_pricing()
     {
         $user = User_helper::get_user();
         $time=time();

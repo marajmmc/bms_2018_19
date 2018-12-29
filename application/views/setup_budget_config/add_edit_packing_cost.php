@@ -18,7 +18,11 @@ if ((isset($CI->permissions['action1']) && ($CI->permissions['action1'] == 1)) |
         'data-form' => '#save_form'
     );
 }
-
+$action_buttons[]=array
+(
+    'label'=>$CI->lang->line("ACTION_REFRESH"),
+    'href'=>site_url($CI->controller_url.'/index/add_edit_packing_cost/'.$item['fiscal_year_id'])
+);
 $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
 ?>
 <form id="save_form" action="<?php echo site_url($CI->controller_url . '/index/save_packing_cost'); ?>" method="post">

@@ -34,7 +34,11 @@ if(isset($CI->permissions['action5']) && ($CI->permissions['action5']==1))
         'data-title'=>"Download"
     );
 }
-
+$action_buttons[]=array
+(
+    'label'=>$CI->lang->line("ACTION_REFRESH"),
+    'href'=>site_url($CI->controller_url.'/index/add_edit_pricing/'.$options['fiscal_year_id'])
+);
 $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
 
 ?>
@@ -53,7 +57,7 @@ $CI->load->view('action_buttons',array('action_buttons'=>$action_buttons));
             <label class="control-label"><?php echo $fiscal_year['name'];?></label>
         </div>
     </div>
-    <form id="save_form_jqx" action="<?php echo site_url($CI->controller_url.'/index/save_pricing_packing');?>" method="post">
+    <form id="save_form_jqx" action="<?php echo site_url($CI->controller_url.'/index/save_pricing');?>" method="post">
         <input type="hidden" name="item[fiscal_year_id]" value="<?php echo $options['fiscal_year_id']; ?>" />
         <div id="jqx_inputs">
         </div>
