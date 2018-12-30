@@ -25,6 +25,7 @@ class Setup_budget_config extends Root_Controller
         $this->lang->language['LABEL_INCENTIVE'] = 'Incentive of NP';
         $this->lang->language['LABEL_PROFIT'] = 'Profit cogs';
         $this->lang->language['LABEL_SALES_COMMISSION'] = 'Sales Commission TP';
+        $this->lang->language['LABEL_PERCENTAGE_AIR_FREIGHT'] = 'Air Freight & Docs';
     }
     public function index($action="list", $id=0)
     {
@@ -429,14 +430,15 @@ class Setup_budget_config extends Root_Controller
 
                 if($before_year_info)
                 {
+                    $data['item']['percentage_air_freight']=$before_year_info['percentage_air_freight'];
                     $data['item']['percentage_direct_cost']=$before_year_info['percentage_direct_cost'];
                 }
 
             }
-            $data['direct_cost_items']=Query_helper::get_info($this->config->item('table_login_setup_direct_cost_items'),'*',array('status !="'.$this->config->item('system_status_delete').'"'));
+            $data['direct_cost_items']=Query_helper::get_info($this->config->item('table_login_setup_direct_cost_items'),'*',array('status !="'.$this->config->item('system_status_delete').'"'),0,0,array('ordering ASC'));
             $data['fiscal_year']=Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'),'*',array('id ='.$fiscal_year_id),1);
             $data['title']="Direct Cost Percentage Setup For (".$data['fiscal_year']['name'].') Fiscal Year';
-            //$data['item']['fiscal_year_id']=$fiscal_year_id;
+            $data['crops']=Query_helper::get_info($this->config->item('table_login_setup_classification_crops'),array('id value','name text'),array('status ="'.$this->config->item('system_status_active').'"'));
             $ajax['status']=true;
             $ajax['system_content'][]=array("id"=>"#system_content","html"=>$this->load->view($this->controller_url."/add_edit_direct_cost",$data,true));
             if($this->message)
@@ -458,7 +460,10 @@ class Setup_budget_config extends Root_Controller
         $user = User_helper::get_user();
         $time=time();
         $item_head=$this->input->post('item');
-        $items=$this->input->post('items');
+        $percentage_air_freight=$this->input->post('percentage_air_freight');
+        $percentage_direct_cost_common=$this->input->post('percentage_direct_cost_common');
+        $percentage_direct_cost_crops=$this->input->post('percentage_direct_cost_crops');
+
         if(!((isset($this->permissions['action1']) && ($this->permissions['action1']==1))||(isset($this->permissions['action2']) && ($this->permissions['action2']==1))))
         {
             $ajax['status']=false;
@@ -475,9 +480,14 @@ class Setup_budget_config extends Root_Controller
         $info=$this->get_info_budget_config($item_head['fiscal_year_id']);
 
         $this->db->trans_start();  //DB Transaction Handle START
-
         $data=array();
-        $data['percentage_direct_cost'] = json_encode($items);
+        $data['percentage_air_freight']=$percentage_air_freight;
+        $percentage_direct_cost[0]=$percentage_direct_cost_common;
+        foreach($percentage_direct_cost_crops as $result)
+        {
+            $percentage_direct_cost[$result['crop_id']][$result['dc_id']]=$result['percentage_dc'];
+        }
+        $data['percentage_direct_cost'] = json_encode($percentage_direct_cost,JSON_FORCE_OBJECT);
         $data['date_percentage_direct_cost'] = $time;
         $data['user_percentage_direct_cost'] = $user->user_id;
         $this->db->set('revision_count_percentage_direct_cost','revision_count_percentage_direct_cost+1',false);
