@@ -26,192 +26,197 @@ $action_buttons[]=array
 $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
 ?>
 <form id="save_form" action="<?php echo site_url($CI->controller_url . '/index/save'); ?>" method="post">
-<input type="hidden" name="item[fiscal_year_id]" value="<?php echo $item['fiscal_year_id'] ?>"/>
-<input type="hidden" name="item[variety_id]" value="<?php echo $item['variety_id'] ?>"/>
-
-<div class="row widget">
-
-<div class="widget-header">
-    <div class="title">
-        <?php echo $title; ?>
-    </div>
-    <div class="clearfix"></div>
-</div>
-
-<?php if ($message_warning_config)
-{
-    ?>
-    <div class="row show-grid bg-warning text-warning" style="padding:10px 0 0">
-        <div class="col-xs-4">
-            <label class="control-label pull-right" style="font-size:1.2em">Warning :</label>
+    <input type="hidden" name="item[fiscal_year_id]" value="<?php echo $item['fiscal_year_id'] ?>"/>
+    <input type="hidden" name="item[variety_id]" value="<?php echo $item['variety_id'] ?>"/>
+    <div class="row widget">
+        <div class="widget-header">
+            <div class="title">
+                <?php echo $title; ?>
+            </div>
+            <div class="clearfix"></div>
         </div>
-        <div class="col-xs-8">
-            <ul style="padding:0;list-style:none">
-                <?php
-                foreach ($message_warning_config as $message)
-                {
-                    ?>
-                    <li><?php echo $message ?></li>
-                    <?php
-                }
-                ?>
-            </ul>
-        </div>
-    </div>
-<?php } ?>
-
-<?php if ($message_warning_changes)
-{
-    ?>
-    <div class="row show-grid bg-danger text-danger" style="padding:10px 0 0">
-        <div class="col-xs-4">
-            <label class="control-label pull-right" style="font-size:1.2em">Attention :</label>
-        </div>
-        <div class="col-xs-8">
-            <ul style="padding:0;list-style:none">
-                <li><b>Please save this Quantity setup again because</b></li>
-                <?php
-                foreach ($message_warning_changes as $message)
-                {
-                    ?>
-                    <li><?php echo $message ?></li>
-                    <?php
-                }
-                ?>
-            </ul>
-        </div>
-    </div>
-<?php } ?>
-
-<div class="row show-grid">
-    <div class="col-xs-4">
-        <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_FISCAL_YEAR'); ?> :</label>
-    </div>
-    <div class="col-xs-4">
-        <label class="control-label"><?php echo $item['fiscal_year_name'] ?></label>
-    </div>
-</div>
-
-<div class="row show-grid">
-    <div class="col-xs-4">
-        <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_CROP_NAME'); ?> :</label>
-    </div>
-    <div class="col-xs-4">
-        <label class="control-label"><?php echo $item['crop_name'] ?></label>
-    </div>
-</div>
-
-<div class="row show-grid">
-    <div class="col-xs-4">
-        <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_CROP_TYPE_NAME'); ?> :</label>
-    </div>
-    <div class="col-xs-4">
-        <label class="control-label"><?php echo $item['crop_type_name'] ?></label>
-    </div>
-</div>
-
-<div class="row show-grid">
-    <div class="col-xs-4">
-        <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_VARIETY_NAME'); ?> :</label>
-    </div>
-    <div class="col-xs-4">
-        <label class="control-label"><?php echo $item['variety_name'] ?></label>
-    </div>
-</div>
-
-<div class="row show-grid">
-    <div class="col-xs-4">
-        <label class="control-label pull-right">Total Direct Cost Percentage :</label>
-    </div>
-    <div class="col-xs-4">
-        <label class="control-label" id="percentage_direct_cost"><?php echo $item['percentage_direct_cost'] ?></label>%
-    </div>
-</div>
-
-<div class="row show-grid">
-    <div class="col-xs-4">
-        <label class="control-label pull-right">Total Packing Cost Percentage :</label>
-    </div>
-    <div class="col-xs-4">
-        <label class="control-label" id="percentage_packing_cost"><?php echo $item['percentage_packing_cost'] ?></label>%
-    </div>
-</div>
-
-<div class="row show-grid">
-    <div class="col-xs-4">
-        <label class="control-label pull-right">Currency Rates :</label>
-    </div>
-    <div class="col-xs-3">
-        <table class="table table-bordered">
-            <tr>
-                <th>Currency Name</th>
-                <th>Rate (BDT)</th>
-            </tr>
-            <?php foreach ($currencies as $currency_id => $currency)
-            {
-                ?>
-                <tr>
-                    <td><?php echo $currency['name']; ?></td>
-                    <td id="amount_currency_rate_<?php echo $currency_id; ?>"><?php echo $currency['amount_currency_rate']; ?></td>
-                </tr>
-            <?php
-            }
+        <?php if ($message_warning_config)
+        {
             ?>
-        </table>
-    </div>
-</div>
+            <div class="row show-grid bg-warning text-warning" style="padding:10px 0 0">
+                <div class="col-xs-4">
+                    <label class="control-label pull-right" style="font-size:1.2em">Warning :</label>
+                </div>
+                <div class="col-xs-8">
+                    <ul style="padding:0;list-style:none">
+                        <?php
+                        foreach ($message_warning_config as $message)
+                        {
+                            ?>
+                            <li><?php echo $message ?></li>
+                            <?php
+                        }
+                        ?>
+                    </ul>
+                </div>
+            </div>
+        <?php } ?>
 
-<div class="row show-grid">
-    <div class="col-xs-4">
-        <label class="control-label pull-right">Quantity Confirm : <br>(At HOM Target)</label>
-    </div>
-    <div class="col-xs-4">
-        <label class="control-label"><?php echo $item['quantity_total_hom_target'];?></label>
-    </div>
-</div>
+        <?php if ($message_warning_changes)
+        {
+            ?>
+            <div class="row show-grid bg-danger text-danger" style="padding:10px 0 0">
+                <div class="col-xs-4">
+                    <label class="control-label pull-right" style="font-size:1.2em">Attention :</label>
+                </div>
+                <div class="col-xs-8">
+                    <ul style="padding:0;list-style:none">
+                        <li><b>Please save this Quantity setup again because</b></li>
+                        <?php
+                        foreach ($message_warning_changes as $message)
+                        {
+                            ?>
+                            <li><?php echo $message ?></li>
+                            <?php
+                        }
+                        ?>
+                    </ul>
+                </div>
+            </div>
+        <?php } ?>
 
-<div class="row show-grid">
-    <div class="col-xs-4">
-        <label class="control-label pull-right">Quantity Confirm :</label>
-    </div>
-    <div class="col-xs-4">
-        <label class="control-label" id="quantity_total">--</label>
-    </div>
-</div>
+        <div class="row show-grid">
+            <div class="col-xs-4">
+                <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_FISCAL_YEAR'); ?> :</label>
+            </div>
+            <div class="col-xs-4">
+                <label class="control-label"><?php echo $item['fiscal_year_name'] ?></label>
+            </div>
+        </div>
 
-<div class="row show-grid">
-    <div class="col-xs-4">
-        <label class="control-label pull-right">Average Unit Price:</label>
-    </div>
-    <div class="col-xs-4">
-        <label class="control-label" id="amount_unit_price_taka">--</label>
-    </div>
-</div>
-<div class="row show-grid">
-    <div class="col-xs-4">
-        <label class="control-label pull-right">Average COGS :</label>
-    </div>
-    <div class="col-xs-4">
-        <label class="control-label" id="cogs">--</label>
-    </div>
-</div>
+        <div class="row show-grid">
+            <div class="col-xs-4">
+                <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_CROP_NAME'); ?> :</label>
+            </div>
+            <div class="col-xs-4">
+                <label class="control-label"><?php echo $item['crop_name'] ?></label>
+            </div>
+        </div>
 
-<div class="row show-grid">
-    <div class="col-xs-4">
-        <label class="control-label pull-right">Total COGS :</label>
-    </div>
-    <div class="col-xs-4">
-        <label class="control-label" id="cogs_total">--</label>
-    </div>
-</div>
-<div class="row show-grid">
-    <div class="col-xs-4">
-        <label class="control-label pull-right" style="text-decoration:underline">Month-wise Budget Allocation :</label>
-    </div>
-    <div class="col-xs-4">
-        &nbsp;
-    </div>
-</div>
+        <div class="row show-grid">
+            <div class="col-xs-4">
+                <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_CROP_TYPE_NAME'); ?> :</label>
+            </div>
+            <div class="col-xs-4">
+                <label class="control-label"><?php echo $item['crop_type_name'] ?></label>
+            </div>
+        </div>
+
+        <div class="row show-grid">
+            <div class="col-xs-4">
+                <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_VARIETY_NAME'); ?> :</label>
+            </div>
+            <div class="col-xs-4">
+                <label class="control-label"><?php echo $item['variety_name'] ?></label>
+            </div>
+        </div>
+
+        <div class="row show-grid">
+            <div class="col-xs-4">
+                <label class="control-label pull-right">Air Freight & Docs Percentage :</label>
+            </div>
+            <div class="col-xs-4">
+                <label class="control-label" id="percentage_air_freight"><?php echo $item['percentage_air_freight'] ?></label>%
+            </div>
+        </div>
+        <div class="row show-grid">
+            <div class="col-xs-4">
+                <label class="control-label pull-right">Total Direct Cost Percentage :</label>
+            </div>
+            <div class="col-xs-4">
+                <label class="control-label" id="percentage_direct_cost"><?php echo $item['percentage_direct_cost'] ?></label>%
+            </div>
+        </div>
+
+        <div class="row show-grid">
+            <div class="col-xs-4">
+                <label class="control-label pull-right">Total Packing Cost Percentage :</label>
+            </div>
+            <div class="col-xs-4">
+                <label class="control-label" id="percentage_packing_cost"><?php echo $item['percentage_packing_cost'] ?></label>%
+            </div>
+        </div>
+
+        <div class="row show-grid">
+            <div class="col-xs-4">
+                <label class="control-label pull-right">Currency Rates :</label>
+            </div>
+            <div class="col-xs-3">
+                <table class="table table-bordered">
+                    <tr>
+                        <th>Currency Name</th>
+                        <th>Rate (BDT)</th>
+                    </tr>
+                    <?php foreach ($currencies as $currency_id => $currency)
+                    {
+                        ?>
+                        <tr>
+                            <td><?php echo $currency['name']; ?></td>
+                            <td id="amount_currency_rate_<?php echo $currency_id; ?>"><?php echo $currency['amount_currency_rate']; ?></td>
+                        </tr>
+                    <?php
+                    }
+                    ?>
+                </table>
+            </div>
+        </div>
+
+        <div class="row show-grid">
+            <div class="col-xs-4">
+                <label class="control-label pull-right">Quantity Confirm : <br>(At HOM Target)</label>
+            </div>
+            <div class="col-xs-4">
+                <label class="control-label"><?php echo $item['quantity_total_hom_target'];?></label>
+            </div>
+        </div>
+
+        <div class="row show-grid">
+            <div class="col-xs-4">
+                <label class="control-label pull-right">Quantity Confirm :</label>
+            </div>
+            <div class="col-xs-4">
+                <label class="control-label" id="quantity_total">--</label>
+            </div>
+        </div>
+
+        <div class="row show-grid">
+            <div class="col-xs-4">
+                <label class="control-label pull-right">Average Unit Price:</label>
+            </div>
+            <div class="col-xs-4">
+                <label class="control-label" id="amount_unit_price_taka">--</label>
+            </div>
+        </div>
+        <div class="row show-grid">
+            <div class="col-xs-4">
+                <label class="control-label pull-right">Average COGS :</label>
+            </div>
+            <div class="col-xs-4">
+                <label class="control-label" id="cogs">--</label>
+            </div>
+        </div>
+
+        <div class="row show-grid">
+            <div class="col-xs-4">
+                <label class="control-label pull-right">Total COGS :</label>
+            </div>
+            <div class="col-xs-4">
+                <label class="control-label" id="cogs_total">--</label>
+            </div>
+        </div>
+        <div class="row show-grid">
+            <div class="col-xs-4">
+                <label class="control-label pull-right" style="text-decoration:underline">Month-wise Budget Allocation :</label>
+            </div>
+            <div class="col-xs-4">
+                &nbsp;
+            </div>
+        </div>
 
 <!---------------------- Each Block of a Single principal ---------------------->
 <?php
@@ -362,9 +367,10 @@ foreach ($item['principals'] as $principal)
     });
     function calculate_principal(principal_id)
     {
+        var percentage_air_freight = parseFloat($('#percentage_air_freight').html().replace(/,/g, ''));
         var percentage_direct_cost = parseFloat($('#percentage_direct_cost').html().replace(/,/g, ''));
-
         var percentage_packing_cost = parseFloat($('#percentage_packing_cost').html().replace(/,/g, ''));
+        var percentage_total=percentage_air_freight+percentage_direct_cost+percentage_packing_cost;
 
         var currency_id = $('#currency_id_' + principal_id).val();
 
@@ -382,11 +388,7 @@ foreach ($item['principals'] as $principal)
         $('#quantity_total_' + principal_id).html(get_string_kg(quantity_total));
         if ((amount_unit_price_currency > 0) && (currency_id > 0))
         {
-            var amount_unit_price_taka = (amount_unit_price_currency * amount_currency_rate).toFixed(12);
-            var direct_cost = (amount_unit_price_taka * percentage_direct_cost / 100).toFixed(12);
-            var packing_cost = (amount_unit_price_taka * percentage_packing_cost / 100).toFixed(12);
-            var cogs = parseFloat(amount_unit_price_taka) + parseFloat(direct_cost) + parseFloat(packing_cost);
-
+            var cogs=amount_unit_price_currency*amount_currency_rate*((100+percentage_total)/100);
             var total_cogs = cogs * quantity_total;
             $('#cogs_' + principal_id).html(cogs.toFixed(4));
             $('#cogs_total_' + principal_id).html(total_cogs.toFixed(4));
@@ -433,10 +435,12 @@ foreach ($item['principals'] as $principal)
         {
             var cogs = (cogs_total / quantity_total);
             $('#cogs').html(cogs.toFixed(4));
+
+            var percentage_air_freight = parseFloat($('#percentage_air_freight').html().replace(/,/g, ''));
             var percentage_direct_cost = parseFloat($('#percentage_direct_cost').html().replace(/,/g, ''));
             var percentage_packing_cost = parseFloat($('#percentage_packing_cost').html().replace(/,/g, ''));
-
-            var amount_unit_price_taka=((cogs*100)/(100+percentage_direct_cost+percentage_packing_cost));
+            var percentage_total=percentage_air_freight+percentage_direct_cost+percentage_packing_cost;
+            var amount_unit_price_taka=cogs*(100/(100+percentage_total));
             $('#amount_unit_price_taka').html(amount_unit_price_taka.toFixed(4));
         }
         else

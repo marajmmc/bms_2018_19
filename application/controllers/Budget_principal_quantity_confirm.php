@@ -20,6 +20,8 @@ class Budget_principal_quantity_confirm extends Root_Controller
     {
         $this->lang->language['LABEL_UNIT_PRICE'] = 'Unit Price (per Kg)';
         $this->lang->language['LABEL_CURRENCY'] = 'Currency';
+        $this->lang->language['LABEL_QUANTITY_TOTAL_TASK'] = 'Total Quantity';
+        $this->lang->language['LABEL_QUANTITY_TOTAL_HOM'] = 'Total Quantity(hom)';
     }
 
     public function index($action = "list", $id = 0, $id1 = 0)
@@ -74,7 +76,8 @@ class Budget_principal_quantity_confirm extends Root_Controller
             $data['amount_unit_price_taka'] = 1;
             $data['cogs'] = 1;
             $data['cogs_total'] = 1;
-            $data['quantity_total'] = 1;
+            $data['quantity_total_task'] = 1;
+            $data['quantity_total_hom'] = 1;
         }
         return $data;
     }
@@ -190,6 +193,14 @@ class Budget_principal_quantity_confirm extends Root_Controller
         {
             $principal_quantity[$result['variety_id']]=$result;
         }
+        //from hom
+        $results = Query_helper::get_info($this->config->item('table_bms_hom_budget_target_hom'), array('variety_id','quantity_principal_quantity_confirm'), array('fiscal_year_id=' . $fiscal_year_id));
+        $principal_quantity_hom=array();
+        foreach($results as $result)
+        {
+            $principal_quantity_hom[$result['variety_id']]=$result['quantity_principal_quantity_confirm'];
+        }
+
         $results = Budget_helper::get_crop_type_varieties();
         foreach ($results as $result)
         {
@@ -203,16 +214,23 @@ class Budget_principal_quantity_confirm extends Root_Controller
                 $item['amount_unit_price_taka'] = $principal_quantity[$result['variety_id']]['amount_unit_price_taka'];
                 $item['cogs'] = $principal_quantity[$result['variety_id']]['cogs'];
                 $item['cogs_total'] = $principal_quantity[$result['variety_id']]['cogs_total'];
-                $item['quantity_total'] = $principal_quantity[$result['variety_id']]['quantity_total'];
+                $item['quantity_total_task'] = $principal_quantity[$result['variety_id']]['quantity_total'];
             }
             else
             {
                 $item['amount_unit_price_taka'] = '';
                 $item['cogs'] = '';
                 $item['cogs_total'] = '';
-                $item['quantity_total'] = '';
+                $item['quantity_total_task'] = 0;
             }
-
+            if(isset($principal_quantity_hom[$result['variety_id']]))
+            {
+                $item['quantity_total_hom'] = $principal_quantity_hom[$result['variety_id']];
+            }
+            else
+            {
+                $item['quantity_total_hom'] = 0;
+            }
             $items[]=$item;
         }
         $this->json_return($items);
@@ -236,33 +254,36 @@ class Budget_principal_quantity_confirm extends Root_Controller
             $data['message_warning_config'] = array(); //for configuration not set
             $data['message_warning_changes'] = array(); //for edit configuration change message
 
-
-            $this->db->from($this->config->item('table_login_basic_setup_fiscal_year') . ' fiscal_year');
-            $this->db->select('fiscal_year.name fiscal_year_name');
-
-            $this->db->join($this->config->item('table_bms_setup_budget_config') . ' budget_config', 'budget_config.fiscal_year_id = fiscal_year.id', 'INNER');
-            $this->db->select('budget_config.*');
-
-            $this->db->where('fiscal_year.id', $fiscal_year_id);
-            $fiscal_year_info = $this->db->get()->row_array();
+            $fiscal_year = Query_helper::get_info($this->config->item('table_login_basic_setup_fiscal_year'), array('name'), array('id=' . $fiscal_year_id), 1);
+            $budget_config = Query_helper::get_info($this->config->item('table_bms_setup_budget_config'), '*', array('fiscal_year_id=' . $fiscal_year_id), 1);
 
             $data['item'] = array();
             $data['item']['fiscal_year_id'] = $fiscal_year_id;
-            $data['item']['fiscal_year_name'] = $fiscal_year_info['fiscal_year_name'];
+            $data['item']['fiscal_year_name'] = $fiscal_year['name'];
+
 
             $results = Budget_helper::get_crop_type_varieties(array(), array(), array($variety_id));
             $data['item']['crop_name'] = $results[0]['crop_name'];
+            $data['item']['crop_id'] = $results[0]['crop_id'];
             $data['item']['crop_type_name'] = $results[0]['crop_type_name'];
+            $data['item']['crop_type_id'] = $results[0]['crop_type_id'];
             $data['item']['variety_name'] = $results[0]['variety_name'];
             $data['item']['variety_id'] = $variety_id;
 
+            $data['item']['percentage_air_freight'] = 0;
             $data['item']['percentage_direct_cost'] = 0;
-            if ($fiscal_year_info['revision_count_percentage_direct_cost'] > 0)
+            if ($budget_config['revision_count_percentage_direct_cost'] > 0)
             {
-                $results = json_decode($fiscal_year_info['percentage_direct_cost'], true);
-                foreach ($results as $value)
+                $data['item']['percentage_air_freight'] = $budget_config['percentage_air_freight'];
+
+                $results = json_decode($budget_config['percentage_direct_cost'], true);
+                foreach ($results[0] as $dc_id=>$dc_percentage)
                 {
-                    $data['item']['percentage_direct_cost'] += $value;
+                    if(isset($results[$data['item']['crop_id']][$dc_id]))
+                    {
+                        $dc_percentage=$results[$data['item']['crop_id']][$dc_id];
+                    }
+                    $data['item']['percentage_direct_cost'] += $dc_percentage;
                 }
             }
             else
@@ -271,9 +292,9 @@ class Budget_principal_quantity_confirm extends Root_Controller
             }
 
             $data['item']['percentage_packing_cost'] = 0;
-            if ($fiscal_year_info['revision_count_percentage_packing_cost'] > 0)
+            if ($budget_config['revision_count_percentage_packing_cost'] > 0)
             {
-                $results = json_decode($fiscal_year_info['percentage_packing_cost'], true);
+                $results = json_decode($budget_config['percentage_packing_cost'], true);
                 foreach ($results as $value)
                 {
                     $data['item']['percentage_packing_cost'] += $value;
@@ -284,9 +305,9 @@ class Budget_principal_quantity_confirm extends Root_Controller
                 $data['message_warning_config'][] = '<b>Packing Cost Percentage</b> - NOT Configured for this Fiscal Year';
             }
             $currency_rates = array();
-            if ($fiscal_year_info['revision_count_currency_rate'] > 0)
+            if ($budget_config['revision_count_currency_rate'] > 0)
             {
-                $currency_rates = json_decode($fiscal_year_info['amount_currency_rate'], true);
+                $currency_rates = json_decode($budget_config['amount_currency_rate'], true);
             }
             else
             {
@@ -303,7 +324,7 @@ class Budget_principal_quantity_confirm extends Root_Controller
                 );
             }
             $data['item']['quantity_total_hom_target']='';
-            $result = Query_helper::get_info($this->config->item('table_bms_hom_budget_target_hom'), 'quantity_principal_quantity_confirm', array('fiscal_year_id=' . $fiscal_year_id, 'variety_id =' . $variety_id), 1);
+            $result = Query_helper::get_info($this->config->item('table_bms_hom_budget_target_hom'), array('quantity_principal_quantity_confirm'), array('fiscal_year_id=' . $fiscal_year_id, 'variety_id =' . $variety_id), 1);
             if($result)
             {
                 $data['item']['quantity_total_hom_target'] = System_helper::get_string_kg($result['quantity_principal_quantity_confirm']); //calculate from National target task
@@ -315,6 +336,7 @@ class Budget_principal_quantity_confirm extends Root_Controller
             $results = Query_helper::get_info($this->config->item('table_bms_principal_quantity_principal'), '*', array('fiscal_year_id=' . $fiscal_year_id, 'variety_id =' . $variety_id,'revision = 1'));
             $old_item_principles = array();
             $principle_ids_old = array();
+            $change_air=false;
             $change_dc=false;
             $change_packing=false;
             foreach ($results as $result)
@@ -324,7 +346,10 @@ class Budget_principal_quantity_confirm extends Root_Controller
 
 
                 //if(abs($a-$b) < $epsilon)
-
+                if((abs($result['percentage_air_freight'] - $data['item']['percentage_air_freight']))>=EPSILON)//because of calculated value
+                {
+                    $change_air=true;
+                }
                 if((abs($result['percentage_direct_cost'] - $data['item']['percentage_direct_cost']))>=EPSILON)//because of calculated value
                 {
                     $change_dc=true;
@@ -339,6 +364,10 @@ class Budget_principal_quantity_confirm extends Root_Controller
                 {
                     $data['message_warning_changes'][] = '<b>Currency('.$data['currencies'][$result['currency_id']]['name'].')Rate</b> has been Changed.';
                 }
+            }
+            if($change_air)
+            {
+                $data['message_warning_changes'][] = '<b>Air Freight & Docs Percentage</b> has been Changed.';
             }
             if($change_dc)
             {
@@ -439,35 +468,43 @@ class Budget_principal_quantity_confirm extends Root_Controller
             $ajax['system_message'] = $this->message;
             $this->json_return($ajax);
         }
-        $fiscal_year_info = Query_helper::get_info($this->config->item('table_bms_setup_budget_config'), '*', array('fiscal_year_id=' . $item_head['fiscal_year_id']), 1);
+        $result = Budget_helper::get_crop_type_varieties(array(), array(), array($item_head['variety_id']));
+        $crop_id=$result[0]['crop_id'];
+
+        $budget_config = Query_helper::get_info($this->config->item('table_bms_setup_budget_config'), '*', array('fiscal_year_id=' . $item_head['fiscal_year_id']), 1);
 
 
         $percentage_direct_cost = 0;
-        if ($fiscal_year_info['revision_count_percentage_direct_cost'] > 0)
+        if ($budget_config['revision_count_percentage_direct_cost'] > 0)
         {
-            $results = json_decode($fiscal_year_info['percentage_direct_cost'], true);
-            foreach ($results as $value)
+            $results = json_decode($budget_config['percentage_direct_cost'], true);
+            foreach ($results[0] as $dc_id=>$dc_percentage)
             {
-                $percentage_direct_cost += $value;
+                if(isset($results[$crop_id][$dc_id]))
+                {
+                    $dc_percentage=$results[$crop_id][$dc_id];
+                }
+                $percentage_direct_cost += $dc_percentage;
             }
         }
 
         $percentage_packing_cost = 0;
-        if ($fiscal_year_info['revision_count_percentage_packing_cost'] > 0)
+        if ($budget_config['revision_count_percentage_packing_cost'] > 0)
         {
-            $results = json_decode($fiscal_year_info['percentage_packing_cost'], true);
+            $results = json_decode($budget_config['percentage_packing_cost'], true);
             foreach ($results as $value)
             {
                 $percentage_packing_cost += $value;
             }
         }
         $currency_rates = array();
-        if ($fiscal_year_info['revision_count_currency_rate'] > 0)
+        if ($budget_config['revision_count_currency_rate'] > 0)
         {
-            $currency_rates = json_decode($fiscal_year_info['amount_currency_rate'], true);
+            $currency_rates = json_decode($budget_config['amount_currency_rate'], true);
         }
         //$item_head['amount_unit_price_taka']; calculate bellow
         $item_head['amount_unit_price_taka'] = 0;
+        $item_head['percentage_air_freight'] = $budget_config['percentage_air_freight'];
         $item_head['percentage_direct_cost'] = $percentage_direct_cost;
         $item_head['percentage_packing_cost'] = $percentage_packing_cost;
         $item_head['cogs'] = 0; //calculate bellow
@@ -513,6 +550,7 @@ class Budget_principal_quantity_confirm extends Root_Controller
             $data['amount_currency_rate'] = (isset($currency_rates[$principal_info['currency_id']])) ? $currency_rates[$principal_info['currency_id']] : 0;
             $data['amount_unit_price_taka'] = $data['amount_unit_price_currency'] * $data['amount_currency_rate'];
 
+            $data['percentage_air_freight'] = $budget_config['percentage_air_freight'];
             $data['percentage_direct_cost'] = $percentage_direct_cost;
             $data['percentage_packing_cost'] = $percentage_packing_cost;
             //$data['cogs'];//later--439
@@ -533,7 +571,8 @@ class Budget_principal_quantity_confirm extends Root_Controller
                     $data['quantity_' . $month_index] = 0;
                 }
             }
-            $data['cogs'] = $data['amount_unit_price_taka'] + ($data['amount_unit_price_taka'] * $percentage_direct_cost / 100) + ($data['amount_unit_price_taka'] * $percentage_packing_cost / 100);
+            //$data['cogs'] = $data['amount_unit_price_taka'] + ($data['amount_unit_price_taka'] * $percentage_direct_cost / 100) + ($data['amount_unit_price_taka'] * $percentage_packing_cost / 100);
+            $data['cogs'] = $data['amount_unit_price_taka'] * ((100+$percentage_direct_cost+$percentage_packing_cost+$budget_config['percentage_air_freight']) / 100);
             $data['cogs_total'] = $data['cogs'] * $data['quantity_total'];
             $item_head['cogs_total'] += $data['cogs_total'];
             $data['date_created'] = $time;
@@ -544,7 +583,7 @@ class Budget_principal_quantity_confirm extends Root_Controller
         if ($item_head['quantity_total'] > 0)
         {
             $item_head['cogs'] = $item_head['cogs_total'] / $item_head['quantity_total'];
-            $item_head['amount_unit_price_taka'] = (($item_head['cogs']*100)/(100+$percentage_direct_cost+$percentage_packing_cost));
+            $item_head['amount_unit_price_taka'] = $item_head['cogs']*(100/(100+$percentage_direct_cost+$percentage_packing_cost+$budget_config['percentage_air_freight']));
         }
         if ($item_head_old)
         {
@@ -573,30 +612,6 @@ class Budget_principal_quantity_confirm extends Root_Controller
             $this->json_return($ajax);
         }
     }
-
-    /*
-    private function calculate_principle_cogs($unit_price, $rate, $direct_cost_percentage_array, $packing_cost_percentage_array)
-    {
-        $total_direct_cost_percentage = 0.0;
-        $total_packing_cost_percentage = 0.0;
-
-        foreach ($direct_cost_percentage_array as $value)
-        {
-            $total_direct_cost_percentage += $value;
-        }
-        foreach ($packing_cost_percentage_array as $value)
-        {
-            $total_packing_cost_percentage += $value;
-        }
-
-        $A = $unit_price * $rate;
-        $B = $A * $total_direct_cost_percentage;
-        $C = $A * $total_packing_cost_percentage;
-
-        return ($A + $B + $C);
-    }
-    */
-
     private function check_validation()
     {
         $items = $this->input->post('items');
