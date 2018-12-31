@@ -483,10 +483,14 @@ class Setup_budget_config extends Root_Controller
         $data=array();
         $data['percentage_air_freight']=$percentage_air_freight;
         $percentage_direct_cost[0]=$percentage_direct_cost_common;
-        foreach($percentage_direct_cost_crops as $result)
+        if(sizeof($percentage_direct_cost_crops)>0)
         {
-            $percentage_direct_cost[$result['crop_id']][$result['dc_id']]=$result['percentage_dc'];
+            foreach($percentage_direct_cost_crops as $result)
+            {
+                $percentage_direct_cost[$result['crop_id']][$result['dc_id']]=$result['percentage_dc'];
+            }
         }
+
         $data['percentage_direct_cost'] = json_encode($percentage_direct_cost,JSON_FORCE_OBJECT);
         $data['date_percentage_direct_cost'] = $time;
         $data['user_percentage_direct_cost'] = $user->user_id;
