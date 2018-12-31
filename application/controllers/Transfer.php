@@ -9,6 +9,7 @@ class Transfer extends CI_Controller
         //$this->di();
         //$this->zi();
         //$this->si();
+        //$this->principal_quantity();
     }
     private function configs()
     {
@@ -398,6 +399,40 @@ class Transfer extends CI_Controller
         else
         {
             echo 'Failed Transfer SI';
+        }
+    }
+    private function principal_quantity()
+    {
+        $time=time();
+        $source_tables=array(
+            'principal_quantity'=>'arm_bms_2018_19.bms_principal_quantity'
+        );
+        $destination_tables=array(
+            'hom'=>'arm_bms_2018_19.bms_hom_budget_target_hom'
+        );
+        $principal_quantity=Query_helper::get_info($source_tables['principal_quantity'],'*',array('fiscal_year_id = 4'));
+        $this->db->trans_start();  //DB Transaction Handle START
+
+        foreach($principal_quantity as $result)
+        {
+            $data=array();
+
+            //$data['fiscal_year_id']=4;
+            //$data['variety_id']=$result['variety_id'];
+            $data['quantity_principal_quantity_confirm']=$result['quantity_total'];
+            $data['revision_count_principal_quantity_confirm']=($data['quantity_principal_quantity_confirm']>0)?1:0;
+            $data['date_updated_principal_quantity_confirm']=$time;
+            $data['user_updated_principal_quantity_confirm']=1;
+            Query_helper::update($destination_tables['hom'],$data,array('fiscal_year_id= 4','variety_id ='.$result['variety_id']),false);
+        }
+        $this->db->trans_complete();   //DB Transaction Handle END
+        if ($this->db->trans_status() === TRUE)
+        {
+            echo 'Success Transfer principal_quantity';
+        }
+        else
+        {
+            echo 'Failed Transfer principal_quantity';
         }
     }
 }
