@@ -396,8 +396,8 @@ class Setup_budget_config extends Root_Controller
 
         $data=array();
         $data['amount_currency_rate'] = json_encode($items);
-        $data['user_currency_rate'] = $time;
-        $data['date_currency_rate'] = $user->user_id;
+        $data['date_currency_rate'] = $time;
+        $data['user_currency_rate'] = $user->user_id;
         $this->db->set('revision_count_currency_rate','revision_count_currency_rate+1',false);
         Query_helper::update($this->config->item('table_bms_setup_budget_config'),$data,array('fiscal_year_id='.$item_head['fiscal_year_id']),false);
 
