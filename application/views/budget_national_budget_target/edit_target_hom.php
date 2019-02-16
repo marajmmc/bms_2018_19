@@ -227,17 +227,15 @@ echo '</pre>';*/
                     { text: 'HQ CS', dataField: 'stock_current_hq',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
                     { text: 'HOM Qty', dataField: 'quantity_budget_hom',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
                     { text: 'Qty Needed', dataField: 'quantity_budget_needed',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
-                    { text: 'Principal Qty<br> Confirm <?php echo $fiscal_year['name'];?>',datafield: 'quantity_principal_quantity_confirm', width: 100,filterable: false,cellsalign: 'right',cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg,columntype: 'custom',
+                    { text: 'Principal Qty<br> Confirm <?php echo $fiscal_year['name'];?>',datafield: 'quantity_principal_quantity_confirm', width: 100,filterable: false,cellsalign: 'right',cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg,columntype: 'textbox',
                         initeditor: function (row, cellvalue, editor, celltext, pressedkey)
                         {
-                            editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');
-                        },
-                        geteditorvalue: function (row, cellvalue, editor)
-                        {
-                            // return the editor's value.
-                            var value=editor.find('input').val();
-                            var selectedRowData = $('#system_jqx_container').jqxGrid('getrowdata', row);
-                            return editor.find('input').val();
+                            editor.wrap( '<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;;line-height: 25px;">');
+                            editor.wrap( '<div class="jqxgrid_input">');
+                            editor.addClass('float_type_positive');
+                            editor.css('width','100%');
+                            editor.css('height','100%');
+                            editor.css('border-width','0');
                         },
                         cellvaluechanging: function (row, datafield, columntype, oldvalue, newvalue)
                         {
@@ -253,17 +251,15 @@ echo '</pre>';*/
                         }
                     },
                     { text: 'Available<br> Target Qty', dataField: 'quantity_target_available',width:'100',filterable:false,cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
-                    { columngroup: 'hom_budget_target',text: 'Target',datafield: 'quantity_target', width: 100,filterable: false, align: 'center',cellsalign: 'right',cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg,columntype: 'custom',
+                    { columngroup: 'hom_budget_target',text: 'Target',datafield: 'quantity_target', width: 100,filterable: false, align: 'center',cellsalign: 'right',cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg,columntype: 'textbox',
                         initeditor: function (row, cellvalue, editor, celltext, pressedkey)
                         {
-                            editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');
-                        },
-                        geteditorvalue: function (row, cellvalue, editor)
-                        {
-                            // return the editor's value.
-                            var value=editor.find('input').val();
-                            var selectedRowData = $('#system_jqx_container').jqxGrid('getrowdata', row);
-                            return editor.find('input').val();
+                            editor.wrap( '<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;;line-height: 25px;">');
+                            editor.wrap( '<div class="jqxgrid_input">');
+                            editor.addClass('float_type_positive');
+                            editor.css('width','100%');
+                            editor.css('height','100%');
+                            editor.css('border-width','0');
                         }
                     },
                     { columngroup: 'hom_budget_target',text: 'Budget', dataField: 'quantity_budget',width:'100',filterable:false, align: 'center',cellsalign: 'right',editable:false,cellsrenderer: cellsrenderer,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_kg},
