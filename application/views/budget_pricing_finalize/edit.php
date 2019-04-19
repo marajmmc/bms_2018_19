@@ -86,6 +86,7 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
             {
                 $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+'][amount_price_trade]" value="'+data[i]['price_trade']+'">');
                 $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+'][percentage_sales_commission]" value="'+data[i]['percentage_sales_commission']+'">');
+                $('#save_form_jqx  #jqx_inputs').append('<input type="hidden" name="items['+data[i]['variety_id']+'][quantity_target]" value="'+data[i]['quantity_target']+'">');
             }
             var sure = confirm('<?php echo $CI->lang->line('MSG_CONFIRM_SAVE'); ?>');
             if(sure)
@@ -145,7 +146,7 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
         var cellsrenderer = function(row, column, value, defaultHtml, columnSettings, record)
         {
             var element = $(defaultHtml);
-            if((column=='price_trade')|| (column=='percentage_sales_commission'))
+            if((column=='price_trade')|| (column=='percentage_sales_commission')|| (column=='quantity_target'))
             {
                 if(value==0)
                 {
@@ -251,11 +252,18 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                                 var marketing=parseFloat(selectedRowData['marketing']);
                                 var finance=parseFloat(selectedRowData['finance']);
                                 var profit=price_net-cogs-general-marketing-finance-incentive;
+
+                                var quantity_target=parseFloat(selectedRowData['quantity_target']);
+                                var price_net_total=price_net*quantity_target;
+                                var profit_total=profit*quantity_target;
+
                                 //console.log(selectedRowData);
                                 $("#system_jqx_container").jqxGrid('setcellvalue', row, 'sales_commission', sales_commission);
                                 $("#system_jqx_container").jqxGrid('setcellvalue', row, 'price_net', price_net);
                                 $("#system_jqx_container").jqxGrid('setcellvalue', row, 'incentive', incentive);
                                 $("#system_jqx_container").jqxGrid('setcellvalue', row, 'profit', profit);
+                                $("#system_jqx_container").jqxGrid('setcellvalue', row, 'price_net_total', price_net_total);
+                                $("#system_jqx_container").jqxGrid('setcellvalue', row, 'profit_total', profit_total);
                                 var percentage_profit_np=0;
                                 if(price_net>0)
                                 {
@@ -300,11 +308,17 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                                 var marketing=parseFloat(selectedRowData['marketing']);
                                 var finance=parseFloat(selectedRowData['finance']);
                                 var profit=price_net-cogs-general-marketing-finance-incentive;
+                                var quantity_target=parseFloat(selectedRowData['quantity_target']);
+                                var price_net_total=price_net*quantity_target;
+                                var profit_total=profit*quantity_target;
+
                                 //console.log(selectedRowData);
                                 $("#system_jqx_container").jqxGrid('setcellvalue', row, 'sales_commission', sales_commission);
                                 $("#system_jqx_container").jqxGrid('setcellvalue', row, 'price_net', price_net);
                                 $("#system_jqx_container").jqxGrid('setcellvalue', row, 'incentive', incentive);
                                 $("#system_jqx_container").jqxGrid('setcellvalue', row, 'profit', profit);
+                                $("#system_jqx_container").jqxGrid('setcellvalue', row, 'price_net_total', price_net_total);
+                                $("#system_jqx_container").jqxGrid('setcellvalue', row, 'profit_total', profit_total);
                                 var percentage_profit_np=0;
                                 if(price_net>0)
                                 {
@@ -330,7 +344,38 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                     { text: '<?php echo $CI->lang->line('LABEL_FINANCE').' ('.(isset($budget_config['percentage_finance'])?$budget_config['percentage_finance']:0).'%)'; ?>', dataField: 'finance', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer,renderer:header_render,editable:false},
                     { text: '<?php echo $CI->lang->line('LABEL_PROFIT'); ?>', dataField: 'profit', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer,renderer:header_render,editable:false},
                     { text: '<?php echo $CI->lang->line('LABEL_PERCENTAGE_PROFIT_NP'); ?>', dataField: 'percentage_profit_np', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer,renderer:header_render,editable:false},
-                    { text: '<?php echo $CI->lang->line('LABEL_PERCENTAGE_PROFIT_COGS'); ?>', dataField: 'percentage_profit_cogs', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer,renderer:header_render,editable:false}
+                    { text: '<?php echo $CI->lang->line('LABEL_PERCENTAGE_PROFIT_COGS'); ?>', dataField: 'percentage_profit_cogs', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer,renderer:header_render,editable:false},
+                    { text: '<?php echo $CI->lang->line('LABEL_STOCK_CURRENT_HQ'); ?>', dataField: 'stock_current_hq', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer,renderer:header_render,editable:false},
+                    { text: '<?php echo $CI->lang->line('LABEL_QUANTITY_PRINCIPAL_QUANTITY_CONFIRM'); ?>', dataField: 'quantity_principal_quantity_confirm', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer,renderer:header_render,editable:false},
+                    { text: '<?php echo $CI->lang->line('LABEL_QUANTITY_AVAILABLE'); ?>', dataField: 'quantity_available', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer,renderer:header_render,editable:false},
+                    { text: '<?php echo $CI->lang->line('LABEL_QUANTITY_TARGET'); ?>', dataField: 'quantity_target', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer,renderer:header_render,columntype: 'custom',
+                        initeditor: function (row, cellvalue, editor, celltext, pressedkey)
+                        {
+                            editor.html('<div style="margin: 0px;width: 100%;height: 100%;padding: 5px;"><input style="z-index: 1 !important;" type="text" value="'+cellvalue+'" class="jqxgrid_input float_type_positive"><div>');
+                        },
+                        geteditorvalue: function (row, cellvalue, editor)
+                        {
+                            // return the editor's value.
+                            var value=editor.find('input').val();
+                            var selectedRowData = $('#system_jqx_container').jqxGrid('getrowdata', row);
+                            return editor.find('input').val();
+                        },
+                        cellvaluechanging: function (row, datafield, columntype, oldvalue, newvalue)
+                        {
+                            if (newvalue != oldvalue)
+                            {
+                                var selectedRowData = $('#system_jqx_container').jqxGrid('getrowdata', row);
+                                var price_net=parseFloat(selectedRowData['price_net']);
+                                var profit=parseFloat(selectedRowData['profit']);
+                                var price_net_total=price_net*newvalue;
+                                var profit_total=profit*newvalue;
+                                $("#system_jqx_container").jqxGrid('setcellvalue', row, 'price_net_total', price_net_total);
+                                $("#system_jqx_container").jqxGrid('setcellvalue', row, 'profit_total', profit_total);
+                            }
+                        }
+                    },
+                    { text: '<?php echo $CI->lang->line('LABEL_PRICE_NET_TOTAL'); ?>', dataField: 'price_net_total', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer,renderer:header_render,editable:false},
+                    { text: '<?php echo $CI->lang->line('LABEL_PROFIT_TOTAL'); ?>', dataField: 'profit_total', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer,renderer:header_render,editable:false}
                 ]
             });
     });

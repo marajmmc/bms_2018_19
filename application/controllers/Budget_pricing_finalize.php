@@ -31,6 +31,12 @@ class Budget_pricing_finalize extends Root_Controller
         $this->lang->language['LABEL_PROFIT'] = 'profit';
         $this->lang->language['LABEL_PERCENTAGE_PROFIT_NP'] = 'Profit %(NP)';
         $this->lang->language['LABEL_PERCENTAGE_PROFIT_COGS'] = 'Profit %(COGS)';
+        $this->lang->language['LABEL_STOCK_CURRENT_HQ'] = 'HQ Current Stock';
+        $this->lang->language['LABEL_QUANTITY_PRINCIPAL_QUANTITY_CONFIRM'] = 'Principal Quantity';
+        $this->lang->language['LABEL_QUANTITY_AVAILABLE'] = 'Available Quantity';
+        $this->lang->language['LABEL_QUANTITY_TARGET'] = 'Target Quantity';
+        $this->lang->language['LABEL_PRICE_NET_TOTAL'] = 'Target Total Net Price';
+        $this->lang->language['LABEL_PROFIT_TOTAL'] = 'Target Total Profit';
     }
 
     public function index($action = "list", $id = 0, $id1 = 0)
@@ -91,6 +97,12 @@ class Budget_pricing_finalize extends Root_Controller
             $data['profit'] = 1;
             $data['percentage_profit_np'] = 1;
             $data['percentage_profit_cogs'] = 1;
+            $data['stock_current_hq'] = 1;
+            $data['quantity_principal_quantity_confirm'] = 1;
+            $data['quantity_available'] = 1;
+            $data['quantity_target'] = 1;
+            $data['price_net_total'] = 1;
+            $data['profit_total'] = 1;
         }
         return $data;
     }
@@ -200,6 +212,20 @@ class Budget_pricing_finalize extends Root_Controller
         $fiscal_year_id = $this->input->post('fiscal_year_id');
         $budget_config= Query_helper::get_info($this->config->item('table_bms_setup_budget_config'), '*', array('fiscal_year_id=' . $fiscal_year_id), 1);
 
+        //HQ Current Stock
+        $this->db->from($this->config->item('table_sms_stock_summary_variety').' stock_summary_variety');
+        $this->db->select('SUM((pack.name*stock_summary_variety.current_stock)/1000) current_stock, stock_summary_variety.variety_id');
+        $this->db->join($this->config->item('table_login_setup_classification_pack_size').' pack','pack.id=stock_summary_variety.pack_size_id','LEFT');
+        //$this->db->where('stock_summary_variety.pack_size_id > 0');
+        $this->db->group_by('stock_summary_variety.variety_id');
+        $results=$this->db->get()->result_array();
+        $stocks=array();
+        foreach($results as $result)
+        {
+            $stocks[$result['variety_id']]=$result;
+        }
+
+
         $this->db->from($this->config->item('table_bms_principal_quantity').' principal_quantity');
         $this->db->select('principal_quantity. *');
         $this->db->where('principal_quantity.fiscal_year_id',$fiscal_year_id);
@@ -220,6 +246,11 @@ class Budget_pricing_finalize extends Root_Controller
         $results = Budget_helper::get_crop_type_varieties();
         foreach ($results as $result)
         {
+            if(isset($stocks[$result['variety_id']]))
+            {
+                $result['stock_current_hq']=$stocks[$result['variety_id']]['current_stock'];
+            }
+
             if(isset($principal_quantity[$result['variety_id']]))
             {
                 $result['quantity_total'] = $principal_quantity[$result['variety_id']]['quantity_total'];
@@ -229,8 +260,19 @@ class Budget_pricing_finalize extends Root_Controller
             {
                 $result['amount_price_trade'] = $items_old[$result['variety_id']]['amount_price_trade'];
                 $result['percentage_sales_commission'] = $items_old[$result['variety_id']]['percentage_sales_commission'];
+                $result['quantity_target'] = $items_old[$result['variety_id']]['quantity_target'];
             }
             $info=$this->initialize_row($result,$budget_config);
+            /*if(isset($stocks[$result['variety_id']]))
+            {
+                $info['stock_current_hq']=$stocks[$result['variety_id']]['current_stock'];
+            }
+            if(isset($principal_quantity[$result['variety_id']]))
+            {
+                $info['quantity_principal_quantity_confirm'] = $principal_quantity[$result['variety_id']]['quantity_total'];
+            }*/
+            $info['quantity_available']=$info['stock_current_hq']+$info['quantity_principal_quantity_confirm'];
+
             $items[]=$info;
         }
         $this->json_return($items);
@@ -281,6 +323,14 @@ class Budget_pricing_finalize extends Root_Controller
         {
             $row['percentage_profit_cogs']=$row['profit']*100/$row['cogs'];
         }
+        $row['stock_current_hq']=isset($info['stock_current_hq'])?$info['stock_current_hq']:0;
+
+        $row['quantity_principal_quantity_confirm']=isset($info['quantity_total'])?$info['quantity_total']:0;//quantity_total means principal quantity
+        $row['quantity_available']=$row['stock_current_hq']+$row['quantity_principal_quantity_confirm'];
+
+        $row['quantity_target']=isset($info['quantity_target'])?$info['quantity_target']:0;
+        $row['price_net_total']=$row['price_net']*$row['quantity_target'];
+        $row['profit_total']=$row['profit']*$row['quantity_target'];
 
         return $row;
 
@@ -308,12 +358,13 @@ class Budget_pricing_finalize extends Root_Controller
         {
             if(isset($items_old[$variety_id]))
             {
-                if(($items_old[$variety_id]['amount_price_trade'] != $quantity_info['amount_price_trade'])||($items_old[$variety_id]['percentage_sales_commission'] != $quantity_info['percentage_sales_commission']))
+                if(($items_old[$variety_id]['amount_price_trade'] != $quantity_info['amount_price_trade'])||($items_old[$variety_id]['percentage_sales_commission'] != $quantity_info['percentage_sales_commission'])||($items_old[$variety_id]['quantity_target'] != $quantity_info['quantity_target']))
                 {
                     $data=array();
                     $this->db->set('revision_count','revision_count+1',false);
                     $data['amount_price_trade']=$quantity_info['amount_price_trade'];
                     $data['percentage_sales_commission']=$quantity_info['percentage_sales_commission'];
+                    $data['quantity_target']=$quantity_info['quantity_target'];
                     $data['amount_price_net']=$data['amount_price_trade']-($quantity_info['percentage_sales_commission']*$quantity_info['amount_price_trade']/100);
                     $data['date_updated']=$time;
                     $data['user_updated']=$user->user_id;
@@ -327,6 +378,7 @@ class Budget_pricing_finalize extends Root_Controller
                 $data['variety_id']=$variety_id;
                 $data['amount_price_trade']=$quantity_info['amount_price_trade'];
                 $data['percentage_sales_commission']=$quantity_info['percentage_sales_commission'];
+                $data['quantity_target']=$quantity_info['quantity_target'];
                 $data['amount_price_net']=$data['amount_price_trade']-($quantity_info['percentage_sales_commission']*$quantity_info['amount_price_trade']/100);
                 $data['revision_count']=1;
                 $data['date_created'] = $time;
