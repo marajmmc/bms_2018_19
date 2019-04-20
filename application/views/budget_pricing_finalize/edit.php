@@ -374,8 +374,8 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                             }
                         }
                     },
-                    { text: '<?php echo $CI->lang->line('LABEL_PRICE_NET_TOTAL'); ?>', dataField: 'price_net_total', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer,renderer:header_render,editable:false},
-                    { text: '<?php echo $CI->lang->line('LABEL_PROFIT_TOTAL'); ?>', dataField: 'profit_total', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer,renderer:header_render,editable:false}
+                    { text: '<?php echo $CI->lang->line('LABEL_PRICE_NET_TOTAL'); ?>', dataField: 'price_net_total', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer,renderer:header_render,editable:false,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_amount},
+                    { text: '<?php echo $CI->lang->line('LABEL_PROFIT_TOTAL'); ?>', dataField: 'profit_total', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer,renderer:header_render,editable:false,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_amount}
                 ]
             });
     });
