@@ -255,6 +255,10 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
 
                                 var quantity_target=parseFloat(selectedRowData['quantity_target']);
                                 var price_net_total=price_net*quantity_target;
+                                var general_total=general*quantity_target;
+                                var marketing_total=marketing*quantity_target;
+                                var finance_total=finance*quantity_target;
+
                                 var profit_total=profit*quantity_target;
 
                                 //console.log(selectedRowData);
@@ -264,6 +268,9 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                                 $("#system_jqx_container").jqxGrid('setcellvalue', row, 'profit', profit);
                                 $("#system_jqx_container").jqxGrid('setcellvalue', row, 'price_net_total', price_net_total);
                                 $("#system_jqx_container").jqxGrid('setcellvalue', row, 'profit_total', profit_total);
+                                $("#system_jqx_container").jqxGrid('setcellvalue', row, 'general_total', general_total);
+                                $("#system_jqx_container").jqxGrid('setcellvalue', row, 'marketing_total', marketing_total);
+                                $("#system_jqx_container").jqxGrid('setcellvalue', row, 'finance_total', finance_total);
                                 var percentage_profit_np=0;
                                 if(price_net>0)
                                 {
@@ -311,6 +318,9 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                                 var quantity_target=parseFloat(selectedRowData['quantity_target']);
                                 var price_net_total=price_net*quantity_target;
                                 var profit_total=profit*quantity_target;
+                                var general_total=general*quantity_target;
+                                var marketing_total=marketing*quantity_target;
+                                var finance_total=finance*quantity_target;
 
                                 //console.log(selectedRowData);
                                 $("#system_jqx_container").jqxGrid('setcellvalue', row, 'sales_commission', sales_commission);
@@ -319,6 +329,9 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                                 $("#system_jqx_container").jqxGrid('setcellvalue', row, 'profit', profit);
                                 $("#system_jqx_container").jqxGrid('setcellvalue', row, 'price_net_total', price_net_total);
                                 $("#system_jqx_container").jqxGrid('setcellvalue', row, 'profit_total', profit_total);
+                                $("#system_jqx_container").jqxGrid('setcellvalue', row, 'general_total', general_total);
+                                $("#system_jqx_container").jqxGrid('setcellvalue', row, 'marketing_total', marketing_total);
+                                $("#system_jqx_container").jqxGrid('setcellvalue', row, 'finance_total', finance_total);
                                 var percentage_profit_np=0;
                                 if(price_net>0)
                                 {
@@ -369,13 +382,27 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                                 var profit=parseFloat(selectedRowData['profit']);
                                 var price_net_total=price_net*newvalue;
                                 var profit_total=profit*newvalue;
+                                var general=parseFloat(selectedRowData['general']);
+                                var marketing=parseFloat(selectedRowData['marketing']);
+                                var finance=parseFloat(selectedRowData['finance']);
+
+                                var general_total=general*newvalue;
+                                var marketing_total=marketing*newvalue;
+                                var finance_total=finance*newvalue;
+
                                 $("#system_jqx_container").jqxGrid('setcellvalue', row, 'price_net_total', price_net_total);
                                 $("#system_jqx_container").jqxGrid('setcellvalue', row, 'profit_total', profit_total);
+                                $("#system_jqx_container").jqxGrid('setcellvalue', row, 'general_total', general_total);
+                                $("#system_jqx_container").jqxGrid('setcellvalue', row, 'marketing_total', marketing_total);
+                                $("#system_jqx_container").jqxGrid('setcellvalue', row, 'finance_total', finance_total);
                             }
                         }
                     },
                     { text: '<?php echo $CI->lang->line('LABEL_PRICE_NET_TOTAL'); ?>', dataField: 'price_net_total', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer,renderer:header_render,editable:false,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_amount},
-                    { text: '<?php echo $CI->lang->line('LABEL_PROFIT_TOTAL'); ?>', dataField: 'profit_total', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer,renderer:header_render,editable:false,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_amount}
+                    { text: '<?php echo $CI->lang->line('LABEL_PROFIT_TOTAL'); ?>', dataField: 'profit_total', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer,renderer:header_render,editable:false,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_amount},
+                    { text: '<?php echo $CI->lang->line('LABEL_GENERAL_TOTAL'); ?>', dataField: 'general_total', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer,renderer:header_render,editable:false,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_amount},
+                    { text: '<?php echo $CI->lang->line('LABEL_MARKETING_TOTAL'); ?>', dataField: 'marketing_total', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer,renderer:header_render,editable:false,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_amount},
+                    { text: '<?php echo $CI->lang->line('LABEL_FINANCE_TOTAL'); ?>', dataField: 'finance_total', width: '100', cellsalign:'right',cellsrenderer: cellsrenderer,renderer:header_render,editable:false,aggregates: ['sum'],aggregatesrenderer:aggregatesrenderer_amount}
                 ]
             });
     });

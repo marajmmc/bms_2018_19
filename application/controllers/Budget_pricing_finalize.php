@@ -37,6 +37,9 @@ class Budget_pricing_finalize extends Root_Controller
         $this->lang->language['LABEL_QUANTITY_TARGET'] = 'Target Quantity';
         $this->lang->language['LABEL_PRICE_NET_TOTAL'] = 'Target Total Net Price';
         $this->lang->language['LABEL_PROFIT_TOTAL'] = 'Target Total Profit';
+        $this->lang->language['LABEL_GENERAL_TOTAL'] = 'Total General';
+        $this->lang->language['LABEL_MARKETING_TOTAL'] = 'Total Marketing';
+        $this->lang->language['LABEL_FINANCE_TOTAL'] = 'Total Finance';
     }
 
     public function index($action = "list", $id = 0, $id1 = 0)
@@ -103,6 +106,9 @@ class Budget_pricing_finalize extends Root_Controller
             $data['quantity_target'] = 1;
             $data['price_net_total'] = 1;
             $data['profit_total'] = 1;
+            $data['general_total'] = 1;
+            $data['marketing_total'] = 1;
+            $data['finance_total'] = 1;
         }
         return $data;
     }
@@ -331,6 +337,9 @@ class Budget_pricing_finalize extends Root_Controller
         $row['quantity_target']=isset($info['quantity_target'])?$info['quantity_target']:0;
         $row['price_net_total']=$row['price_net']*$row['quantity_target'];
         $row['profit_total']=$row['profit']*$row['quantity_target'];
+        $row['general_total']=$row['general']*$row['quantity_target'];
+        $row['marketing_total']=$row['marketing']*$row['quantity_target'];
+        $row['finance_total']=$row['finance']*$row['quantity_target'];
 
         return $row;
 
