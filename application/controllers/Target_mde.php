@@ -234,10 +234,10 @@ class Target_mde extends Root_Controller
 
         $this->db->start_cache();
 
-        $this->db->from($this->config->item('table_bi_target_tsme') . ' target');
+        $this->db->from($this->config->item('table_bms_target_tsme') . ' target');
         $this->db->select('target.*, target.revision_count AS no_of_edit');
 
-        $this->db->join($this->config->item('table_bi_target_ams') . ' parent', 'parent.id = target.ams_id AND parent.status_forward="' . $this->config->item('system_status_forwarded') . '"', 'INNER');
+        $this->db->join($this->config->item('table_bms_target_ams') . ' parent', 'parent.id = target.ams_id AND parent.status_forward="' . $this->config->item('system_status_forwarded') . '"', 'INNER');
         $this->db->select('parent.status_forward, parent.remarks_forward, parent.date_forwarded, parent.user_forwarded');
 
         $this->db->join($this->config->item('table_login_setup_location_territories') . ' territory', 'territory.id = target.territory_id', 'INNER');

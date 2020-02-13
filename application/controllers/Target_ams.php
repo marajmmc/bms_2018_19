@@ -144,7 +144,7 @@ class Target_ams extends Root_Controller
         $this->db->flush_cache(); // Flush/Clear current Query Stack
 
         // Details Table
-        $this->db->from($this->config->item('table_bi_target_tsme'));
+        $this->db->from($this->config->item('table_bms_target_tsme'));
         $this->db->select('ams_id, SUM(amount_target) AS amount_allocated');
 
         $this->db->group_by('ams_id');
@@ -213,7 +213,7 @@ class Target_ams extends Root_Controller
         $this->db->flush_cache(); // Flush/Clear current Query Stack
 
         // Details Table
-        $this->db->from($this->config->item('table_bi_target_tsme'));
+        $this->db->from($this->config->item('table_bms_target_tsme'));
         $this->db->select('ams_id, SUM(amount_target) AS amount_allocated');
 
         $this->db->group_by('ams_id');
@@ -274,7 +274,7 @@ class Target_ams extends Root_Controller
                 $this->json_return($ajax);
             }
 
-            $results = Query_helper::get_info($this->config->item('table_bi_target_tsme'), array('territory_id', 'amount_target'), array('ams_id =' . $item_id));
+            $results = Query_helper::get_info($this->config->item('table_bms_target_tsme'), array('territory_id', 'amount_target'), array('ams_id =' . $item_id));
             foreach ($results as $result) {
                 $data['item']['targets'][$result['territory_id']] = $result['amount_target'];
             }
@@ -343,7 +343,7 @@ class Target_ams extends Root_Controller
             $this->json_return($ajax);
         }
 
-        $this->db->from($this->config->item('table_bi_target_tsme'));
+        $this->db->from($this->config->item('table_bms_target_tsme'));
         $this->db->select('*');
         $this->db->where('ams_id', $item_id);
         $this->db->where('status', $this->config->item('system_status_active'));
@@ -371,7 +371,7 @@ class Target_ams extends Root_Controller
                     'user_updated' => $user->user_id
                 );
                 $this->db->set('revision_count', 'revision_count+1', FALSE);
-                Query_helper::update($this->config->item('table_bi_target_tsme'), $items, array('ams_id = ' . $item_id, 'territory_id = ' . $location_id)); // UPDATE into Details Table
+                Query_helper::update($this->config->item('table_bms_target_tsme'), $items, array('ams_id = ' . $item_id, 'territory_id = ' . $location_id)); // UPDATE into Details Table
             }
         } else {
             foreach ($amount_target as $location_id => $amount) {
@@ -386,7 +386,7 @@ class Target_ams extends Root_Controller
                     'date_created' => $time,
                     'user_created' => $user->user_id
                 );
-                Query_helper::add($this->config->item('table_bi_target_tsme'), $items, FALSE); // INSERT into Details Table
+                Query_helper::add($this->config->item('table_bms_target_tsme'), $items, FALSE); // INSERT into Details Table
             }
         }
 
@@ -398,7 +398,7 @@ class Target_ams extends Root_Controller
             $item_head['user_updated'] = $user->user_id;
             $item_head['date_updated'] = $time;
             $this->db->set('revision_count', 'revision_count+1', FALSE);
-            Query_helper::update($this->config->item('table_bi_target_ams'), $items, array('dsm_id = ' . $item_id, 'zone_id = ' . $location_id)); // UPDATE into Details Table
+            Query_helper::update($this->config->item('table_bms_target_ams'), $items, array('dsm_id = ' . $item_id, 'zone_id = ' . $location_id)); // UPDATE into Details Table
         }
         $this->db->trans_complete(); //DB Transaction Handle END
 
@@ -428,7 +428,7 @@ class Target_ams extends Root_Controller
             $location_id_field = 'territory_id';
             $foreign_key = 'ams_id';
 
-            $this->db->from($this->config->item('table_bi_target_tsme') . ' target');
+            $this->db->from($this->config->item('table_bms_target_tsme') . ' target');
             $this->db->select("target.{$location_id_field}, target.amount_target");
             $this->db->join($this->config->item('table_login_setup_location_territories') . ' location', "location.id = target.{$location_id_field}", 'INNER');
             $this->db->select('location.name');
@@ -477,7 +477,7 @@ class Target_ams extends Root_Controller
             $location_id_field = 'territory_id';
             $foreign_key = 'ams_id';
 
-            $this->db->from($this->config->item('table_bi_target_tsme') . ' details');
+            $this->db->from($this->config->item('table_bms_target_tsme') . ' details');
             $this->db->select("details.{$location_id_field}, details.amount_target");
             $this->db->join($this->config->item('table_login_setup_location_territories') . ' location', "location.id = details.{$location_id_field}", 'INNER');
             $this->db->select('location.name');
@@ -515,7 +515,7 @@ class Target_ams extends Root_Controller
 
         $this->common_query(); // Call Common part of below Query Stack
         // Additional Conditions -STARTS
-        $this->db->join($this->config->item('table_bi_target_tsme'). ' details', 'details.ams_id = target.id');
+        $this->db->join($this->config->item('table_bms_target_tsme'). ' details', 'details.ams_id = target.id');
         $this->db->select('SUM(details.amount_target) AS amount_allocated');
 
         $this->db->where('target.status', $this->config->item('system_status_active'));
@@ -559,7 +559,7 @@ class Target_ams extends Root_Controller
         $item['date_forwarded'] = $time;
         $item['user_forwarded'] = $user->user_id;
         // Main Table UPDATE
-        Query_helper::update($this->config->item('table_bi_target_ams'), $item, array("id =" . $item_id), FALSE);
+        Query_helper::update($this->config->item('table_bms_target_ams'), $item, array("id =" . $item_id), FALSE);
 
         $this->db->trans_complete(); //DB Transaction Handle END
         if ($this->db->trans_status() === TRUE) {
@@ -578,7 +578,7 @@ class Target_ams extends Root_Controller
 
         $this->common_query(); // Call Common part of below Query Stack
         // Additional Conditions -STARTS
-        $this->db->join($this->config->item('table_bi_target_tsme'). ' details', 'details.ams_id = target.id', 'LEFT');
+        $this->db->join($this->config->item('table_bms_target_tsme'). ' details', 'details.ams_id = target.id', 'LEFT');
         $this->db->select('SUM(details.amount_target) AS amount_allocated');
 
         $this->db->where('target.status', $this->config->item('system_status_active'));
@@ -694,10 +694,10 @@ class Target_ams extends Root_Controller
 
         $this->db->start_cache();
 
-        $this->db->from($this->config->item('table_bi_target_ams') . ' target');
+        $this->db->from($this->config->item('table_bms_target_ams') . ' target');
         $this->db->select('target.*, target.revision_count AS no_of_edit');
 
-        $this->db->join($this->config->item('table_bi_target_dsm') . ' parent', 'parent.id = target.dsm_id AND parent.status_forward="' . $this->config->item('system_status_forwarded') . '"', 'INNER');
+        $this->db->join($this->config->item('table_bms_target_dsm') . ' parent', 'parent.id = target.dsm_id AND parent.status_forward="' . $this->config->item('system_status_forwarded') . '"', 'INNER');
 
         $this->db->join($this->config->item('table_login_setup_location_zones') . ' zone', 'zone.id = target.zone_id', 'INNER');
         $this->db->select('zone.name location');
