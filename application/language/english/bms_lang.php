@@ -400,3 +400,7 @@ $lang['LABEL_CUSTOMER_TYPE'] = 'Customer Type';
 $lang['LABEL_MAP_ADDRESS'] = 'Google Map Link';
 $lang['LABEL_INCHARGE'] = 'In-charge';
 
+// Target Task
+$lang['MSG_ID_NOT_EXIST'] = 'ID Not Exist.';
+$lang['MSG_INVALID_TRY'] = 'Invalid Try.';
+$lang['MSG_LOCATION_ERROR'] = 'Trying to Access Other Location';
