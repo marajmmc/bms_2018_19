@@ -158,7 +158,7 @@ $CI->load->view("action_buttons", array('action_buttons' => $action_buttons));
                 <tfoot>
                     <tr>
                         <td colspan="2"><label class="control-label pull-right">
-                            <?php echo $CI->lang->line('LABEL_AMOUNT_TARGET_TOTAL'); ?> :
+                            <?php echo $CI->lang->line('LABEL_AMOUNT_TARGET_TOTAL'); ?>:
                         </td>
                         <td>
                             <label class="control-label pull-right" id="amount_target_total">
