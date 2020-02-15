@@ -10,6 +10,7 @@ $lang['MSG_USERNAME_PASSWORD_SAME'] = 'Please Change your password to Continue F
 $lang['MSG_CONFIRM_SAVE'] = 'Are You Sure to save?';
 $lang['MSG_SAVED_SUCCESS'] = 'Successfully Saved';
 $lang['MSG_SAVED_FAIL'] = 'Failed to Save!';
+$lang['MSG_CONFIRM_FORWARD'] = 'Are You sure to forward?'; // added by maraj
 $lang['MSG_CONFIRM_DELETE'] = 'Are You sure to delete?'; // added by maraj
 $lang['MSG_DELETED_SUCCESS'] = 'Successfully Deleted';
 $lang['MSG_FORWARD_SUCCESS'] = 'Successfully Forwarded';
