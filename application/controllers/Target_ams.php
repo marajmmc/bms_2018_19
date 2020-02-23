@@ -28,8 +28,8 @@ class Target_ams extends Root_Controller
     private function language_labels()
     {
         // Labels
-        $this->lang->language['LABEL_AMOUNT_TARGET'] = 'Target Amount';
-        $this->lang->language['LABEL_AMOUNT_TARGET_TOTAL'] = 'Total Target Amount';
+        $this->lang->language['LABEL_AMOUNT_TARGET'] = 'Target Amount (BDT)';
+        $this->lang->language['LABEL_AMOUNT_TARGET_TOTAL'] = 'Total Target Amount (BDT)';
         $this->lang->language['LABEL_AMOUNT_ALLOCATED'] = 'Allocated Amount';
         $this->lang->language['LABEL_AMOUNT_REMAINING'] = 'Remaining Amount';
         $this->lang->language['LABEL_LOCATION'] = 'Location';
@@ -40,8 +40,8 @@ class Target_ams extends Root_Controller
         $this->lang->language['LABEL_REMAINING_TARGET'] = 'Remaining Target';
         // Messages
         $this->lang->language['MSG_TARGET_NOT_ASSIGNED'] = 'No Target has been assigned for this Location.';
-        $this->lang->language['MSG_FORWARDED_ALREADY'] = 'This Target has been Forwarded Already';
-        $this->lang->language['MSG_TARGET_ALLOCATION'] = 'Target Amount has not been allocated Completely.';
+        $this->lang->language['MSG_FORWARDED_ALREADY'] = 'This Target has been Forwarded Already.';
+        $this->lang->language['MSG_TARGET_ALLOCATION'] = 'No Target Amount has not been Allocated.';
     }
 
     public function index($action = "list", $id = 0)
@@ -166,9 +166,6 @@ class Target_ams extends Root_Controller
             }
             $item['amount_target'] = System_helper::get_string_amount($item['amount_target']);
             $item['month'] = DateTime::createFromFormat('!m', $item['month'])->format('F');
-            /*if(!($item['amount_target'] > 0)){
-                $item['amount_target'] = '<b>No Target Assigned</b>';
-            }*/
         }
         $this->json_return($items);
     }
@@ -238,9 +235,6 @@ class Target_ams extends Root_Controller
             }
             $item['amount_target'] = System_helper::get_string_amount($item['amount_target']);
             $item['month'] = DateTime::createFromFormat('!m', $item['month'])->format('F');
-            /*if(!($item['amount_target'] > 0)){
-                $item['amount_target'] = '<b>No Target Assigned</b>';
-            }*/
         }
         $this->json_return($items);
     }
@@ -269,11 +263,6 @@ class Target_ams extends Root_Controller
                 $ajax['system_message'] = $this->lang->line('MSG_INVALID_TRY');
                 $this->json_return($ajax);
             }
-            /*if ($data['item']['amount_target'] == 0) {
-                $ajax['status'] = false;
-                $ajax['system_message'] = $this->lang->line('MSG_TARGET_NOT_ASSIGNED');
-                $this->json_return($ajax);
-            }*/
             if ($data['item']['status_forward'] == $this->config->item('system_status_forwarded')) {
                 $ajax['status'] = false;
                 $ajax['system_message'] = $this->lang->line('MSG_FORWARDED_ALREADY');
@@ -360,16 +349,6 @@ class Target_ams extends Root_Controller
         $this->db->where('ams_id', $item_id);
         $this->db->where('status', $this->config->item('system_status_active'));
         $result_exist = $this->db->get()->result_array();
-
-        /*$amount_total = 0;
-        foreach ($amount_target as $location_id => $amount) {
-            $amount_total += $amount;
-        }
-        if ($amount_total > $result['amount_target']) {
-            $ajax['status'] = false;
-            $ajax['system_message'] = $this->lang->line('LABEL_AMOUNT_TARGET_TOTAL') . " cannot be Greater than " . $this->lang->line('LABEL_ASSIGNED_TARGET');
-            $this->json_return($ajax);
-        }*/
 
         $this->db->trans_start(); //DB Transaction Handle START
 
@@ -473,21 +452,16 @@ class Target_ams extends Root_Controller
 
             $data = $this->get_item_info($item_id);
             // Validation
-            if ($data['item_head']['amount_target'] == 0) {
-                $ajax['status'] = false;
-                $ajax['system_message'] = $this->lang->line('MSG_TARGET_NOT_ASSIGNED');
-                $this->json_return($ajax);
-            }
             if ($data['item_head']['status_forward'] == $this->config->item('system_status_forwarded')) {
                 $ajax['status'] = false;
                 $ajax['system_message'] = $this->lang->line('MSG_FORWARDED_ALREADY');
                 $this->json_return($ajax);
             }
-            /*if ($data['item_head']['amount_allocated'] != $data['item_head']['amount_target']) {
+            if (!($data['item_head']['amount_allocated'] > 0)) {
                 $ajax['status'] = false;
                 $ajax['system_message'] = $this->lang->line('MSG_TARGET_ALLOCATION');
                 $this->json_return($ajax);
-            }*/
+            }
             $data['id'] = $item_id;
             $data['details_title'] = 'AMS Target Distribution';
 
@@ -560,21 +534,16 @@ class Target_ams extends Root_Controller
             $ajax['system_message'] = $this->lang->line('LABEL_STATUS_FORWARD') . ' field is required.';
             $this->json_return($ajax);
         }
-        if ($result['amount_target'] == 0) {
-            $ajax['status'] = false;
-            $ajax['system_message'] = $this->lang->line('MSG_TARGET_NOT_ASSIGNED');
-            $this->json_return($ajax);
-        }
         if ($result['status_forward'] == $this->config->item('system_status_forwarded')) {
             $ajax['status'] = false;
             $ajax['system_message'] = $this->lang->line('MSG_FORWARDED_ALREADY');
             $this->json_return($ajax);
         }
-        /*if ($result['amount_allocated'] != $result['amount_target']) {
+        if (!($result['amount_allocated'] > 0)) {
             $ajax['status'] = false;
             $ajax['system_message'] = $this->lang->line('MSG_TARGET_ALLOCATION');
             $this->json_return($ajax);
-        }*/
+        }
 
         $this->db->trans_start(); //DB Transaction Handle START
 
@@ -633,29 +602,18 @@ class Target_ams extends Root_Controller
         $data = array();
         $data['item_head'] = $result;
 
-        if(!($result['amount_target'] > 0)){
-            $amount_inword = $amount = '<span style="color:#FF0000">- No Target Assigned -</span>';
-            $show_amount_inword = FALSE;
-        }else{
-            $amount = System_helper::get_string_amount($result['amount_target']);
-            $amount_inword = Bi_helper::get_string_amount_inword($result['amount_target']);
-            $show_amount_inword = TRUE;
-        }
-
         $data['item'][] = array
         (
             'label_1' => 'Target ' . $this->lang->line('LABEL_MONTH'),
             'value_1' => (DateTime::createFromFormat('!m', $result['month'])->format('F')) . ', ' . $result['year'],
             'label_2' => $this->lang->line('LABEL_AMOUNT_TARGET'),
-            'value_2' => $amount
+            'value_2' => System_helper::get_string_amount($result['amount_target'])
         );
-        if($show_amount_inword){
-            $data['item'][] = array
-            (
-                'label_1' => $this->lang->line('LABEL_AMOUNT_TARGET') . ' ( In words )',
-                'value_1' => $amount_inword
-            );
-        }
+        $data['item'][] = array
+        (
+            'label_1' => $this->lang->line('LABEL_AMOUNT_TARGET') . ' ( In words )',
+            'value_1' => Bi_helper::get_string_amount_inword($result['amount_target'])
+        );
         $data['item'][] = array
         (
             'label_1' => $this->lang->line('LABEL_CREATED_BY'),

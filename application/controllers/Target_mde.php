@@ -26,7 +26,7 @@ class Target_mde extends Root_Controller
     private function language_labels()
     {
         // Labels
-        $this->lang->language['LABEL_AMOUNT_TARGET'] = 'Target Amount';
+        $this->lang->language['LABEL_AMOUNT_TARGET'] = 'Target Amount (BDT)';
         $this->lang->language['LABEL_LOCATION'] = 'Location';
     }
 

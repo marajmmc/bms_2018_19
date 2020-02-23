@@ -29,7 +29,7 @@ class Target_dsm extends Root_Controller
     {
         // Labels
         $this->lang->language['LABEL_AMOUNT_TARGET'] = 'Target Amount (BDT)';
-        $this->lang->language['LABEL_AMOUNT_TARGET_TOTAL'] = 'Total Target Amount';
+        $this->lang->language['LABEL_AMOUNT_TARGET_TOTAL'] = 'Total Target Amount (BDT)';
         $this->lang->language['LABEL_AMOUNT_ALLOCATED'] = 'Allocated Amount';
         $this->lang->language['LABEL_AMOUNT_REMAINING'] = 'Remaining Amount';
         $this->lang->language['LABEL_LOCATION'] = 'Location';
@@ -39,8 +39,9 @@ class Target_dsm extends Root_Controller
         $this->lang->language['LABEL_ASSIGNED_TARGET'] = 'Assigned Target';
         $this->lang->language['LABEL_REMAINING_TARGET'] = 'Remaining Target';
         // Messages
-        $this->lang->language['MSG_FORWARDED_ALREADY'] = 'This Target has been Forwarded Already';
-        $this->lang->language['MSG_TARGET_ALLOCATION'] = 'Target Amount has not been allocated Completely.';
+        $this->lang->language['MSG_TARGET_NOT_ASSIGNED'] = 'No Target has been assigned for this Location.';
+        $this->lang->language['MSG_FORWARDED_ALREADY'] = 'This Target has been Forwarded Already.';
+        $this->lang->language['MSG_TARGET_ALLOCATION'] = 'No Target Amount has not been Allocated.';
     }
 
     public function index($action = "list", $id = 0)
@@ -353,11 +354,6 @@ class Target_dsm extends Root_Controller
         foreach ($amount_target as $amount) {
             $amount_total += $amount;
         }
-        /*if ($amount_total > $result['amount_target']) {
-            $ajax['status'] = false;
-            $ajax['system_message'] = $this->lang->line('LABEL_AMOUNT_TARGET_TOTAL') . " cannot be Greater than " . $this->lang->line('LABEL_ASSIGNED_TARGET');
-            $this->json_return($ajax);
-        }*/
 
         $this->db->trans_start(); //DB Transaction Handle START
 
@@ -467,11 +463,11 @@ class Target_dsm extends Root_Controller
                 $ajax['system_message'] = $this->lang->line('MSG_FORWARDED_ALREADY');
                 $this->json_return($ajax);
             }
-            /*if ($data['item_head']['amount_allocated'] != $data['item_head']['amount_target']) {
+            if (!($data['item_head']['amount_allocated'] > 0)) {
                 $ajax['status'] = false;
                 $ajax['system_message'] = $this->lang->line('MSG_TARGET_ALLOCATION');
                 $this->json_return($ajax);
-            }*/
+            }
             $data['id'] = $item_id;
             $data['details_title'] = 'DSM Target Distribution';
 
@@ -549,11 +545,11 @@ class Target_dsm extends Root_Controller
             $ajax['system_message'] = $this->lang->line('MSG_FORWARDED_ALREADY');
             $this->json_return($ajax);
         }
-        /*if ($result['amount_allocated'] != $result['amount_target']) {
+        if (!($result['amount_allocated'] > 0)) {
             $ajax['status'] = false;
             $ajax['system_message'] = $this->lang->line('MSG_TARGET_ALLOCATION');
             $this->json_return($ajax);
-        }*/
+        }
 
         $this->db->trans_start(); //DB Transaction Handle START
 

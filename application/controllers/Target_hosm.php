@@ -28,8 +28,8 @@ class Target_hosm extends Root_Controller
     private function language_labels()
     {
         // Labels
-        $this->lang->language['LABEL_AMOUNT_TARGET'] = 'Target Amount';
-        $this->lang->language['LABEL_AMOUNT_TARGET_TOTAL'] = 'Total Target Amount';
+        $this->lang->language['LABEL_AMOUNT_TARGET'] = 'Target Amount (BDT)';
+        $this->lang->language['LABEL_AMOUNT_TARGET_TOTAL'] = 'Total Target Amount (BDT)';
         $this->lang->language['LABEL_NO_OF_EDIT'] = 'No. of Edit';
         // Messages
         $this->lang->language['MSG_FORWARDED_ALREADY'] = 'This Target has been Forwarded Already';
