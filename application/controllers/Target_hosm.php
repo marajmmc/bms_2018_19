@@ -341,7 +341,7 @@ class Target_hosm extends Root_Controller
             $result = $this->db->get()->row_array();
             if ($result) {
                 $ajax['status'] = false;
-                $ajax['system_message'] = 'A Target for same Month is Already Exist';
+                $ajax['system_message'] = 'A Target for same Month Already Exist';
                 $this->json_return($ajax);
             }
         }
@@ -631,11 +631,13 @@ class Target_hosm extends Root_Controller
             $this->message = validation_errors();
             return false;
         }
+        $sum = 0;
         foreach ($amount_target as $amount) {
-            if (!(trim($amount) > 0)) {
-                $this->message = 'All ' . $this->lang->line('LABEL_AMOUNT_TARGET') . ' fields are required.';
-                return false;
-            }
+            $sum += intval($amount);
+        }
+        if (!($sum > 0)) {
+            $this->message = $this->lang->line('LABEL_AMOUNT_TARGET_TOTAL') . ' cannot be Zero.';
+            return false;
         }
         return true;
     }

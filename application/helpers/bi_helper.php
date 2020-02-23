@@ -11,16 +11,13 @@ class Bi_helper
         //--------- System User Info ------------
         $user_ids = array();
         $user_ids[$result['user_created']] = $result['user_created'];
-        if ($result['user_updated'] > 0)
-        {
+        if ($result['user_updated'] > 0) {
             $user_ids[$result['user_updated']] = $result['user_updated'];
         }
-        if ($result['user_forwarded'] > 0)
-        {
+        if ($result['user_forwarded'] > 0) {
             $user_ids[$result['user_forwarded']] = $result['user_forwarded'];
         }
-        if ($result['user_approved'] > 0)
-        {
+        if ($result['user_approved'] > 0) {
             $user_ids[$result['user_approved']] = $result['user_approved'];
         }
         $user_info = System_helper::get_users_info($user_ids);
@@ -56,12 +53,10 @@ class Bi_helper
             'label_2' => 'Created Time',
             'value_2' => System_helper::display_date_time($result['date_created'])
         );
-        if ($result['user_updated'] > 0)
-        {
+        if ($result['user_updated'] > 0) {
             $inactive_update_by = 'Updated By';
             $inactive_update_time = 'Updated Time';
-            if ($result['status'] == $CI->config->item('system_status_inactive'))
-            {
+            if ($result['status'] == $CI->config->item('system_status_inactive')) {
                 $inactive_update_by = 'In-Active By';
                 $inactive_update_time = 'In-Active Time';
             }
@@ -79,8 +74,7 @@ class Bi_helper
             'label_2' => 'Revision (Forward)',
             'value_2' => $result['revision_count'],
         );
-        if ($result['status_forward'] == $CI->config->item('system_status_forwarded'))
-        {
+        if ($result['status_forward'] == $CI->config->item('system_status_forwarded')) {
             $data[] = array
             (
                 'label_1' => 'Forwarded By',
@@ -94,16 +88,11 @@ class Bi_helper
                 'value_1' => $result['remarks_forward']
             );
         }
-        if ($result['status_approve'] == $CI->config->item('system_status_approved'))
-        {
+        if ($result['status_approve'] == $CI->config->item('system_status_approved')) {
             $label_approve = $CI->config->item('system_status_approved');
-        }
-        else if ($result['status_approve'] == $CI->config->item('system_status_rejected'))
-        {
+        } else if ($result['status_approve'] == $CI->config->item('system_status_rejected')) {
             $label_approve = 'Reject';
-        }
-        else
-        {
+        } else {
             $label_approve = $CI->config->item('system_status_approved');
         }
         $data[] = array
@@ -112,8 +101,7 @@ class Bi_helper
             'value_1' => $result['status_approve'],
 
         );
-        if ($result['status_approve'] != $CI->config->item('system_status_pending'))
-        {
+        if ($result['status_approve'] != $CI->config->item('system_status_pending')) {
             $data[] = array
             (
                 'label_1' => $label_approve . ' By',
@@ -127,10 +115,8 @@ class Bi_helper
                 'value_1' => $result['remarks_approve']
             );
         }
-        if ($result['revision_count_rollback'] > 0)
-        {
-            if ($result['status_approve'] == $CI->config->item('system_status_pending'))
-            {
+        if ($result['revision_count_rollback'] > 0) {
+            if ($result['status_approve'] == $CI->config->item('system_status_pending')) {
                 $data[] = array
                 (
                     'label_1' => 'Revision (Rollback)',
@@ -138,9 +124,7 @@ class Bi_helper
                     'label_2' => 'Rollback Reason',
                     'value_2' => $result['remarks_approve']
                 );
-            }
-            else
-            {
+            } else {
                 $data[] = array
                 (
                     'label_1' => 'Revision (Rollback)',
@@ -174,8 +158,7 @@ class Bi_helper
         $CI->db->where('upazilla_id', $row_request['upazilla_id']);
         $results = $CI->db->get()->result_array();
 
-        foreach ($results as $result)
-        {
+        foreach ($results as $result) {
             $data['market_size_old'][$result['type_id']] = $result['market_size_kg'];
         }
 
@@ -192,14 +175,10 @@ class Bi_helper
         $CI->db->order_by('crops.id', 'ASC');
         $CI->db->order_by('crop_types.ordering', 'ASC');
         $data['crops'] = $CI->db->get()->result_array();
-        foreach ($data['crops'] as $result)
-        {
-            if (isset($data['crop_type_count'][$result['crop_id']]))
-            {
+        foreach ($data['crops'] as $result) {
+            if (isset($data['crop_type_count'][$result['crop_id']])) {
                 $data['crop_type_count'][$result['crop_id']] += 1;
-            }
-            else
-            {
+            } else {
                 $data['crop_type_count'][$result['crop_id']] = 1;
             }
         }
@@ -234,8 +213,7 @@ class Bi_helper
         $CI->db->where('ms.id', $item_id);
         $CI->db->where('ms.status', $CI->config->item('system_status_active'));
         $result = $CI->db->get()->row_array();
-        if (!$result)
-        {
+        if (!$result) {
             System_helper::invalid_try('Details', $item_id, 'ID Not Exists');
             $ajax['status'] = false;
             $ajax['system_message'] = 'Invalid Try.';
@@ -281,8 +259,7 @@ class Bi_helper
                 )
             )
         );
-        if ($result['user_updated'] > 0)
-        {
+        if ($result['user_updated'] > 0) {
             $item['data'][] = array(
                 'label_1' => $CI->lang->line('LABEL_UPDATED_BY'),
                 'value_1' => $user_info[$result['user_updated']]['name'],
@@ -290,8 +267,7 @@ class Bi_helper
                 'value_2' => System_helper::display_date_time($result['date_updated'])
             );
         }
-        if ($result['user_forwarded'] > 0)
-        {
+        if ($result['user_forwarded'] > 0) {
             $item['data'][] = array(
                 'label_1' => $CI->lang->line('LABEL_FORWARDED_BY'),
                 'value_1' => $user_info[$result['user_forwarded']]['name'],
@@ -299,8 +275,7 @@ class Bi_helper
                 'value_2' => System_helper::display_date_time($result['date_forwarded'])
             );
         }
-        if ($result['user_rollback'] > 0)
-        {
+        if ($result['user_rollback'] > 0) {
             $item['data'][] = array(
                 'label_1' => $CI->lang->line('LABEL_ROLLBACK') . ' ' . $CI->lang->line('LABEL_REMARKS'),
                 'value_1' => '<span style="color:' . Bi_helper::$warning_color . '">' . nl2br($result['remarks_rollback']) . '</span>'
@@ -312,8 +287,7 @@ class Bi_helper
                 'value_2' => '<span style="color:' . Bi_helper::$warning_color . '">' . System_helper::display_date_time($result['date_rollback']) . '</span>'
             );
         }
-        if ($result['user_rejected'] > 0)
-        {
+        if ($result['user_rejected'] > 0) {
             $item['data'][] = array(
                 'label_1' => $CI->lang->line('LABEL_REJECTED') . ' ' . $CI->lang->line('LABEL_REMARKS'),
                 'value_1' => '<span style="color:' . Bi_helper::$warning_color . '">' . nl2br($result['remarks_rejected']) . '</span>'
@@ -325,8 +299,7 @@ class Bi_helper
                 'value_2' => '<span style="color:' . Bi_helper::$warning_color . '">' . System_helper::display_date_time($result['date_rejected']) . '</span>'
             );
         }
-        if ($result['user_approved'] > 0)
-        {
+        if ($result['user_approved'] > 0) {
             $item['data'][] = array(
                 'label_1' => $CI->lang->line('LABEL_APPROVED_BY'),
                 'value_1' => $user_info[$result['user_approved']]['name'],
@@ -361,10 +334,9 @@ class Bi_helper
         $CI->db->join($CI->config->item('table_login_setup_classification_hybrid') . ' hybrid', 'hybrid.id = v.hybrid');
         $CI->db->select('hybrid.name hybrid');
 
-        if(is_array($variety_id) && (sizeof($variety_id) > 0)){
+        if (is_array($variety_id) && (sizeof($variety_id) > 0)) {
             $CI->db->where_in('v.id', $variety_id);
-        }
-        elseif ($variety_id > 0) {
+        } elseif ($variety_id > 0) {
             $CI->db->where('v.id', $variety_id);
         }
 
@@ -388,9 +360,9 @@ class Bi_helper
         $CI->db->order_by('crop.id');
         $CI->db->order_by('type.id');
 
-        if(is_array($variety_id) && (sizeof($variety_id) > 0)){
+        if (is_array($variety_id) && (sizeof($variety_id) > 0)) {
             return $CI->db->get()->result_array(); // Results
-        }elseif ($variety_id > 0) {
+        } elseif ($variety_id > 0) {
             return $CI->db->get()->row_array(); // Result
         } else {
             return $CI->db->get()->result_array(); // Results
@@ -403,15 +375,11 @@ class Bi_helper
         $items = array();
         $i = 0;
 
-        if ($show_basic)
-        {
-            if ($whose == 'ARM')
-            {
+        if ($show_basic) {
+            if ($whose == 'ARM') {
                 $CI->db->from($CI->config->item('table_login_setup_classification_varieties') . ' v');
                 $CI->db->select('v.id, v.name, v.status, v.date_created, v.user_created, v.date_updated, v.user_updated');
-            }
-            else
-            {
+            } else {
                 $CI->db->from($CI->config->item('table_bi_setup_competitor_variety') . ' v');
                 $CI->db->select('v.id, v.name, v.status, v.date_created, v.user_created, v.date_updated, v.user_updated');
 
@@ -431,15 +399,12 @@ class Bi_helper
             $CI->db->where('v.id', $item_id);
             $CI->db->where('v.whose', $whose);
             $result = $CI->db->get()->row_array();
-            if (!$result)
-            {
+            if (!$result) {
                 System_helper::invalid_try('Details', $item_id, 'Id Non-Exists');
                 $ajax['status'] = false;
                 $ajax['system_message'] = 'Invalid Try.';
                 $CI->json_return($ajax);
-            }
-            else
-            {
+            } else {
                 $user_ids = array(
                     $result['user_created'] => $result['user_created'],
                     $result['user_updated'] => $result['user_updated']
@@ -451,8 +416,7 @@ class Bi_helper
                     'label_1' => $CI->lang->line('LABEL_VARIETY_NAME'),
                     'value_1' => $result['name'] . ' ( ID: ' . $item_id . ' )'
                 );
-                if ($whose == 'Competitor')
-                {
+                if ($whose == 'Competitor') {
                     $variety_label['label_2'] = $CI->lang->line('LABEL_COMPETITOR_NAME');
                     $variety_label['value_2'] = $result['competitor_name'];
                 }
@@ -484,8 +448,7 @@ class Bi_helper
                         )
                     )
                 );
-                if ($result['user_updated'] > 0)
-                {
+                if ($result['user_updated'] > 0) {
                     $items[$i]['data'][] = array(
                         'label_1' => $CI->lang->line('LABEL_UPDATED_BY'),
                         'value_1' => $user_info[$result['user_updated']]['name'],
@@ -497,11 +460,9 @@ class Bi_helper
             }
         }
 
-        if ($show_characteristics)
-        {
+        if ($show_characteristics) {
             $result = Query_helper::get_info($CI->config->item('table_bi_setup_competitor_variety_characteristics'), '*', array('variety_id =' . $item_id), 1);
-            if ($result)
-            {
+            if ($result) {
                 $user_ids = array(
                     $result['user_created'] => $result['user_created'],
                     $result['user_updated'] => $result['user_updated']
@@ -543,8 +504,7 @@ class Bi_helper
                         )
                     )
                 );
-                if ($result['user_updated'] > 0)
-                {
+                if ($result['user_updated'] > 0) {
                     $items[$i]['data'][] = array(
                         'label_1' => $CI->lang->line('LABEL_UPDATED_BY'),
                         'value_1' => $user_info[$result['user_updated']]['name'],
@@ -552,9 +512,7 @@ class Bi_helper
                         'value_2' => System_helper::display_date_time($result['date_updated'])
                     );
                 }
-            }
-            else
-            {
+            } else {
                 $items[$i] = array(
                     'header' => '+ Characteristics Information',
                     'div_id' => 'info_' . $i,
@@ -568,8 +526,7 @@ class Bi_helper
             $i++;
         }
 
-        if ($show_images)
-        {
+        if ($show_images) {
             $items[$i] = array(
                 'header' => '+ Image Information',
                 'div_id' => 'info_' . $i,
@@ -577,11 +534,9 @@ class Bi_helper
             );
 
             $results = Query_helper::get_info($CI->config->item('table_bi_setup_competitor_variety_files'), '*', array('variety_id =' . $item_id, 'file_type ="' . $CI->config->item('system_file_type_image') . '"', 'status ="' . $CI->config->item('system_status_active') . '"'));
-            if ($results)
-            {
+            if ($results) {
 
-                foreach ($results as $result)
-                {
+                foreach ($results as $result) {
                     $image = '<a href="' . $CI->config->item('system_base_url_picture') . $result['file_location'] . '" target="_blank" class="external blob">
                                 <img class="img img-thumbnail img-responsive" style="width:300px; height:200px" src="' . $CI->config->item('system_base_url_picture') . $result['file_location'] . '" alt="' . $result['file_name'] . '">
                              </a>';
@@ -591,9 +546,7 @@ class Bi_helper
                         'value_1' => '<span style="font-weight:normal"><b style="text-decoration:underline">Remarks:</b><br/>' . nl2br($result['remarks']) . '</span>'
                     );
                 }
-            }
-            else
-            {
+            } else {
                 $items[$i]['data'][] = array(
                     'label_1' => '<p style="text-align:center">No ' . $CI->lang->line('LABEL_IMAGE') . ' has been Uploaded Yet</p>'
                 );
@@ -602,8 +555,7 @@ class Bi_helper
             $i++;
         }
 
-        if ($show_videos)
-        {
+        if ($show_videos) {
             $items[$i] = array(
                 'header' => '+ Video Information',
                 'div_id' => 'info_' . $i,
@@ -611,11 +563,9 @@ class Bi_helper
             );
 
             $results = Query_helper::get_info($CI->config->item('table_bi_setup_competitor_variety_files'), '*', array('variety_id =' . $item_id, 'file_type ="' . $CI->config->item('system_file_type_video') . '"', 'status ="' . $CI->config->item('system_status_active') . '"'));
-            if ($results)
-            {
+            if ($results) {
 
-                foreach ($results as $result)
-                {
+                foreach ($results as $result) {
                     $video = '<video class="img img-thumbnail img-responsive" style="width:350px; max-height:350px" controls>
                                  <source src="' . $CI->config->item('system_base_url_picture') . $result['file_location'] . '"/>
                               </video>';
@@ -625,9 +575,7 @@ class Bi_helper
                         'value_1' => '<span style="font-weight:normal"><b style="text-decoration:underline">Remarks:</b><br/>' . nl2br($result['remarks']) . '</span>'
                     );
                 }
-            }
-            else
-            {
+            } else {
                 $items[$i]['data'][] = array(
                     'label_1' => '<p style="text-align:center">No ' . $CI->lang->line('LABEL_VIDEO') . ' has been Uploaded Yet</p>'
                 );
@@ -642,8 +590,7 @@ class Bi_helper
     public static function cultivation_date_display($date_int)
     {
         $return_value = 0;
-        if ($date_int && strtotime(date('d-M-Y', $date_int)))
-        {
+        if ($date_int && strtotime(date('d-M-Y', $date_int))) {
             $return_value = date('d-F', $date_int);
         }
         return $return_value;
@@ -652,8 +599,7 @@ class Bi_helper
     public static function cultivation_date_sql($date_string)
     {
         $return_value = 0;
-        if (strtotime($date_string))
-        {
+        if (strtotime($date_string)) {
             $return_value = strtotime('1970-' . date('m-d', strtotime($date_string)));
         }
         return $return_value;
@@ -684,8 +630,7 @@ class Bi_helper
         $CI->db->where('item.id', $item_id);
         $CI->db->where('item.status', $CI->config->item('system_status_active'));
         $result = $CI->db->get()->row_array();
-        if (!$result)
-        {
+        if (!$result) {
             System_helper::invalid_try(__FUNCTION__, $item_id, 'ID Not Exists');
             $ajax['status'] = false;
             $ajax['system_message'] = 'Invalid Try.';
@@ -731,8 +676,7 @@ class Bi_helper
                 )
             )
         );
-        if ($result['user_updated'] > 0)
-        {
+        if ($result['user_updated'] > 0) {
             $item['data'][] = array(
                 'label_1' => $CI->lang->line('LABEL_UPDATED_BY'),
                 'value_1' => $user_info[$result['user_updated']]['name'],
@@ -740,8 +684,7 @@ class Bi_helper
                 'value_2' => System_helper::display_date_time($result['date_updated'])
             );
         }
-        if ($result['user_forwarded'] > 0)
-        {
+        if ($result['user_forwarded'] > 0) {
             $item['data'][] = array(
                 'label_1' => $CI->lang->line('LABEL_FORWARDED_BY'),
                 'value_1' => $user_info[$result['user_forwarded']]['name'],
@@ -749,8 +692,7 @@ class Bi_helper
                 'value_2' => System_helper::display_date_time($result['date_forwarded'])
             );
         }
-        if ($result['user_rollback'] > 0)
-        {
+        if ($result['user_rollback'] > 0) {
             $item['data'][] = array(
                 'label_1' => $CI->lang->line('LABEL_ROLLBACK') . ' ' . $CI->lang->line('LABEL_REMARKS'),
                 'value_1' => '<span style="color:' . Bi_helper::$warning_color . '">' . nl2br($result['remarks_rollback']) . '</span>'
@@ -762,8 +704,7 @@ class Bi_helper
                 'value_2' => '<span style="color:' . Bi_helper::$warning_color . '">' . System_helper::display_date_time($result['date_rollback']) . '</span>'
             );
         }
-        if ($result['user_rejected'] > 0)
-        {
+        if ($result['user_rejected'] > 0) {
             $item['data'][] = array(
                 'label_1' => $CI->lang->line('LABEL_REJECTED') . ' ' . $CI->lang->line('LABEL_REMARKS'),
                 'value_1' => '<span style="color:' . Bi_helper::$warning_color . '">' . nl2br($result['remarks_rejected']) . '</span>'
@@ -775,8 +716,7 @@ class Bi_helper
                 'value_2' => '<span style="color:' . Bi_helper::$warning_color . '">' . System_helper::display_date_time($result['date_rejected']) . '</span>'
             );
         }
-        if ($result['user_approved'] > 0)
-        {
+        if ($result['user_approved'] > 0) {
             $item['data'][] = array(
                 'label_1' => $CI->lang->line('LABEL_APPROVED_BY'),
                 'value_1' => $user_info[$result['user_approved']]['name'],
@@ -824,8 +764,7 @@ class Bi_helper
         $CI->db->order_by('crop.ordering', 'ASC');
         $CI->db->order_by('type.ordering', 'ASC');
         $competitor_variety_results = $CI->db->get()->result_array();
-        foreach ($competitor_variety_results as $variety_result)
-        {
+        foreach ($competitor_variety_results as $variety_result) {
             $data['competitor_varieties'][$variety_result['crop_id']][$variety_result['variety_id']] = array(
                 'crop_name' => $variety_result['crop_name'],
                 'crop_type_id' => $variety_result['crop_type_id'],
@@ -848,14 +787,10 @@ class Bi_helper
         $CI->db->order_by('crops.id', 'ASC');
         $CI->db->order_by('crop_types.ordering', 'ASC');
         $data['crops'] = $results = $CI->db->get()->result_array();
-        foreach ($results as $result)
-        {
-            if (isset($data['crop_type_count'][$result['crop_id']]))
-            {
+        foreach ($results as $result) {
+            if (isset($data['crop_type_count'][$result['crop_id']])) {
                 $data['crop_type_count'][$result['crop_id']] += 1;
-            }
-            else
-            {
+            } else {
                 $data['crop_type_count'][$result['crop_id']] = 1;
             }
         }
@@ -886,19 +821,20 @@ class Bi_helper
             70 => 'Seventy', 80 => 'Eighty', 90 => 'Ninety'
         );
         $digits = array('', 'hundred', 'thousand', 'lakh', 'crore');
-        while ($i < $digits_length)
-        {
-            $divider = ($i == 2) ? 10 : 100;
-            $number = floor($no % $divider);
-            $no = floor($no / $divider);
-            $i += $divider == 10 ? 1 : 2;
-            if ($number)
-            {
-                $plural = (($counter = count($str)) && $number > 9) ? 's' : null;
-                $hundred = ($counter == 1 && $str[0]) ? ' and ' : null;
-                $str [] = ($number < 21) ? $words[$number] . ' ' . $digits[$counter] . $plural . ' ' . $hundred : $words[floor($number / 10) * 10] . ' ' . $words[$number % 10] . ' ' . $digits[$counter] . $plural . ' ' . $hundred;
+        if ($number == 0) {
+            $str[] = 'Zero';
+        } else {
+            while ($i < $digits_length) {
+                $divider = ($i == 2) ? 10 : 100;
+                $number = floor($no % $divider);
+                $no = floor($no / $divider);
+                $i += $divider == 10 ? 1 : 2;
+                if ($number) {
+                    $plural = (($counter = count($str)) && $number > 9) ? 's' : null;
+                    $hundred = ($counter == 1 && $str[0]) ? ' and ' : null;
+                    $str [] = ($number < 21) ? $words[$number] . ' ' . $digits[$counter] . $plural . ' ' . $hundred : $words[floor($number / 10) * 10] . ' ' . $words[$number % 10] . ' ' . $digits[$counter] . $plural . ' ' . $hundred;
+                } else $str[] = null;
             }
-            else $str[] = null;
         }
         $Taka = implode('', array_reverse($str));
 

@@ -166,9 +166,9 @@ class Target_ams extends Root_Controller
             }
             $item['amount_target'] = System_helper::get_string_amount($item['amount_target']);
             $item['month'] = DateTime::createFromFormat('!m', $item['month'])->format('F');
-            if(!($item['amount_target'] > 0)){
+            /*if(!($item['amount_target'] > 0)){
                 $item['amount_target'] = '<b>No Target Assigned</b>';
-            }
+            }*/
         }
         $this->json_return($items);
     }
@@ -238,9 +238,9 @@ class Target_ams extends Root_Controller
             }
             $item['amount_target'] = System_helper::get_string_amount($item['amount_target']);
             $item['month'] = DateTime::createFromFormat('!m', $item['month'])->format('F');
-            if(!($item['amount_target'] > 0)){
+            /*if(!($item['amount_target'] > 0)){
                 $item['amount_target'] = '<b>No Target Assigned</b>';
-            }
+            }*/
         }
         $this->json_return($items);
     }
@@ -269,11 +269,11 @@ class Target_ams extends Root_Controller
                 $ajax['system_message'] = $this->lang->line('MSG_INVALID_TRY');
                 $this->json_return($ajax);
             }
-            if ($data['item']['amount_target'] == 0) {
+            /*if ($data['item']['amount_target'] == 0) {
                 $ajax['status'] = false;
                 $ajax['system_message'] = $this->lang->line('MSG_TARGET_NOT_ASSIGNED');
                 $this->json_return($ajax);
-            }
+            }*/
             if ($data['item']['status_forward'] == $this->config->item('system_status_forwarded')) {
                 $ajax['status'] = false;
                 $ajax['system_message'] = $this->lang->line('MSG_FORWARDED_ALREADY');
@@ -361,16 +361,16 @@ class Target_ams extends Root_Controller
         $this->db->where('status', $this->config->item('system_status_active'));
         $result_exist = $this->db->get()->result_array();
 
-        $amount_total = 0;
+        /*$amount_total = 0;
         foreach ($amount_target as $location_id => $amount) {
             $amount_total += $amount;
         }
-
         if ($amount_total > $result['amount_target']) {
             $ajax['status'] = false;
             $ajax['system_message'] = $this->lang->line('LABEL_AMOUNT_TARGET_TOTAL') . " cannot be Greater than " . $this->lang->line('LABEL_ASSIGNED_TARGET');
             $this->json_return($ajax);
-        }
+        }*/
+
         $this->db->trans_start(); //DB Transaction Handle START
 
         if ($result_exist) // EDIT
@@ -483,11 +483,11 @@ class Target_ams extends Root_Controller
                 $ajax['system_message'] = $this->lang->line('MSG_FORWARDED_ALREADY');
                 $this->json_return($ajax);
             }
-            if ($data['item_head']['amount_allocated'] != $data['item_head']['amount_target']) {
+            /*if ($data['item_head']['amount_allocated'] != $data['item_head']['amount_target']) {
                 $ajax['status'] = false;
                 $ajax['system_message'] = $this->lang->line('MSG_TARGET_ALLOCATION');
                 $this->json_return($ajax);
-            }
+            }*/
             $data['id'] = $item_id;
             $data['details_title'] = 'AMS Target Distribution';
 
@@ -570,11 +570,11 @@ class Target_ams extends Root_Controller
             $ajax['system_message'] = $this->lang->line('MSG_FORWARDED_ALREADY');
             $this->json_return($ajax);
         }
-        if ($result['amount_allocated'] != $result['amount_target']) {
+        /*if ($result['amount_allocated'] != $result['amount_target']) {
             $ajax['status'] = false;
             $ajax['system_message'] = $this->lang->line('MSG_TARGET_ALLOCATION');
             $this->json_return($ajax);
-        }
+        }*/
 
         $this->db->trans_start(); //DB Transaction Handle START
 
