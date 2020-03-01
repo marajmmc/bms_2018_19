@@ -133,6 +133,7 @@ $lang['LABEL_STATUS_APPROVE']='Approve Status';
 $lang['LABEL_STATUS_DELIVERY']='Delivery Status';
 $lang['LABEL_STATUS_RECEIVE']='Received Status';
 $lang['LABEL_STATUS_FORWARD']='Forward Status';
+$lang['LABEL_STATUS_DELETE']='Delete Status';
 
 // Common information related
 // ID or Code
