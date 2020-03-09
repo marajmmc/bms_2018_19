@@ -118,6 +118,7 @@ $lang['LABEL_APPROVED_BY'] = 'Approved By';
 $lang['LABEL_DELIVERED_BY'] = 'Delivered By';
 $lang['LABEL_RECEIVED_BY'] = 'Received By';
 $lang['LABEL_DELETED_BY'] = 'Deleted By';
+$lang['LABEL_ASSIGNED_BY'] = 'Assigned By';
 
 /* Status */
 $lang['LABEL_STATUS']='Status';
@@ -223,6 +224,7 @@ $lang['LABEL_TIME_APPROVED']='Approved Time';
 $lang['LABEL_DATE_DELIVERY']='Date for Delivery';
 $lang['LABEL_TIME_DELIVERY']='Delivery Time';
 $lang['LABEL_DATE_CHALLAN']='Date for Challan';
+$lang['LABEL_DATE_ASSIGNED_TIME']='Assigned Time';
 
 //months array
 $lang['LABEL_MONTH'] = 'Month';

@@ -21,7 +21,7 @@ class Target_hosm extends Root_Controller
             $this->json_return($ajax);
         }
         $this->common_view_location = 'target_hosm';
-        $this->load->helper('bi_helper');
+        $this->load->helper('target_helper');
         $this->language_labels();
     }
 
@@ -31,6 +31,7 @@ class Target_hosm extends Root_Controller
         $this->lang->language['LABEL_AMOUNT_TARGET'] = 'Target Amount (BDT)';
         $this->lang->language['LABEL_AMOUNT_TARGET_TOTAL'] = 'Total Target Amount (BDT)';
         $this->lang->language['LABEL_NO_OF_EDIT'] = 'No. of Edit';
+        $this->lang->language['LABEL_REASON_REMARKS'] = 'Reason/ Remarks';
         // Messages
         $this->lang->language['MSG_FORWARDED_ALREADY'] = 'This Target has been Forwarded Already';
     }
@@ -53,10 +54,16 @@ class Target_hosm extends Root_Controller
             $this->system_save();
         } elseif ($action == "details") {
             $this->system_details($id);
+        } elseif ($action == "delete") {
+            $this->system_delete($id);
+        } elseif ($action == "save_delete") {
+            $this->system_save_delete($id);
         } elseif ($action == "forward") {
             $this->system_forward($id);
         } elseif ($action == "save_forward") {
             $this->system_save_forward();
+        }  elseif ($action == "get_delete_history") {
+            $this->system_get_delete_history();
         } elseif ($action == "set_preference") {
             $this->system_set_preference('list');
         } elseif ($action == "set_preference_all") {
@@ -195,7 +202,7 @@ class Target_hosm extends Root_Controller
             $data = array();
             $data['item'] = Array(
                 'id' => 0,
-                'month' => (intval(date('m')) + 1),
+                'month' => intval(date('m')),
                 'year' => intval(date('Y')),
                 'targets' => array()
             );
@@ -351,7 +358,7 @@ class Target_hosm extends Root_Controller
         foreach ($amount_target as $amount) {
             $item_head['amount_target_total'] += $amount;
         }
-        if ($item_id > 0) // Revision Update if EDIT
+        if ($item_id > 0) // Revision Count Update if EDIT
         {
             $item_head['user_updated'] = $user->user_id;
             $item_head['date_updated'] = $time;
@@ -361,12 +368,11 @@ class Target_hosm extends Root_Controller
             foreach ($amount_target as $location_id => $amount) {
                 $items = array(
                     'amount_target' => $amount,
-                    'status' => $this->config->item('system_status_active')
+                    'date_updated' => $time,
+                    'user_updated' => $user->user_id
                 );
-                $item_head['user_updated'] = $user->user_id;
-                $item_head['date_updated'] = $time;
                 $this->db->set('revision_count', 'revision_count+1', FALSE);
-                Query_helper::update($this->config->item('table_bms_target_dsm'), $items, array('hosm_id = ' . $item_id, 'division_id = ' . $location_id)); // UPDATE into Details Table
+                Query_helper::update($this->config->item('table_bms_target_dsm'), $items, array('hosm_id =' . $item_id, 'division_id =' . $location_id, "status ='".$this->config->item('system_status_active')."'")); // UPDATE into Details Table
             }
 
         } else {
@@ -425,6 +431,7 @@ class Target_hosm extends Root_Controller
             $this->db->select("target.{$location_id_field}, target.amount_target");
             $this->db->join($this->config->item('table_login_setup_location_divisions') . ' location', "location.id = target.{$location_id_field}", 'INNER');
             $this->db->select('location.name');
+            $this->db->where('target.status', $this->config->item('system_status_active'));
             $this->db->where("target.{$foreign_key}", $item_id);
             $data['details'] = $this->db->get()->result_array();
 
@@ -439,6 +446,103 @@ class Target_hosm extends Root_Controller
         } else {
             $ajax['status'] = false;
             $ajax['system_message'] = $this->lang->line("YOU_DONT_HAVE_ACCESS");
+            $this->json_return($ajax);
+        }
+    }
+
+    private function system_delete($id)
+    {
+        if (isset($this->permissions['action3']) && ($this->permissions['action3'] == 1)) {
+            if ($id > 0) {
+                $item_id = $id;
+            } else {
+                $item_id = $this->input->post('id');
+            }
+
+            $data = $this->get_item_info($item_id);
+            $data['id'] = $item_id;
+            $data['details_title'] = 'HOSM Target Distribution';
+
+            $location_id_field = 'division_id';
+            $foreign_key = 'hosm_id';
+
+            $this->db->from($this->config->item('table_bms_target_dsm') . ' target');
+            $this->db->select("target.{$location_id_field}, target.amount_target");
+            $this->db->join($this->config->item('table_login_setup_location_divisions') . ' location', "location.id = target.{$location_id_field}", 'INNER');
+            $this->db->select('location.name');
+            $this->db->where('target.status', $this->config->item('system_status_active'));
+            $this->db->where("target.{$foreign_key}", $item_id);
+            $data['details'] = $this->db->get()->result_array();
+
+            $data['title'] = "Delete " . ($this->lang->line('LABEL_DIVISION_NAME')) . "-wise Target (ID: ".$item_id.")";
+            $ajax['status'] = true;
+            $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->controller_url . "/delete", $data, true));
+            if ($this->message) {
+                $ajax['system_message'] = $this->message;
+            }
+            $ajax['system_page_url'] = site_url($this->controller_url . '/index/delete/' . $item_id);
+            $this->json_return($ajax);
+        } else {
+            $ajax['status'] = false;
+            $ajax['system_message'] = $this->lang->line("YOU_DONT_HAVE_ACCESS");
+            $this->json_return($ajax);
+        }
+    }
+
+    private function system_save_delete()
+    {
+        $item_id = $this->input->post('id');
+        $item = $this->input->post('item');
+
+        //Permission Checking
+        if (!(isset($this->permissions['action3']) && ($this->permissions['action3'] == 1))) {
+            $ajax['status'] = false;
+            $ajax['system_message'] = $this->lang->line("YOU_DONT_HAVE_ACCESS");
+            $this->json_return($ajax);
+        }
+
+        $this->common_query(); // Call Common part of below Query Stack
+        // Additional Conditions -STARTS
+        $this->db->where('target.status', $this->config->item('system_status_active'));
+        $this->db->where('target.id', $item_id);
+        // Additional Conditions -ENDS
+        $result = $this->db->get()->row_array();
+        $this->db->flush_cache(); // Flush/Clear current Query Stack
+
+        if (!$result) {
+            System_helper::invalid_try(__FUNCTION__, $item_id, $this->lang->line('MSG_ID_NOT_EXIST'));
+            $ajax['status'] = false;
+            $ajax['system_message'] = $this->lang->line('MSG_INVALID_TRY');
+            $this->json_return($ajax);
+        }
+        if (!$this->check_my_editable($result)) {
+            System_helper::invalid_try(__FUNCTION__, $item_id, $this->lang->line('MSG_LOCATION_ERROR'));
+            $ajax['status'] = false;
+            $ajax['system_message'] = $this->lang->line('MSG_LOCATION_ERROR');
+            $this->json_return($ajax);
+        }
+        if ($item['status'] != $this->config->item('system_status_delete')) {
+            $ajax['status'] = false;
+            $ajax['system_message'] = $this->lang->line('LABEL_STATUS_DELETE') . ' field is required.';
+            $this->json_return($ajax);
+        }
+        if (trim($item['remarks_delete']) == '') {
+            $ajax['status'] = false;
+            $ajax['system_message'] = $this->lang->line('LABEL_REASON_REMARKS') . ' field is required.';
+            $this->json_return($ajax);
+        }
+        $this->db->trans_start(); //DB Transaction Handle START
+
+        Target_helper::delete_target_tree('hosm');
+        $delete_status = Target_helper::$update_success_status;
+
+        $this->db->trans_complete(); //DB Transaction Handle END
+
+        if (($this->db->trans_status() === TRUE) && (!in_array(FALSE, $delete_status))) {
+            $this->message = $this->lang->line("MSG_SAVED_SUCCESS");
+            $this->system_list();
+        } else {
+            $ajax['system_message'] = $this->lang->line("MSG_SAVED_FAIL");
             $this->json_return($ajax);
         }
     }
@@ -469,6 +573,7 @@ class Target_hosm extends Root_Controller
             $this->db->select("target.{$location_id_field}, target.amount_target");
             $this->db->join($this->config->item('table_login_setup_location_divisions') . ' location', "location.id = target.{$location_id_field}", 'INNER');
             $this->db->select('location.name');
+            $this->db->where('target.status', $this->config->item('system_status_active'));
             $this->db->where("target.{$foreign_key}", $item_id);
             $data['details'] = $this->db->get()->result_array();
 
@@ -553,7 +658,6 @@ class Target_hosm extends Root_Controller
 
     private function get_item_info($item_id) // Common Item Details Info
     {
-
         $this->common_query(); // Call Common part of below Query Stack
         // Additional Conditions -STARTS
         $this->db->where('target.status', $this->config->item('system_status_active'));
@@ -593,7 +697,7 @@ class Target_hosm extends Root_Controller
         $data['item'][] = array
         (
             'label_1' => $this->lang->line('LABEL_AMOUNT_TARGET_TOTAL') . ' ( In words )',
-            'value_1' => Bi_helper::get_string_amount_inword($result['amount_target_total']),
+            'value_1' => Target_helper::get_string_amount_inword($result['amount_target_total']),
         );
         $data['item'][] = array
         (
@@ -602,6 +706,15 @@ class Target_hosm extends Root_Controller
             'label_2' => $this->lang->line('LABEL_DATE_CREATED_TIME'),
             'value_2' => System_helper::display_date_time($result['date_created'])
         );
+        if ($result['user_updated'] > 0) {
+            $data['item'][] = array
+            (
+                'label_1' => 'Last '.$this->lang->line('LABEL_UPDATED_BY'),
+                'value_1' => $user_info[$result['user_updated']]['name'] . ' ( ' . $user_info[$result['user_updated']]['employee_id'] . ' )',
+                'label_2' => 'Last '.$this->lang->line('LABEL_DATE_UPDATED_TIME'),
+                'value_2' => System_helper::display_date_time($result['date_updated'])
+            );
+        }
         if ($result['status_forward'] == $this->config->item('system_status_forwarded')) {
             $data['item'][] = array
             (
@@ -619,6 +732,25 @@ class Target_hosm extends Root_Controller
             }
         }
         return $data;
+    }
+
+    private function system_get_delete_history()
+    {
+        $post = $this->input->post();
+        $data = $post;
+
+        if ($data)
+        {
+            $ajax['status'] = true;
+            $ajax['system_content'][] = array("id" => $data['html_container_id'], "html" => $this->load->view($this->controller_url . "/get_delete_history", $data, true));
+            $this->json_return($ajax);
+        }
+        else
+        {
+            $ajax['status'] = false;
+            $ajax['system_message'] = 'No market size found.';
+            $this->json_return($ajax);
+        }
     }
 
     private function check_validation()

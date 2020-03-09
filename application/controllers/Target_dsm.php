@@ -21,7 +21,7 @@ class Target_dsm extends Root_Controller
             $this->json_return($ajax);
         }
         $this->common_view_location = 'target_hosm';
-        $this->load->helper('bi_helper');
+        $this->load->helper('target_helper');
         $this->language_labels();
     }
 
@@ -34,6 +34,7 @@ class Target_dsm extends Root_Controller
         $this->lang->language['LABEL_AMOUNT_REMAINING'] = 'Remaining Amount';
         $this->lang->language['LABEL_LOCATION'] = 'Location';
         $this->lang->language['LABEL_NO_OF_EDIT'] = 'No. of Edit';
+        $this->lang->language['LABEL_REASON_REMARKS'] = 'Reason/ Remarks';
         // Target
         $this->lang->language['LABEL_ASSIGN_TARGET'] = 'Assign Target';
         $this->lang->language['LABEL_ASSIGNED_TARGET'] = 'Assigned Target';
@@ -60,6 +61,10 @@ class Target_dsm extends Root_Controller
             $this->system_save();
         } elseif ($action == "details") {
             $this->system_details($id);
+        } elseif ($action == "delete") {
+            $this->system_delete($id);
+        } elseif ($action == "save_delete") {
+            $this->system_save_delete($id);
         } elseif ($action == "forward") {
             $this->system_forward($id);
         } elseif ($action == "save_forward") {
@@ -147,7 +152,7 @@ class Target_dsm extends Root_Controller
         // Details Table
         $this->db->from($this->config->item('table_bms_target_ams'));
         $this->db->select('dsm_id, SUM(amount_target) AS amount_allocated');
-
+        $this->db->where('status', $this->config->item('system_status_active'));
         $this->db->group_by('dsm_id');
         $results = $this->db->get()->result_array();
 
@@ -216,7 +221,7 @@ class Target_dsm extends Root_Controller
         // Details Table
         $this->db->from($this->config->item('table_bms_target_ams'));
         $this->db->select('dsm_id, SUM(amount_target) AS amount_allocated');
-
+        $this->db->where('status', $this->config->item('system_status_active'));
         $this->db->group_by('dsm_id');
         $results = $this->db->get()->result_array();
 
@@ -275,7 +280,7 @@ class Target_dsm extends Root_Controller
                 $this->json_return($ajax);
             }
 
-            $results = Query_helper::get_info($this->config->item('table_bms_target_ams'), array('zone_id', 'amount_target'), array('dsm_id =' . $item_id));
+            $results = Query_helper::get_info($this->config->item('table_bms_target_ams'), array('zone_id', 'amount_target'), array('dsm_id =' . $item_id, 'status ="' . $this->config->item('system_status_active') . '"'));
             foreach ($results as $result) {
                 $data['item']['targets'][$result['zone_id']] = $result['amount_target'];
             }
@@ -350,11 +355,6 @@ class Target_dsm extends Root_Controller
         $this->db->where('status', $this->config->item('system_status_active'));
         $result_exist = $this->db->get()->result_array();
 
-        $amount_total = 0;
-        foreach ($amount_target as $amount) {
-            $amount_total += $amount;
-        }
-
         $this->db->trans_start(); //DB Transaction Handle START
 
         if ($result_exist) // EDIT
@@ -362,12 +362,11 @@ class Target_dsm extends Root_Controller
             foreach ($amount_target as $location_id => $amount) {
                 $items = array(
                     'amount_target' => $amount,
-                    'status' => $this->config->item('system_status_active'),
                     'date_updated' => $time,
                     'user_updated' => $user->user_id
                 );
                 $this->db->set('revision_count', 'revision_count+1', FALSE);
-                Query_helper::update($this->config->item('table_bms_target_ams'), $items, array('dsm_id = ' . $item_id, 'zone_id = ' . $location_id)); // UPDATE into Details Table
+                Query_helper::update($this->config->item('table_bms_target_ams'), $items, array('dsm_id =' . $item_id, 'zone_id =' . $location_id, "status ='".$this->config->item('system_status_active')."'")); // UPDATE into Details Table
             }
 
         } else {
@@ -387,7 +386,7 @@ class Target_dsm extends Root_Controller
             }
         }
 
-        foreach ($amount_target as $location_id => $amount) {
+        /*foreach ($amount_target as $location_id => $amount) {
             $items = array(
                 'amount_target' => $amount,
                 'status' => $this->config->item('system_status_active')
@@ -396,7 +395,7 @@ class Target_dsm extends Root_Controller
             $item_head['date_updated'] = $time;
             $this->db->set('revision_count', 'revision_count+1', FALSE);
             Query_helper::update($this->config->item('table_bms_target_dsm'), $items, array('hosm_id = ' . $item_id, 'division_id = ' . $location_id)); // UPDATE into Details Table
-        }
+        }*/
         $this->db->trans_complete(); //DB Transaction Handle END
 
         if ($this->db->trans_status() === TRUE) {
@@ -429,6 +428,7 @@ class Target_dsm extends Root_Controller
             $this->db->select("target.{$location_id_field}, target.amount_target");
             $this->db->join($this->config->item('table_login_setup_location_zones') . ' location', "location.id = target.{$location_id_field}", 'INNER');
             $this->db->select('location.name');
+            $this->db->where('target.status', $this->config->item('system_status_active'));
             $this->db->where("target.{$foreign_key}", $item_id);
             $data['details'] = $this->db->get()->result_array();
 
@@ -443,6 +443,103 @@ class Target_dsm extends Root_Controller
         } else {
             $ajax['status'] = false;
             $ajax['system_message'] = $this->lang->line("YOU_DONT_HAVE_ACCESS");
+            $this->json_return($ajax);
+        }
+    }
+
+    private function system_delete($id)
+    {
+        if (isset($this->permissions['action3']) && ($this->permissions['action3'] == 1)) {
+            if ($id > 0) {
+                $item_id = $id;
+            } else {
+                $item_id = $this->input->post('id');
+            }
+
+            $data = $this->get_item_info($item_id);
+            $data['id'] = $item_id;
+            $data['details_title'] = 'DSM Target Distribution';
+
+            $location_id_field = 'zone_id';
+            $foreign_key = 'dsm_id';
+
+            $this->db->from($this->config->item('table_bms_target_ams') . ' details');
+            $this->db->select("details.{$location_id_field}, details.amount_target");
+            $this->db->join($this->config->item('table_login_setup_location_zones') . ' location', "location.id = details.{$location_id_field}", 'INNER');
+            $this->db->select('location.name');
+            $this->db->where('details.status', $this->config->item('system_status_active'));
+            $this->db->where("details.{$foreign_key}", $item_id);
+            $data['details'] = $this->db->get()->result_array();
+
+            $data['title'] = "Delete " . ($this->lang->line('LABEL_ZONE_NAME')) . "-wise Target (ID: " . $item_id . ")";
+            $ajax['status'] = true;
+            $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->controller_url . "/delete", $data, true));
+            if ($this->message) {
+                $ajax['system_message'] = $this->message;
+            }
+            $ajax['system_page_url'] = site_url($this->controller_url . '/index/delete/' . $item_id);
+            $this->json_return($ajax);
+        } else {
+            $ajax['status'] = false;
+            $ajax['system_message'] = $this->lang->line("YOU_DONT_HAVE_ACCESS");
+            $this->json_return($ajax);
+        }
+    }
+
+    private function system_save_delete()
+    {
+        $item_id = $this->input->post('id');
+        $item = $this->input->post('item');
+
+        //Permission Checking
+        if (!(isset($this->permissions['action3']) && ($this->permissions['action3'] == 1))) {
+            $ajax['status'] = false;
+            $ajax['system_message'] = $this->lang->line("YOU_DONT_HAVE_ACCESS");
+            $this->json_return($ajax);
+        }
+
+        $this->common_query(); // Call Common part of below Query Stack
+        // Additional Conditions -STARTS
+        $this->db->where('target.status', $this->config->item('system_status_active'));
+        $this->db->where('target.id', $item_id);
+        // Additional Conditions -ENDS
+        $result = $this->db->get()->row_array();
+        $this->db->flush_cache(); // Flush/Clear current Query Stack
+
+        if (!$result) {
+            System_helper::invalid_try(__FUNCTION__, $item_id, $this->lang->line('MSG_ID_NOT_EXIST'));
+            $ajax['status'] = false;
+            $ajax['system_message'] = $this->lang->line('MSG_INVALID_TRY');
+            $this->json_return($ajax);
+        }
+        if (!$this->check_my_editable($result)) {
+            System_helper::invalid_try(__FUNCTION__, $item_id, $this->lang->line('MSG_LOCATION_ERROR'));
+            $ajax['status'] = false;
+            $ajax['system_message'] = $this->lang->line('MSG_LOCATION_ERROR');
+            $this->json_return($ajax);
+        }
+        if ($item['status'] != $this->config->item('system_status_delete')) {
+            $ajax['status'] = false;
+            $ajax['system_message'] = $this->lang->line('LABEL_STATUS_DELETE') . ' field is required.';
+            $this->json_return($ajax);
+        }
+        if (trim($item['remarks_delete']) == '') {
+            $ajax['status'] = false;
+            $ajax['system_message'] = $this->lang->line('LABEL_REASON_REMARKS') . ' field is required.';
+            $this->json_return($ajax);
+        }
+        $this->db->trans_start(); //DB Transaction Handle START
+
+        Target_helper::delete_target_tree('dsm');
+        $delete_status = Target_helper::$update_success_status;
+
+        $this->db->trans_complete(); //DB Transaction Handle END
+
+        if (($this->db->trans_status() === TRUE) && (!in_array(FALSE, $delete_status))) {
+            $this->message = $this->lang->line("MSG_SAVED_SUCCESS");
+            $this->system_list();
+        } else {
+            $ajax['system_message'] = $this->lang->line("MSG_SAVED_FAIL");
             $this->json_return($ajax);
         }
     }
@@ -478,6 +575,7 @@ class Target_dsm extends Root_Controller
             $this->db->select("details.{$location_id_field}, details.amount_target");
             $this->db->join($this->config->item('table_login_setup_location_zones') . ' location', "location.id = details.{$location_id_field}", 'INNER');
             $this->db->select('location.name');
+            $this->db->where('details.status', $this->config->item('system_status_active'));
             $this->db->where("details.{$foreign_key}", $item_id);
             $data['details'] = $this->db->get()->result_array();
 
@@ -515,6 +613,7 @@ class Target_dsm extends Root_Controller
         $this->db->join($this->config->item('table_bms_target_ams'). ' details', 'details.dsm_id = target.id');
         $this->db->select('SUM(details.amount_target) AS amount_allocated');
 
+        $this->db->where('details.status', $this->config->item('system_status_active'));
         $this->db->where('target.status', $this->config->item('system_status_active'));
         $this->db->where('target.id', $item_id);
 
@@ -575,7 +674,7 @@ class Target_dsm extends Root_Controller
 
         $this->common_query(); // Call Common part of below Query Stack
         // Additional Conditions -STARTS
-        $this->db->join($this->config->item('table_bms_target_ams'). ' details', 'details.dsm_id = target.id', 'LEFT');
+        $this->db->join($this->config->item('table_bms_target_ams'). ' details', "details.dsm_id = target.id AND details.status ='".$this->config->item('system_status_active')."'", 'LEFT');
         $this->db->select('SUM(details.amount_target) AS amount_allocated');
 
         $this->db->where('target.status', $this->config->item('system_status_active'));
@@ -596,8 +695,11 @@ class Target_dsm extends Root_Controller
         //--------- System User Info ------------
         $user_ids = array();
         $user_ids[$result['user_created']] = $result['user_created'];
-        if ($result['user_updated'] > 0) {
-            $user_ids[$result['user_updated']] = $result['user_updated'];
+        if ($result['parent_user_updated'] > 0) {
+            $user_ids[$result['parent_user_updated']] = $result['parent_user_updated'];
+        }
+        if ($result['parent_user_forwarded'] > 0) {
+            $user_ids[$result['parent_user_forwarded']] = $result['parent_user_forwarded'];
         }
         if ($result['user_forwarded'] > 0) {
             $user_ids[$result['user_forwarded']] = $result['user_forwarded'];
@@ -617,16 +719,41 @@ class Target_dsm extends Root_Controller
         $data['item'][] = array
         (
             'label_1' => $this->lang->line('LABEL_AMOUNT_TARGET') . ' ( In words )',
-            'value_1' => Bi_helper::get_string_amount_inword($result['amount_target']),
+            'value_1' => Target_helper::get_string_amount_inword($result['amount_target']),
         );
-        $data['item'][] = array
+        $data['item'][] = array // Parent
         (
             'label_1' => $this->lang->line('LABEL_CREATED_BY'),
             'value_1' => $user_info[$result['user_created']]['name'] . ' ( ' . $user_info[$result['user_created']]['employee_id'] . ' )',
             'label_2' => $this->lang->line('LABEL_DATE_CREATED_TIME'),
             'value_2' => System_helper::display_date_time($result['date_created'])
         );
-        if ($result['status_forward'] == $this->config->item('system_status_forwarded')) {
+        if ($result['parent_user_updated'] > 0) { // Parent
+            $data['item'][] = array
+            (
+                'label_1' => 'Last '.$this->lang->line('LABEL_UPDATED_BY'),
+                'value_1' => $user_info[$result['parent_user_updated']]['name'] . ' ( ' . $user_info[$result['parent_user_updated']]['employee_id'] . ' )',
+                'label_2' => 'Last '.$this->lang->line('LABEL_DATE_UPDATED_TIME'),
+                'value_2' => System_helper::display_date_time($result['parent_date_updated'])
+            );
+        }
+        if ($result['parent_user_forwarded'] > 0) { // Parent
+            $data['item'][] = array
+            (
+                'label_1' => $this->lang->line('LABEL_ASSIGNED_BY'),
+                'value_1' => $user_info[$result['parent_user_forwarded']]['name'] . ' ( ' . $user_info[$result['parent_user_forwarded']]['employee_id'] . ' )',
+                'label_2' => $this->lang->line('LABEL_DATE_ASSIGNED_TIME'),
+                'value_2' => System_helper::display_date_time($result['parent_date_forwarded'])
+            );
+            if (trim($result['parent_remarks_forward']) != '') {
+                $data['item'][] = array
+                (
+                    'label_1' => 'Assigned ' . $this->lang->line('LABEL_REMARKS'),
+                    'value_1' => nl2br($result['parent_remarks_forward'])
+                );
+            }
+        }
+        if ($result['user_forwarded'] > 0) {
             $data['item'][] = array
             (
                 'label_1' => $this->lang->line('LABEL_FORWARDED_BY'),
@@ -637,7 +764,7 @@ class Target_dsm extends Root_Controller
             if (trim($result['remarks_forward']) != '') {
                 $data['item'][] = array
                 (
-                    'label_1' => 'Forward ' . $this->lang->line('LABEL_REMARKS'),
+                    'label_1' => 'Assigned ' . $this->lang->line('LABEL_REMARKS'),
                     'value_1' => nl2br($result['remarks_forward'])
                 );
             }
@@ -695,6 +822,8 @@ class Target_dsm extends Root_Controller
         $this->db->select('target.*, target.revision_count AS no_of_edit');
 
         $this->db->join($this->config->item('table_bms_target_hosm') . ' parent', 'parent.id = target.hosm_id AND parent.status_forward="' . $this->config->item('system_status_forwarded') . '"', 'INNER');
+        $this->db->select('parent.date_updated AS parent_date_updated, parent.user_updated AS parent_user_updated');
+        $this->db->select('parent.remarks_forward AS parent_remarks_forward, parent.date_forwarded AS parent_date_forwarded, parent.user_forwarded AS parent_user_forwarded');
 
         $this->db->join($this->config->item('table_login_setup_location_divisions') . ' division', 'division.id = target.division_id', 'INNER');
         $this->db->select('division.name location');

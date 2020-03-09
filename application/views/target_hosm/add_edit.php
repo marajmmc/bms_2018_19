@@ -150,6 +150,14 @@ $CI->load->view("action_buttons", array('action_buttons' => $action_buttons));
         </div>
     </div>
 
+    <div class="row show-grid" id="deleted_target_history_container">
+        <div class="col-xs-12 display">
+
+            <!----- AJAX Data Here.... ----->
+
+        </div>
+    </div>
+
 </div>
 
 </form>
@@ -160,6 +168,8 @@ $CI->load->view("action_buttons", array('action_buttons' => $action_buttons));
     jQuery(document).ready(function ($) {
         system_preset({controller: '<?php echo $CI->router->class; ?>'});
         system_off_events(); // Triggers
+
+        get_delete_history('hosm');
 
         $(document).on("input", ".amount_target", function (event) {
             var sum = parseFloat(0);
@@ -172,5 +182,38 @@ $CI->load->view("action_buttons", array('action_buttons' => $action_buttons));
             });
             $("#amount_target_total").text(get_string_amount(sum));
         });
+
+        $(document).on("change", "#year, #month", function (event) {
+            get_delete_history('hosm');
+        });
     });
+
+    function get_delete_history(task = '')
+    {
+        <?php if($item['id'] > 0){ ?>
+            var year  = <?php echo $item['year']; ?>;
+            var month = <?php echo $item['month']; ?>;
+        <?php } else { ?>
+            var year  = $('#year').val();
+            var month = $('#month').val();
+        <?php } ?>
+
+        $.ajax({
+            url: "<?php echo site_url($CI->common_view_location.'/index/get_delete_history/') ?>",
+            type: 'POST',
+            datatype: "JSON",
+            data: {
+                html_container_id: '#deleted_target_history_container .display',
+                month: month,
+                year: year,
+                task: task
+            },
+            success: function (data, status) {
+
+            },
+            error: function (xhr, desc, err) {
+                console.log("error");
+            }
+        });
+    }
 </script>

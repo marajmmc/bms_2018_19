@@ -19,7 +19,7 @@ class Target_mde extends Root_Controller
             $ajax['system_message'] = $this->lang->line('MSG_LOCATION_NOT_ASSIGNED_OR_INVALID');
             $this->json_return($ajax);
         }
-        $this->load->helper('bi_helper');
+        $this->load->helper('target_helper');
         $this->language_labels();
     }
 
@@ -105,7 +105,6 @@ class Target_mde extends Root_Controller
         $this->common_query(); // Call Common part of below Query Stack
         // Additional Conditions -STARTS
         $this->db->where('target.status', $this->config->item('system_status_active'));
-        /*$this->db->where('target.status_forward', $this->config->item('system_status_pending'));*/
         // Additional Conditions -ENDS
         $items = $this->db->get()->result_array();
         $this->db->flush_cache(); // Flush/Clear current Query Stack
@@ -167,11 +166,11 @@ class Target_mde extends Root_Controller
         //--------- System User Info ------------
         $user_ids = array();
         $user_ids[$result['user_created']] = $result['user_created'];
-        if ($result['user_updated'] > 0) {
-            $user_ids[$result['user_updated']] = $result['user_updated'];
+        if ($result['parent_user_updated'] > 0) {
+            $user_ids[$result['parent_user_updated']] = $result['parent_user_updated'];
         }
-        if ($result['user_forwarded'] > 0) {
-            $user_ids[$result['user_forwarded']] = $result['user_forwarded'];
+        if ($result['parent_user_forwarded'] > 0) {
+            $user_ids[$result['parent_user_forwarded']] = $result['parent_user_forwarded'];
         }
         $user_info = System_helper::get_users_info($user_ids);
 
@@ -184,7 +183,7 @@ class Target_mde extends Root_Controller
             $show_amount_inword = FALSE;
         }else{
             $amount = System_helper::get_string_amount($result['amount_target']);
-            $amount_inword = Bi_helper::get_string_amount_inword($result['amount_target']);
+            $amount_inword = Target_helper::get_string_amount_inword($result['amount_target']);
             $show_amount_inword = TRUE;
         }
 
@@ -202,26 +201,35 @@ class Target_mde extends Root_Controller
                 'value_1' => $amount_inword
             );
         }
-        $data['item'][] = array
+        $data['item'][] = array // Parent
         (
             'label_1' => $this->lang->line('LABEL_CREATED_BY'),
             'value_1' => $user_info[$result['user_created']]['name'] . ' ( ' . $user_info[$result['user_created']]['employee_id'] . ' )',
             'label_2' => $this->lang->line('LABEL_DATE_CREATED_TIME'),
             'value_2' => System_helper::display_date_time($result['date_created'])
         );
-        if ($result['status_forward'] == $this->config->item('system_status_forwarded')) {
+        if ($result['parent_user_updated'] > 0) { // Parent
             $data['item'][] = array
             (
-                'label_1' => $this->lang->line('LABEL_FORWARDED_BY'),
-                'value_1' => $user_info[$result['user_forwarded']]['name'] . ' ( ' . $user_info[$result['user_forwarded']]['employee_id'] . ' )',
-                'label_2' => $this->lang->line('LABEL_DATE_FORWARDED_TIME'),
-                'value_2' => System_helper::display_date_time($result['date_forwarded'])
+                'label_1' => 'Last '.$this->lang->line('LABEL_UPDATED_BY'),
+                'value_1' => $user_info[$result['parent_user_updated']]['name'] . ' ( ' . $user_info[$result['parent_user_updated']]['employee_id'] . ' )',
+                'label_2' => 'Last '.$this->lang->line('LABEL_DATE_UPDATED_TIME'),
+                'value_2' => System_helper::display_date_time($result['parent_date_updated'])
             );
-            if (trim($result['remarks_forward']) != '') {
+        }
+        if ($result['parent_user_forwarded'] > 0) { // Parent
+            $data['item'][] = array
+            (
+                'label_1' => $this->lang->line('LABEL_ASSIGNED_BY'),
+                'value_1' => $user_info[$result['parent_user_forwarded']]['name'] . ' ( ' . $user_info[$result['parent_user_forwarded']]['employee_id'] . ' )',
+                'label_2' => $this->lang->line('LABEL_DATE_ASSIGNED_TIME'),
+                'value_2' => System_helper::display_date_time($result['parent_date_forwarded'])
+            );
+            if (trim($result['parent_remarks_forward']) != '') {
                 $data['item'][] = array
                 (
-                    'label_1' => 'Forward ' . $this->lang->line('LABEL_REMARKS'),
-                    'value_1' => nl2br($result['remarks_forward'])
+                    'label_1' => 'Assigned ' . $this->lang->line('LABEL_REMARKS'),
+                    'value_1' => nl2br($result['parent_remarks_forward'])
                 );
             }
         }
@@ -238,7 +246,8 @@ class Target_mde extends Root_Controller
         $this->db->select('target.*, target.revision_count AS no_of_edit');
 
         $this->db->join($this->config->item('table_bms_target_ams') . ' parent', 'parent.id = target.ams_id AND parent.status_forward="' . $this->config->item('system_status_forwarded') . '"', 'INNER');
-        $this->db->select('parent.status_forward, parent.remarks_forward, parent.date_forwarded, parent.user_forwarded');
+        $this->db->select('parent.date_updated AS parent_date_updated, parent.user_updated AS parent_user_updated');
+        $this->db->select('parent.remarks_forward AS parent_remarks_forward, parent.date_forwarded AS parent_date_forwarded, parent.user_forwarded AS parent_user_forwarded');
 
         $this->db->join($this->config->item('table_login_setup_location_territories') . ' territory', 'territory.id = target.territory_id', 'INNER');
         $this->db->select('territory.name location');

@@ -107,7 +107,7 @@ $CI->load->view("action_buttons", array('action_buttons' => $action_buttons));
         </div>
         <div class="col-sm-4 col-xs-8">
             <label class="control-label text-success bg-success" style="padding:5px;margin:0"><?php echo System_helper::get_string_amount($item['amount_target']); ?></label>
-            <span style="font-size:0.85em">( <b>In-words:</b> <?php echo Bi_helper::get_string_amount_inword($item['amount_target']); ?> )</span>
+            <span style="font-size:0.85em">( <b>In-words:</b> <?php echo Target_helper::get_string_amount_inword($item['amount_target']); ?> )</span>
             <input type="hidden" value="<?php echo $item['amount_target']; ?>" id="target_assigned" />
         </div>
     </div>
@@ -171,11 +171,20 @@ $CI->load->view("action_buttons", array('action_buttons' => $action_buttons));
             </table>
         </div>
     </div>
+
+    <div class="row show-grid" id="deleted_target_history_container">
+        <div class="col-xs-12 display">
+
+            <!----- AJAX Data Here.... ----->
+
+        </div>
+    </div>
+
 </div>
 
 </form>
 
-<style type="text/css"> label { margin-top: 5px;} th{text-align:center} table{margin:0 !important}</style>
+<style type="text/css"> label { margin-top: 5px;} th{text-align:center}</style>
 
 <script type="text/javascript">
     jQuery(document).ready(function ($) {
@@ -183,6 +192,8 @@ $CI->load->view("action_buttons", array('action_buttons' => $action_buttons));
         system_off_events(); // Triggers
 
         calculate_remaining_target();
+
+        get_delete_history('dsm');
 
         $(document).on("input", ".amount_target", function (event) {
             var item_amount = parseFloat(0);
@@ -215,5 +226,34 @@ $CI->load->view("action_buttons", array('action_buttons' => $action_buttons));
             $("#target_remaining_msg").addClass('hide').text('');
         }
         $("#target_remaining").text(get_string_amount(target_remaining));
+    }
+
+    function get_delete_history(task = '')
+    {
+        <?php if($item['id'] > 0){ ?>
+            var year  = <?php echo $item['year']; ?>;
+            var month = <?php echo $item['month']; ?>;
+        <?php } else { ?>
+            var year  = $('#year').val();
+            var month = $('#month').val();
+        <?php } ?>
+
+        $.ajax({
+            url: "<?php echo site_url($CI->common_view_location.'/index/get_delete_history/') ?>",
+            type: 'POST',
+            datatype: "JSON",
+            data: {
+                html_container_id: '#deleted_target_history_container .display',
+                month: month,
+                year: year,
+                task: task
+            },
+            success: function (data, status) {
+
+            },
+            error: function (xhr, desc, err) {
+                console.log("error");
+            }
+        });
     }
 </script>

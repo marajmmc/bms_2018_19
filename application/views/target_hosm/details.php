@@ -39,12 +39,15 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
         </div>
         <div id="target_distribution" class="panel-collapse collapse in">
             <table class="table table-bordered">
-                <tr>
-                    <th>Location</th>
-                    <th><?php echo $CI->lang->line('LABEL_AMOUNT_TARGET'); ?></th>
-                </tr>
                 <?php
-                if($details){
+                if($details)
+                {
+                    ?>
+                    <tr>
+                        <th>Location</th>
+                        <th><?php echo $CI->lang->line('LABEL_AMOUNT_TARGET'); ?></th>
+                    </tr>
+                    <?php
                     $sum=0;
                     foreach($details as $detail)
                     {
@@ -61,7 +64,7 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                         <th style="text-align:right">Total:</th>
                         <th>
                             <?php echo System_helper::get_string_amount($sum); ?>
-                            <span style="font-size:0.85em">( <b>In-words:</b> <?php echo Bi_helper::get_string_amount_inword($sum); ?> )</span>
+                            <span style="font-size:0.85em">( <b>In-words:</b> <?php echo Target_helper::get_string_amount_inword($sum); ?> )</span>
                         </th>
                     </tr>
                 <?php
