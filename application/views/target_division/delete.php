@@ -4,12 +4,7 @@ $CI = & get_instance();
 $action_buttons = array();
 $action_buttons[] = array
 (
-    'label' => $CI->lang->line("ACTION_BACK") . ' to Pending List',
-    'href' => site_url($CI->controller_url . '/index/list')
-);
-$action_buttons[] = array
-(
-    'label' => $CI->lang->line("ACTION_BACK") . ' to All List',
+    'label' => $CI->lang->line("ACTION_BACK"),
     'href' => site_url($CI->controller_url . '/index/list_all')
 );
 $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
@@ -58,10 +53,10 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                     ?>
                     <tr>
                         <th style="text-align:right">Total:</th>
-                        <td>
+                        <th style="text-align:right">
                             <?php echo System_helper::get_string_amount($sum); ?> <br/>
                             <span style="font-size:0.85em">( <b>In-words:</b> <?php echo Target_helper::get_string_amount_inword($sum); ?> )</span>
-                        </td>
+                        </th>
                     </tr>
                 </table>
             </div>

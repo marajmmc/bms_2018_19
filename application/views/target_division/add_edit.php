@@ -184,7 +184,7 @@ $CI->load->view("action_buttons", array('action_buttons' => $action_buttons));
 
 </form>
 
-<style type="text/css"> label { margin-top: 5px;} th{text-align:center} table{margin:0 !important}</style>
+<style type="text/css"> label { margin-top: 5px;} th{text-align:center}</style>
 
 <script type="text/javascript">
     jQuery(document).ready(function ($) {
@@ -193,7 +193,7 @@ $CI->load->view("action_buttons", array('action_buttons' => $action_buttons));
 
         calculate_remaining_target();
 
-        get_delete_history('ams');
+        get_delete_history();
 
         $(document).on("input", ".amount_target", function (event) {
             var item_amount = parseFloat(0);
@@ -228,25 +228,24 @@ $CI->load->view("action_buttons", array('action_buttons' => $action_buttons));
         $("#target_remaining").text(get_string_amount(target_remaining));
     }
 
-    function get_delete_history(task = '')
+    function get_delete_history()
     {
         <?php if($item['id'] > 0){ ?>
-        var year  = <?php echo $item['year']; ?>;
-        var month = <?php echo $item['month']; ?>;
+            var year  = <?php echo $item['year']; ?>;
+            var month = <?php echo $item['month']; ?>;
         <?php } else { ?>
-        var year  = $('#year').val();
-        var month = $('#month').val();
+            var year  = $('#year').val();
+            var month = $('#month').val();
         <?php } ?>
 
         $.ajax({
-            url: "<?php echo site_url($CI->common_view_location.'/index/get_delete_history/') ?>",
+            url: "<?php echo site_url($CI->controller_url.'/index/get_delete_history/') ?>",
             type: 'POST',
             datatype: "JSON",
             data: {
                 html_container_id: '#deleted_target_history_container .display',
                 month: month,
-                year: year,
-                task: task
+                year: year
             },
             success: function (data, status) {
 

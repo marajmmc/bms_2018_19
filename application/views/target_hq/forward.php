@@ -4,18 +4,13 @@ $CI = & get_instance();
 $action_buttons = array();
 $action_buttons[] = array
 (
-    'label' => $CI->lang->line("ACTION_BACK") . ' to Pending List',
-    'href' => site_url($CI->controller_url . '/index/list')
-);
-$action_buttons[] = array
-(
-    'label' => $CI->lang->line("ACTION_BACK") . ' to All List',
-    'href' => site_url($CI->controller_url . '/index/list_all')
+    'label' => $CI->lang->line("ACTION_BACK"),
+    'href' => site_url($CI->controller_url)
 );
 $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
 ?>
 
-<form class="form_valid" id="save_form" action="<?php echo site_url($CI->controller_url . '/index/save_delete'); ?>" method="post">
+<form class="form_valid" id="save_form" action="<?php echo site_url($CI->controller_url . '/index/save_forward'); ?>" method="post">
     <input type="hidden" id="id" name="id" value="<?php echo $id; ?>"/>
 
     <div class="row widget">
@@ -58,10 +53,10 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                     ?>
                     <tr>
                         <th style="text-align:right">Total:</th>
-                        <td>
+                        <th style="text-align:right">
                             <?php echo System_helper::get_string_amount($sum); ?> <br/>
                             <span style="font-size:0.85em">( <b>In-words:</b> <?php echo Target_helper::get_string_amount_inword($sum); ?> )</span>
-                        </td>
+                        </th>
                     </tr>
                 </table>
             </div>
@@ -69,22 +64,22 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
 
         <div class="row show-grid">
             <div class="col-xs-4">
-                <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_STATUS_DELETE'); ?> <span style="color:#FF0000">*</span></label>
+                <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_STATUS_FORWARD'); ?> <span style="color:#FF0000">*</span></label>
             </div>
             <div class="col-xs-4">
-                <select name="item[status]" class="form-control status-combo">
+                <select name="item[status_forward]" class="form-control status-combo">
                     <option value=""><?php echo $CI->lang->line('SELECT'); ?></option>
-                    <option value="<?php echo $CI->config->item('system_status_delete'); ?>"><?php echo $CI->lang->line('LABEL_DELETED'); ?></option>
+                    <option value="<?php echo $CI->config->item('system_status_forwarded'); ?>"><?php echo $CI->lang->line('LABEL_FORWARDED'); ?></option>
                 </select>
             </div>
         </div>
 
         <div class="row show-grid">
             <div class="col-xs-4">
-                <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_REASON_REMARKS'); ?> <span style="color:#FF0000">*</span></label>
+                <label class="control-label pull-right"><?php echo $CI->lang->line('LABEL_REMARKS'); ?> &nbsp;</label>
             </div>
             <div class="col-xs-4">
-                <textarea id="remarks" name="item[remarks_delete]" class="form-control"></textarea>
+                <textarea id="remarks" name="item[remarks_forward]" class="form-control"></textarea>
             </div>
         </div>
 
@@ -113,8 +108,8 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
 
         $(".status-combo").on('change', function (event) {
             var options = $(this).val();
-            if (options == '<?php echo $CI->config->item('system_status_delete'); ?>') {
-                $("#button_action_save").attr('data-message-confirm', '<?php echo $CI->lang->line('MSG_CONFIRM_DELETE'); ?>');
+            if (options == '<?php echo $CI->config->item('system_status_forwarded'); ?>') {
+                $("#button_action_save").attr('data-message-confirm', '<?php echo $CI->lang->line('MSG_CONFIRM_FORWARD'); ?>');
             } else {
                 $("#button_action_save").removeAttr('data-message-confirm');
             }

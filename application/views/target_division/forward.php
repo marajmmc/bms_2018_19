@@ -54,10 +54,10 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                     ?>
                     <tr>
                         <th style="text-align:right">Total:</th>
-                        <td>
+                        <th style="text-align:right">
                             <?php echo System_helper::get_string_amount($sum); ?> <br/>
                             <span style="font-size:0.85em">( <b>In-words:</b> <?php echo Target_helper::get_string_amount_inword($sum); ?> )</span>
-                        </td>
+                        </th>
                     </tr>
                 </table>
             </div>

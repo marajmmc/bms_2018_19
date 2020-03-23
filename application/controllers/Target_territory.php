@@ -1,11 +1,12 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed');
 
-class Target_mde extends Root_Controller
+class Target_territory extends Root_Controller
 {
     public $message;
     public $permissions;
     public $controller_url;
     public $locations;
+    public $common_view_location;
 
     public function __construct()
     {
@@ -19,6 +20,7 @@ class Target_mde extends Root_Controller
             $ajax['system_message'] = $this->lang->line('MSG_LOCATION_NOT_ASSIGNED_OR_INVALID');
             $this->json_return($ajax);
         }
+        $this->common_view_location = 'target_hq';
         $this->load->helper('target_helper');
         $this->language_labels();
     }
@@ -34,15 +36,20 @@ class Target_mde extends Root_Controller
     {
         if ($action == "list") {
             $this->system_list();
-        } elseif ($action == "get_items") {
+        }
+        elseif ($action == "get_items") {
             $this->system_get_items();
-        } elseif ($action == "details") {
+        }
+        elseif ($action == "details") {
             $this->system_details($id);
-        } elseif ($action == "set_preference") {
+        }
+        elseif ($action == "set_preference") {
             $this->system_set_preference('list');
-        } elseif ($action == "save_preference") {
+        }
+        elseif ($action == "save_preference") {
             System_helper::save_preference();
-        } else {
+        }
+        else {
             $this->system_list();
         }
     }
@@ -71,7 +78,8 @@ class Target_mde extends Root_Controller
             $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view("preference_add_edit", $data, true));
             $ajax['system_page_url'] = site_url($this->controller_url . '/index/set_preference_' . $method);
             $this->json_return($ajax);
-        } else {
+        }
+        else {
             $ajax['status'] = false;
             $ajax['system_message'] = $this->lang->line("YOU_DONT_HAVE_ACCESS");
             $this->json_return($ajax);
@@ -85,7 +93,7 @@ class Target_mde extends Root_Controller
             $method = 'list';
             $data = array();
             $data['system_preference_items'] = System_helper::get_preference($user->user_id, $this->controller_url, $method, $this->get_preference_headers($method));
-            $data['title'] = "Monthly MDE Target List";
+            $data['title'] = "Monthly " . $this->lang->line('LABEL_TERRITORY_NAME') . " Target List";
             $ajax['status'] = true;
             $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->controller_url . "/list", $data, true));
             if ($this->message) {
@@ -93,7 +101,8 @@ class Target_mde extends Root_Controller
             }
             $ajax['system_page_url'] = site_url($this->controller_url . '/index/' . $method);
             $this->json_return($ajax);
-        } else {
+        }
+        else {
             $ajax['status'] = false;
             $ajax['system_message'] = $this->lang->line("YOU_DONT_HAVE_ACCESS");
             $this->json_return($ajax);
@@ -112,7 +121,7 @@ class Target_mde extends Root_Controller
         foreach ($items as &$item) {
             $item['amount_target'] = System_helper::get_string_amount($item['amount_target']);
             $item['month'] = DateTime::createFromFormat('!m', $item['month'])->format('F');
-            if(!($item['amount_target'] > 0)){
+            if (!($item['amount_target'] > 0)) {
                 $item['amount_target'] = '<b>No Target Assigned</b>';
             }
         }
@@ -124,7 +133,8 @@ class Target_mde extends Root_Controller
         if (isset($this->permissions['action0']) && ($this->permissions['action0'] == 1)) {
             if ($id > 0) {
                 $item_id = $id;
-            } else {
+            }
+            else {
                 $item_id = $this->input->post('id');
             }
 
@@ -138,7 +148,8 @@ class Target_mde extends Root_Controller
             }
             $ajax['system_page_url'] = site_url($this->controller_url . '/index/details/' . $item_id);
             $this->json_return($ajax);
-        } else {
+        }
+        else {
             $ajax['status'] = false;
             $ajax['system_message'] = $this->lang->line("YOU_DONT_HAVE_ACCESS");
             $this->json_return($ajax);
@@ -166,22 +177,25 @@ class Target_mde extends Root_Controller
         //--------- System User Info ------------
         $user_ids = array();
         $user_ids[$result['user_created']] = $result['user_created'];
-        if ($result['parent_user_updated'] > 0) {
-            $user_ids[$result['parent_user_updated']] = $result['parent_user_updated'];
-        }
         if ($result['parent_user_forwarded'] > 0) {
             $user_ids[$result['parent_user_forwarded']] = $result['parent_user_forwarded'];
         }
         $user_info = System_helper::get_users_info($user_ids);
 
         //---------------- Basic Info ----------------
+        $user_acting = $this->lang->line('LABEL_TERRITORY_NAME') . " ";
+        $parent_acting = $this->lang->line('LABEL_ZONE_NAME') . " ";
+        $user_acting_target = $user_acting . ' target ';
+        $parent_acting_target = $parent_acting . ' target ';
+
         $data = array();
         $data['item_head'] = $result;
 
-        if(!($result['amount_target'] > 0)){
+        if (!($result['amount_target'] > 0)) {
             $amount_inword = $amount = '<span style="color:#FF0000">- No Target Assigned -</span>';
             $show_amount_inword = FALSE;
-        }else{
+        }
+        else {
             $amount = System_helper::get_string_amount($result['amount_target']);
             $amount_inword = Target_helper::get_string_amount_inword($result['amount_target']);
             $show_amount_inword = TRUE;
@@ -191,44 +205,28 @@ class Target_mde extends Root_Controller
         (
             'label_1' => 'Target ' . $this->lang->line('LABEL_MONTH'),
             'value_1' => (DateTime::createFromFormat('!m', $result['month'])->format('F')) . ', ' . $result['year'],
-            'label_2' => $this->lang->line('LABEL_AMOUNT_TARGET'),
+            'label_2' => $parent_acting . $this->lang->line('LABEL_AMOUNT_TARGET'),
             'value_2' => $amount
         );
-        if($show_amount_inword){
+        if ($show_amount_inword) {
             $data['item'][] = array
             (
-                'label_1' => $this->lang->line('LABEL_AMOUNT_TARGET') . ' ( In words )',
+                'label_1' => $this->lang->line('LABEL_AMOUNT_TARGET') . ' ( In-words )',
                 'value_1' => $amount_inword
-            );
-        }
-        $data['item'][] = array // Parent
-        (
-            'label_1' => $this->lang->line('LABEL_CREATED_BY'),
-            'value_1' => $user_info[$result['user_created']]['name'] . ' ( ' . $user_info[$result['user_created']]['employee_id'] . ' )',
-            'label_2' => $this->lang->line('LABEL_DATE_CREATED_TIME'),
-            'value_2' => System_helper::display_date_time($result['date_created'])
-        );
-        if ($result['parent_user_updated'] > 0) { // Parent
-            $data['item'][] = array
-            (
-                'label_1' => 'Last '.$this->lang->line('LABEL_UPDATED_BY'),
-                'value_1' => $user_info[$result['parent_user_updated']]['name'] . ' ( ' . $user_info[$result['parent_user_updated']]['employee_id'] . ' )',
-                'label_2' => 'Last '.$this->lang->line('LABEL_DATE_UPDATED_TIME'),
-                'value_2' => System_helper::display_date_time($result['parent_date_updated'])
             );
         }
         if ($result['parent_user_forwarded'] > 0) { // Parent
             $data['item'][] = array
             (
-                'label_1' => $this->lang->line('LABEL_ASSIGNED_BY'),
+                'label_1' => $parent_acting_target . $this->lang->line('LABEL_FORWARDED_BY'),
                 'value_1' => $user_info[$result['parent_user_forwarded']]['name'] . ' ( ' . $user_info[$result['parent_user_forwarded']]['employee_id'] . ' )',
-                'label_2' => $this->lang->line('LABEL_DATE_ASSIGNED_TIME'),
+                'label_2' => $parent_acting_target . $this->lang->line('LABEL_DATE_FORWARDED_TIME'),
                 'value_2' => System_helper::display_date_time($result['parent_date_forwarded'])
             );
             if (trim($result['parent_remarks_forward']) != '') {
                 $data['item'][] = array
                 (
-                    'label_1' => 'Assigned ' . $this->lang->line('LABEL_REMARKS'),
+                    'label_1' => $parent_acting . $this->lang->line('LABEL_REMARKS'),
                     'value_1' => nl2br($result['parent_remarks_forward'])
                 );
             }
@@ -242,11 +240,10 @@ class Target_mde extends Root_Controller
 
         $this->db->start_cache();
 
-        $this->db->from($this->config->item('table_bms_target_tsme') . ' target');
+        $this->db->from($this->config->item('table_bms_target_territory') . ' target');
         $this->db->select('target.*, target.revision_count AS no_of_edit');
 
-        $this->db->join($this->config->item('table_bms_target_ams') . ' parent', 'parent.id = target.ams_id AND parent.status_forward="' . $this->config->item('system_status_forwarded') . '"', 'INNER');
-        $this->db->select('parent.date_updated AS parent_date_updated, parent.user_updated AS parent_user_updated');
+        $this->db->join($this->config->item('table_bms_target_zone') . ' parent', 'parent.id = target.target_zone_id AND parent.status_forward="' . $this->config->item('system_status_forwarded') . '"', 'INNER');
         $this->db->select('parent.remarks_forward AS parent_remarks_forward, parent.date_forwarded AS parent_date_forwarded, parent.user_forwarded AS parent_user_forwarded');
 
         $this->db->join($this->config->item('table_login_setup_location_territories') . ' territory', 'territory.id = target.territory_id', 'INNER');
