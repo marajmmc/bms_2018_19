@@ -53,10 +53,12 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                     ?>
                     <tr>
                         <th style="text-align:right">Total:</th>
-                        <th style="text-align:right">
-                            <?php echo System_helper::get_string_amount($sum); ?> <br/>
-                            <span style="font-size:0.85em">( <b>In-words:</b> <?php echo Target_helper::get_string_amount_inword($sum); ?> )</span>
-                        </th>
+                        <th style="text-align:right"><?php echo System_helper::get_string_amount($sum); ?></th>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="font-size:0.85em; text-align:center">
+                            ( <b>Total In-words:</b> <?php echo Target_helper::get_string_amount_inword($sum); ?> )
+                        </td>
                     </tr>
                 </table>
             </div>
@@ -97,7 +99,7 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
 </form>
 
 <style>
-    #target_distribution table{width:500px; margin:0 auto}
+    #target_distribution table{width:50%; margin:0 auto}
     th{text-align:center}
     #target_distribution td:last-child{text-align:right}
 </style>

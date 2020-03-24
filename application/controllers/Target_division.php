@@ -48,7 +48,7 @@ class Target_division extends Root_Controller
         $this->lang->language['MSG_TARGET_ALLOCATION'] = 'No Target Amount has been Allocated.';
     }
 
-    public function index($action = "list", $id = 0)
+    public function index($action = "list", $id = 0, $year = '', $month = '')
     {
         if ($action == "list") {
             $this->system_list();
@@ -78,7 +78,7 @@ class Target_division extends Root_Controller
             $this->system_details($id);
         }
         elseif ($action == "details_deleted") {
-            $this->system_details_deleted($id);
+            $this->system_details_deleted($id, $year, $month);
         }
         elseif ($action == "delete") {
             $this->system_delete($id);
@@ -133,9 +133,6 @@ class Target_division extends Root_Controller
             $data['amount_allocated'] = 1;
             $data['amount_remaining'] = 1;
             $data['status_forward'] = 1;
-        }
-        if ($method == 'list_deleted') {
-            $data['no_of_delete'] = 1;
         }
         return $data;
     }
@@ -300,7 +297,7 @@ class Target_division extends Root_Controller
             $data['system_preference_items'] = System_helper::get_preference($user->user_id, $this->controller_url, $method, $this->get_preference_headers($method));
             $data['title'] = "Monthly " . ($this->lang->line('LABEL_HEAD_OFFICE_NAME')) . " Target Deleted List";
             $ajax['status'] = true;
-            $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->controller_url . "/list_deleted", $data, true));
+            $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->common_view_location . "/list_deleted", $data, true));
             if ($this->message) {
                 $ajax['system_message'] = $this->message;
             }
@@ -319,16 +316,20 @@ class Target_division extends Root_Controller
         $user = User_helper::get_user();
 
         $this->db->from($this->config->item('table_bms_target_division'));
-        $this->db->select('id, year, month, SUM(revision_count_delete) AS no_of_delete');
+        $this->db->select('year, month');
 
-        $this->db->where("user_deleted", $user->user_id);
         $this->db->where("revision_count_delete > ", 0);
-
+        if ($user->user_group != $this->config->item('USER_GROUP_SUPER')) // If not SuperAdmin, Then user can only access own Deleted Item.
+        {
+            $this->db->where("user_deleted", $user->user_id);
+        }
         $this->db->group_by("year");
         $this->db->group_by("month");
         $items = $this->db->get()->result_array();
 
+        $i = 1;
         foreach ($items as &$item) {
+            $item['id'] = $i++;
             $item['month'] = DateTime::createFromFormat('!m', $item['month'])->format('F');
         }
         $this->json_return($items);
@@ -518,19 +519,35 @@ class Target_division extends Root_Controller
         }
     }
 
-    private function system_details_deleted($id)
+    private function system_details_deleted($id, $year=0, $month=0)
     {
-        if (isset($this->permissions['action0']) && ($this->permissions['action0'] == 1)) {
-            if ($id > 0) {
+        if (isset($this->permissions['action0']) && ($this->permissions['action0'] == 1))
+        {
+            if ($id > 0)
+            {
                 $item_id = $id;
             }
-            else {
+            else
+            {
                 $item_id = $this->input->post('id');
             }
-            $result = Query_helper::get_info($this->config->item('table_bms_target_division'), array('year', 'month'), array('id ='.$item_id), 1);
+
+            $post = $this->input->post();
+            if ($year > 0 && $month > 0) {
+                // Then OK!
+            }
+            else if(isset($post['year']) && isset($post['month']))
+            {
+                $year = $post['year'];
+                if(is_string($post['month']))
+                    $month = date_parse($post['month'])['month'];
+                else
+                    $month = $post['month'];
+            }
+
             $params = array(
-                'year' => $result['year'],
-                'month' => $result['month'],
+                'year' => $year,
+                'month' => $month,
                 'main_table' => $this->config->item('table_bms_target_division'),
                 'details_table' => $this->config->item('table_bms_target_zone'),
                 'location_table' => $this->config->item('table_login_setup_location_zones'),
@@ -539,13 +556,13 @@ class Target_division extends Root_Controller
             );
             $data = Target_helper::get_delete_info($params);
 
-            $data['title'] = ($this->lang->line('LABEL_HEAD_OFFICE_NAME')) . " Deleted Target Details ( " . DateTime::createFromFormat('!m', $result['month'])->format('F') . ", {$result['year']} )";
+            $data['title'] = ($this->lang->line('LABEL_DIVISION_NAME')) . " Deleted Target Details ( " . (DateTime::createFromFormat('!m', $month)->format('F')).", {$year} )";
             $ajax['status'] = true;
             $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->common_view_location . "/details_deleted", $data, true));
             if ($this->message) {
                 $ajax['system_message'] = $this->message;
             }
-            $ajax['system_page_url'] = site_url($this->controller_url . '/index/details_deleted/' . $item_id);
+            $ajax['system_page_url'] = site_url($this->controller_url . '/index/details_deleted/' . $item_id . '/' . $year . '/' . $month);
             $this->json_return($ajax);
         }
         else {
@@ -592,6 +609,61 @@ class Target_division extends Root_Controller
     private function system_save_delete()
     {
         $item_id = $this->input->post('id');
+        $item = $this->input->post('item');
+        if (!(isset($this->permissions['action3']) && ($this->permissions['action3'] == 1)))
+        {
+            $ajax['status'] = false;
+            $ajax['system_message'] = $this->lang->line("YOU_DONT_HAVE_ACCESS");
+            $this->json_return($ajax);
+        }
+        if ($item['status'] != $this->config->item('system_status_delete')) {
+            $ajax['status'] = false;
+            $ajax['system_message'] = $this->lang->line('LABEL_STATUS_DELETE') . ' field is required.';
+            $this->json_return($ajax);
+        }
+        if (trim($item['remarks_delete']) == '') {
+            $ajax['status'] = false;
+            $ajax['system_message'] = $this->lang->line('LABEL_REASON_REMARKS') . ' field is required.';
+            $this->json_return($ajax);
+        }
+        $result = Query_helper::get_info($this->config->item('table_bms_target_division'), array('*'), array('id =' . $item_id),1);
+        if (!$result)
+        {
+            $ajax['status'] = false;
+            $ajax['system_message'] = 'Invalid Try';
+            $this->json_return($ajax);
+        }
+        if ($result['status'] != $this->config->item('system_status_active'))
+        {
+            $ajax['status'] = false;
+            $ajax['system_message'] = 'Already Deleted';
+            $this->json_return($ajax);
+        }
+        if ($result['status_forward'] != $this->config->item('system_status_forwarded'))
+        {
+            $ajax['status'] = false;
+            $ajax['system_message'] = $this->lang->line('MSG_FORWARDED_DELETE');
+            $this->json_return($ajax);
+        }
+
+        $this->db->trans_start(); //DB Transaction Handle START
+
+        Target_helper::delete_target_tree('division');
+
+        $this->db->trans_complete(); //DB Transaction Handle END
+
+        if (($this->db->trans_status() === TRUE))
+        {
+            $this->message = $this->lang->line("MSG_SAVED_SUCCESS");
+            $this->system_list();
+        }
+        else
+        {
+            $ajax['system_message'] = $this->lang->line("MSG_SAVED_FAIL");
+            $this->json_return($ajax);
+        }
+
+        /*$item_id = $this->input->post('id');
         $item = $this->input->post('item');
 
         //Permission Checking
@@ -651,7 +723,7 @@ class Target_division extends Root_Controller
         else {
             $ajax['system_message'] = $this->lang->line("MSG_SAVED_FAIL");
             $this->json_return($ajax);
-        }
+        }*/
     }
 
     private function system_forward($id)

@@ -135,8 +135,7 @@ $CI->load->view('action_buttons', array('action_buttons' => $action_buttons));
                 columns: [
                     { text: '<?php echo $CI->lang->line('LABEL_ID'); ?>', pinned: true, dataField: 'id', width: '50', cellsalign: 'right', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['id']?0:1;?>},
                     { text: '<?php echo $CI->lang->line('LABEL_YEAR'); ?>', pinned: true, dataField: 'year', width: '60', cellsalign: 'right', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['year']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_MONTH'); ?>', pinned: true, dataField: 'month', width: '100', cellsalign: 'right', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['month']?0:1;?>},
-                    { text: '<?php echo $CI->lang->line('LABEL_NO_OF_DELETE'); ?>', pinned: true, dataField: 'no_of_delete', width: '100', cellsalign: 'right', filtertype: 'none', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['no_of_delete']?0:1;?>}
+                    { text: '<?php echo $CI->lang->line('LABEL_MONTH'); ?>', pinned: true, dataField: 'month', width: '100', cellsalign: 'right', filtertype: 'list', rendered: tooltiprenderer, hidden: <?php echo $system_preference_items['month']?0:1;?>}
                 ]
             });
     });

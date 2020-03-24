@@ -48,7 +48,7 @@ class Target_zone extends Root_Controller
         $this->lang->language['MSG_TARGET_ALLOCATION'] = 'No Target Amount has been Allocated.';
     }
 
-    public function index($action = "list", $id = 0)
+    public function index($action = "list", $id = 0, $year = '', $month = '')
     {
         if ($action == "list") {
             $this->system_list();
@@ -78,7 +78,7 @@ class Target_zone extends Root_Controller
             $this->system_details($id);
         }
         elseif ($action == "details_deleted") {
-            $this->system_details_deleted($id);
+            $this->system_details_deleted($id, $year, $month);
         }
         elseif ($action == "delete") {
             $this->system_delete($id);
@@ -133,9 +133,6 @@ class Target_zone extends Root_Controller
             $data['amount_allocated'] = 1;
             $data['amount_remaining'] = 1;
             $data['status_forward'] = 1;
-        }
-        if ($method == 'list_deleted') {
-            $data['no_of_delete'] = 1;
         }
         return $data;
     }
@@ -300,7 +297,7 @@ class Target_zone extends Root_Controller
             $data['system_preference_items'] = System_helper::get_preference($user->user_id, $this->controller_url, $method, $this->get_preference_headers($method));
             $data['title'] = "Monthly " . ($this->lang->line('LABEL_DIVISION_NAME')) . " Target Deleted List";
             $ajax['status'] = true;
-            $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->controller_url . "/list_deleted", $data, true));
+            $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->common_view_location . "/list_deleted", $data, true));
             if ($this->message) {
                 $ajax['system_message'] = $this->message;
             }
@@ -319,16 +316,20 @@ class Target_zone extends Root_Controller
         $user = User_helper::get_user();
 
         $this->db->from($this->config->item('table_bms_target_zone'));
-        $this->db->select('id, year, month, SUM(revision_count_delete) AS no_of_delete');
+        $this->db->select('year, month');
 
-        $this->db->where("user_deleted", $user->user_id);
         $this->db->where("revision_count_delete > ", 0);
-
+        if ($user->user_group != $this->config->item('USER_GROUP_SUPER')) // If not SuperAdmin, Then user can only access own Deleted Item.
+        {
+            $this->db->where("user_deleted", $user->user_id);
+        }
         $this->db->group_by("year");
         $this->db->group_by("month");
         $items = $this->db->get()->result_array();
 
+        $i = 1;
         foreach ($items as &$item) {
+            $item['id'] = $i++;
             $item['month'] = DateTime::createFromFormat('!m', $item['month'])->format('F');
         }
         $this->json_return($items);
@@ -371,7 +372,7 @@ class Target_zone extends Root_Controller
                 $this->json_return($ajax);
             }
 
-            $results = Query_helper::get_info($this->config->item('table_bms_target_territory'), array('territory_id', 'amount_target'), array('target_zone_id =' . $item_id, "status ='".$this->config->item('system_status_active')."'"));
+            $results = Query_helper::get_info($this->config->item('table_bms_target_territory'), array('territory_id', 'amount_target'), array('target_zone_id =' . $item_id, "status ='" . $this->config->item('system_status_active') . "'"));
             $data['item']['targets'] = array();
             foreach ($results as $result) {
                 $data['item']['targets'][$result['territory_id']] = $result['amount_target'];
@@ -460,7 +461,7 @@ class Target_zone extends Root_Controller
                 Query_helper::update($this->config->item('table_bms_target_territory'), $items, array('target_zone_id =' . $item_id, 'territory_id =' . $location_id, "status ='" . $this->config->item('system_status_active') . "'")); // UPDATE into Details Table
             }
         }
-        else{
+        else {
             foreach ($amount_target as $location_id => $amount) {
                 $items = array(
                     'target_zone_id' => $item_id,
@@ -518,7 +519,7 @@ class Target_zone extends Root_Controller
         }
     }
 
-    private function system_details_deleted($id)
+    private function system_details_deleted($id, $year=0, $month=0)
     {
         if (isset($this->permissions['action0']) && ($this->permissions['action0'] == 1)) {
             if ($id > 0) {
@@ -527,10 +528,22 @@ class Target_zone extends Root_Controller
             else {
                 $item_id = $this->input->post('id');
             }
-            $result = Query_helper::get_info($this->config->item('table_bms_target_zone'), array('year', 'month'), array('id ='.$item_id), 1);
+
+            $post = $this->input->post();
+            if ($year > 0 && $month > 0) {
+                // Then OK!
+            }
+            else if(isset($post['year']) && isset($post['month'])) {
+                $year = $post['year'];
+                if(is_string($post['month']))
+                    $month = date_parse($post['month'])['month'];
+                else
+                    $month = $post['month'];
+            }
+
             $params = array(
-                'year' => $result['year'],
-                'month' => $result['month'],
+                'year' => $year,
+                'month' => $month,
                 'main_table' => $this->config->item('table_bms_target_zone'),
                 'details_table' => $this->config->item('table_bms_target_territory'),
                 'location_table' => $this->config->item('table_login_setup_location_territories'),
@@ -539,13 +552,13 @@ class Target_zone extends Root_Controller
             );
             $data = Target_helper::get_delete_info($params);
 
-            $data['title'] = ($this->lang->line('LABEL_DIVISION_NAME')) . " Deleted Target Details ( " . DateTime::createFromFormat('!m', $result['month'])->format('F') . ", {$result['year']} )";
+            $data['title'] = ($this->lang->line('LABEL_DIVISION_NAME')) . " Deleted Target Details ( " . (DateTime::createFromFormat('!m', $month)->format('F')).", {$year} )";
             $ajax['status'] = true;
             $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->common_view_location . "/details_deleted", $data, true));
             if ($this->message) {
                 $ajax['system_message'] = $this->message;
             }
-            $ajax['system_page_url'] = site_url($this->controller_url . '/index/details_deleted/' . $item_id);
+            $ajax['system_page_url'] = site_url($this->controller_url . '/index/details_deleted/' . $item_id . '/' . $year . '/' . $month);
             $this->json_return($ajax);
         }
         else {
@@ -640,11 +653,11 @@ class Target_zone extends Root_Controller
         $this->db->trans_start(); //DB Transaction Handle START
 
         Target_helper::delete_target_tree('zone');
-        $delete_status = Target_helper::$update_success_status;
+        //$delete_status = Target_helper::$update_success_status;
 
         $this->db->trans_complete(); //DB Transaction Handle END
 
-        if (($this->db->trans_status() === TRUE) && (!in_array(FALSE, $delete_status))) {
+        if (($this->db->trans_status() === TRUE)) {
             $this->message = $this->lang->line("MSG_SAVED_SUCCESS");
             $this->system_list();
         }
@@ -772,7 +785,7 @@ class Target_zone extends Root_Controller
     {
         $this->common_query(); // Call Common part of below Query Stack
         // Additional Conditions -STARTS
-        $this->db->join($this->config->item('table_bms_target_territory') . ' details', "details.target_zone_id = target.id AND details.status = '".$this->config->item('system_status_active')."'", 'LEFT');
+        $this->db->join($this->config->item('table_bms_target_territory') . ' details', "details.target_zone_id = target.id AND details.status = '" . $this->config->item('system_status_active') . "'", 'LEFT');
         $this->db->select('SUM(details.amount_target) AS amount_allocated');
 
         $this->db->where('target.status', $this->config->item('system_status_active'));
