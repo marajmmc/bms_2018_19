@@ -95,13 +95,13 @@ class Target_division extends Root_Controller
         elseif ($action == "get_delete_history") {
             $this->system_get_delete_history();
         }
-        elseif ($action == "set_preference") {
+        elseif ($action == "set_preference_list") {
             $this->system_set_preference('list');
         }
-        elseif ($action == "set_preference_all") {
+        elseif ($action == "set_preference_list_all") {
             $this->system_set_preference('list_all');
         }
-        elseif ($action == "set_preference_deleted") {
+        elseif ($action == "set_preference_list_deleted") {
             $this->system_set_preference('list_deleted');
         }
         elseif ($action == "save_preference") {
@@ -118,20 +118,23 @@ class Target_division extends Root_Controller
         $data['id'] = 1;
         $data['year'] = 1;
         $data['month'] = 1;
-        if (!($this->locations['division_id'] > 0)) {
-            $data['location'] = 1;
-        }
         if ($method == 'list') {
-            $data['no_of_edit'] = 1;
             $data['amount_target'] = 1;
             $data['amount_allocated'] = 1;
             $data['amount_remaining'] = 1;
+            if (!($this->locations['division_id'] > 0)) {
+                $data['location'] = 1;
+            }
+            $data['no_of_edit'] = 1;
         }
         if ($method == 'list_all') {
-            $data['no_of_edit'] = 1;
             $data['amount_target'] = 1;
             $data['amount_allocated'] = 1;
             $data['amount_remaining'] = 1;
+            if (!($this->locations['division_id'] > 0)) {
+                $data['location'] = 1;
+            }
+            $data['no_of_edit'] = 1;
             $data['status_forward'] = 1;
         }
         return $data;

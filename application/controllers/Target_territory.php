@@ -43,7 +43,7 @@ class Target_territory extends Root_Controller
         elseif ($action == "details") {
             $this->system_details($id);
         }
-        elseif ($action == "set_preference") {
+        elseif ($action == "set_preference_list") {
             $this->system_set_preference('list');
         }
         elseif ($action == "save_preference") {
