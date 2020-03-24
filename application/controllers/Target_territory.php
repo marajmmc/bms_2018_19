@@ -211,10 +211,15 @@ class Target_territory extends Root_Controller
         if ($show_amount_inword) {
             $data['item'][] = array
             (
-                'label_1' => $this->lang->line('LABEL_AMOUNT_TARGET') . ' ( In-words )',
+                'label_1' => '<span style="white-space:nowrap">'.$this->lang->line('LABEL_AMOUNT_TARGET') . ' ( In-words )</span>',
                 'value_1' => $amount_inword
             );
         }
+        $data['item'][] = array
+        (
+            'label_1' => $this->lang->line('LABEL_LOCATION'),
+            'value_1' => Target_helper::get_location_name('territory', $result['territory_id']),
+        );
         if ($result['parent_user_forwarded'] > 0) { // Parent
             $data['item'][] = array
             (

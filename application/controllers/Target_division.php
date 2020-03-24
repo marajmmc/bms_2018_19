@@ -662,68 +662,6 @@ class Target_division extends Root_Controller
             $ajax['system_message'] = $this->lang->line("MSG_SAVED_FAIL");
             $this->json_return($ajax);
         }
-
-        /*$item_id = $this->input->post('id');
-        $item = $this->input->post('item');
-
-        //Permission Checking
-        if (!(isset($this->permissions['action3']) && ($this->permissions['action3'] == 1))) {
-            $ajax['status'] = false;
-            $ajax['system_message'] = $this->lang->line("YOU_DONT_HAVE_ACCESS");
-            $this->json_return($ajax);
-        }
-
-        $this->common_query(); // Call Common part of below Query Stack
-        // Additional Conditions -STARTS
-        $this->db->where('target.status', $this->config->item('system_status_active'));
-        $this->db->where('target.id', $item_id);
-        // Additional Conditions -ENDS
-        $result = $this->db->get()->row_array();
-        $this->db->flush_cache(); // Flush/Clear current Query Stack
-
-        // Validation: Only Forwarded Targets can be deleted.
-        if ($result['status_forward'] != $this->config->item('system_status_forwarded')) {
-            $ajax['status'] = false;
-            $ajax['system_message'] = $this->lang->line('MSG_FORWARDED_DELETE');
-            $this->json_return($ajax);
-        }
-        if (!$result) {
-            System_helper::invalid_try(__FUNCTION__, $item_id, $this->lang->line('MSG_ID_NOT_EXIST'));
-            $ajax['status'] = false;
-            $ajax['system_message'] = $this->lang->line('MSG_INVALID_TRY');
-            $this->json_return($ajax);
-        }
-        if (!$this->check_my_editable($result)) {
-            System_helper::invalid_try(__FUNCTION__, $item_id, $this->lang->line('MSG_LOCATION_ERROR'));
-            $ajax['status'] = false;
-            $ajax['system_message'] = $this->lang->line('MSG_LOCATION_ERROR');
-            $this->json_return($ajax);
-        }
-        if ($item['status'] != $this->config->item('system_status_delete')) {
-            $ajax['status'] = false;
-            $ajax['system_message'] = $this->lang->line('LABEL_STATUS_DELETE') . ' field is required.';
-            $this->json_return($ajax);
-        }
-        if (trim($item['remarks_delete']) == '') {
-            $ajax['status'] = false;
-            $ajax['system_message'] = $this->lang->line('LABEL_REASON_REMARKS') . ' field is required.';
-            $this->json_return($ajax);
-        }
-        $this->db->trans_start(); //DB Transaction Handle START
-
-        Target_helper::delete_target_tree('division');
-        $delete_status = Target_helper::$update_success_status;
-
-        $this->db->trans_complete(); //DB Transaction Handle END
-
-        if (($this->db->trans_status() === TRUE) && (!in_array(FALSE, $delete_status))) {
-            $this->message = $this->lang->line("MSG_SAVED_SUCCESS");
-            $this->system_list();
-        }
-        else {
-            $ajax['system_message'] = $this->lang->line("MSG_SAVED_FAIL");
-            $this->json_return($ajax);
-        }*/
     }
 
     private function system_forward($id)
@@ -893,8 +831,13 @@ class Target_division extends Root_Controller
         );
         $data['item'][] = array
         (
-            'label_1' => $this->lang->line('LABEL_AMOUNT_TARGET') . ' ( In-words )',
+            'label_1' => '<span style="white-space:nowrap">'.$this->lang->line('LABEL_AMOUNT_TARGET') . ' ( In-words )</span>',
             'value_1' => Target_helper::get_string_amount_inword($result['amount_target']),
+        );
+        $data['item'][] = array
+        (
+            'label_1' => $this->lang->line('LABEL_LOCATION'),
+            'value_1' => Target_helper::get_location_name('division', $result['division_id']),
         );
         if ($result['parent_user_forwarded'] > 0) { // Parent
             $data['item'][] = array

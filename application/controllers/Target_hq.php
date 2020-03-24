@@ -34,6 +34,7 @@ class Target_hq extends Root_Controller
         $this->lang->language['LABEL_NO_OF_DELETE'] = 'No. of Delete';
         $this->lang->language['LABEL_REASON_REMARKS'] = 'Reason/ Remarks';
         $this->lang->language['LABEL_DATE_DELETED_TIME'] = 'Deleted Time';
+        $this->lang->language['LABEL_LOCATION'] = 'Location';
         // Messages
         $this->lang->language['MSG_FORWARDED_ALREADY'] = 'This Target has been Forwarded Already.';
         $this->lang->language['MSG_FORWARDED_DELETE'] = 'Only a Forwarded target can be Deleted.';
@@ -538,7 +539,7 @@ class Target_hq extends Root_Controller
 
             $data = $this->get_item_info($item_id);
 
-            $data['title'] = ($this->lang->line('LABEL_DIVISION_NAME')) . "-wise Variety Target Details (ID: " . $item_id . ")";
+            $data['title'] = ($this->lang->line('LABEL_DIVISION_NAME')) . "-wise Target Details (ID: " . $item_id . ")";
             $ajax['status'] = true;
             $ajax['system_content'][] = array("id" => "#system_content", "html" => $this->load->view($this->common_view_location . "/details", $data, true));
             if ($this->message) {
@@ -865,8 +866,13 @@ class Target_hq extends Root_Controller
         );
         $data['item'][] = array
         (
-            'label_1' => $this->lang->line('LABEL_AMOUNT_TARGET_TOTAL') . ' ( In-words )',
+            'label_1' => '<span style="white-space:nowrap">'.$this->lang->line('LABEL_AMOUNT_TARGET_TOTAL') . ' ( In-words )</span>',
             'value_1' => Target_helper::get_string_amount_inword($result['amount_target_total']),
+        );
+        $data['item'][] = array
+        (
+            'label_1' => $this->lang->line('LABEL_LOCATION'),
+            'value_1' => Target_helper::get_location_name(),
         );
         $data['item'][] = array
         (

@@ -3,22 +3,40 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Target_helper
 {
-    public static $update_success_status;
-    
-    public function __construct()
-    {
-        Target_helper::$update_success_status = array();
-    }
-
-    public static function check_update_status()
+    public static function get_location_name($task='', $location_id = 0)
     {
         $CI = & get_instance();
-        if($CI->db->affected_rows() > 0){
-            Target_helper::$update_success_status[] = TRUE;
-        }else{
-            Target_helper::$update_success_status[] = FALSE;
+        if($task=='division')
+        {
+            $CI->db->from($CI->config->item('table_login_setup_location_divisions'));
+            $CI->db->select('name');
+            $CI->db->where('id', $location_id);
+            $result = $CI->db->get()->row_array();
+            return $result['name'];
         }
+        else if($task=='zone')
+        {
+            $CI->db->from($CI->config->item('table_login_setup_location_zones'));
+            $CI->db->select('name');
+            $CI->db->where('id', $location_id);
+            $result = $CI->db->get()->row_array();
+            return $CI->lang->line('LABEL_ZONE_NAME').' - '.$result['name'];
+        }
+        else if($task=='territory')
+        {
+            $CI->db->from($CI->config->item('table_login_setup_location_territories'));
+            $CI->db->select('name');
+            $CI->db->where('id', $location_id);
+            $result = $CI->db->get()->row_array();
+            return $CI->lang->line('LABEL_TERRITORY_NAME').' - '.$result['name'];
+        }
+        else
+        {
+            return $CI->lang->line('LABEL_HEAD_OFFICE_NAME');
+        }
+
     }
+
     public static function delete_target_tree($task)
     {
         $CI = & get_instance();
@@ -45,14 +63,15 @@ class Target_helper
         );
         if($task=='hq')
         {
+            $delete_array['amount_target_total'] = 0;
             $CI->db->set('revision_count_delete', 'revision_count_delete+1', FALSE);
             Query_helper::update($CI->config->item('table_bms_target_hq'), $delete_array, array("id =".$item_id), FALSE);
-            Query_helper::update($CI->config->item('table_bms_target_division'), $delete_parent_array, array("target_hq_id =".$item_id), FALSE);
+            Query_helper::update($CI->config->item('table_bms_target_division'), $delete_parent_array, array("target_hq_id =".$item_id, "status = '".$CI->config->item('system_status_active')."'"), FALSE);
             if(sizeof($get_location_relation_ids['zone'])>0)
             {
                 $parent_id = implode(', ', $get_location_relation_ids['zone']);
                 Query_helper::update($CI->config->item('table_bms_target_zone'), $delete_parent_array, array("id IN (" . $parent_id . ")"), FALSE);
-                Query_helper::update($CI->config->item('table_bms_target_territory'), $delete_parent_array, array("target_zone_id IN (" . $parent_id . ")"), FALSE);
+                Query_helper::update($CI->config->item('table_bms_target_territory'), $delete_parent_array, array("target_zone_id IN (" . $parent_id . ")", "status = '".$CI->config->item('system_status_active')."'"), FALSE);
             }
         }
         elseif($task=='division')
@@ -60,18 +79,18 @@ class Target_helper
             $CI->db->set('revision_count_delete', 'revision_count_delete+1', FALSE);
             Query_helper::update($CI->config->item('table_bms_target_division'), $delete_array, array("id =".$item_id), FALSE);
 
-            Query_helper::update($CI->config->item('table_bms_target_zone'), $delete_parent_array, array("target_division_id =".$item_id), FALSE);
             if(sizeof($get_location_relation_ids['zone'])>0)
             {
                 $parent_id = implode(', ', $get_location_relation_ids['zone']);
-                Query_helper::update($CI->config->item('table_bms_target_territory'), $delete_parent_array, array("target_zone_id IN (" . $parent_id . ")"), FALSE);
+                Query_helper::update($CI->config->item('table_bms_target_zone'), $delete_parent_array, array("id IN (" . $parent_id . ")"), FALSE);
+                Query_helper::update($CI->config->item('table_bms_target_territory'), $delete_parent_array, array("target_zone_id IN (" . $parent_id . ")", "status = '".$CI->config->item('system_status_active')."'"), FALSE);
             }
         }
         elseif($task=='zone')
         {
             $CI->db->set('revision_count_delete', 'revision_count_delete+1', FALSE);
             Query_helper::update($CI->config->item('table_bms_target_zone'), $delete_array, array("id =".$item_id), FALSE);
-            Query_helper::update($CI->config->item('table_bms_target_zone'), $delete_parent_array, array("target_zone_id =".$item_id), FALSE);
+            Query_helper::update($CI->config->item('table_bms_target_territory'), $delete_parent_array, array("target_zone_id =".$item_id, "status = '".$CI->config->item('system_status_active')."'"), FALSE);
         }
     }
     public static function get_location_relation_ids($task, $item_id)
@@ -114,138 +133,6 @@ class Target_helper
         return $item_ids;
     }
 
-    /*public static function delete_target_tree($task)
-    {
-        $CI = & get_instance();
-        $user = User_helper::get_user();
-        $time = time();
-
-        $item_id = $CI->input->post('id');
-        $item = $CI->input->post('item');
-
-        $pending_array = array(
-            'status_forward' => $CI->config->item('system_status_pending'),
-            'remarks_forward' => '',
-            'date_forwarded' => null,
-            'user_forwarded' => null,
-            'remarks_delete' => $item['remarks_delete'],
-            'date_deleted' => $time,
-            'user_deleted' => $user->user_id
-        );
-        $delete_array = array(
-            'status' => $item['status'],
-            'remarks_delete_parent' => $item['remarks_delete'],
-            'date_deleted_parent' => $time,
-            'user_deleted_parent' => $user->user_id
-        );
-
-        if($task=='hq')
-        {
-                                   Target_helper::delete_target_hq($pending_array, $item_id);                  //HQ target: Revert Back to PENDING
-            $target_division_ids = Target_helper::delete_target_division($delete_array, 0, $item_id);          //Division target: DELETE
-                $target_zone_ids = Target_helper::delete_target_zone($delete_array, 0, $target_division_ids);  //Zone target: DELETE
-                                   Target_helper::delete_target_territory($delete_array, $target_zone_ids);    //Territory target: DELETE
-        }
-        elseif($task=='division')
-        {
-                                   Target_helper::delete_target_division($pending_array, $item_id);          //Division target: Revert Back to PENDING
-                $target_zone_ids = Target_helper::delete_target_zone($delete_array, 0, $item_id);            //Zone target: DELETE
-                                   Target_helper::delete_target_territory($delete_array, $target_zone_ids);  //Territory target: DELETE
-        }
-        elseif($task=='zone')
-        {
-                                   Target_helper::delete_target_zone($pending_array, $item_id);      //Zone target: Revert Back to PENDING
-                                   Target_helper::delete_target_territory($delete_array, $item_id);  //Territory target: DELETE
-        }
-    }
-
-    public static function delete_target_hq($item, $item_id) //------------------------------------ HQ Target Delete
-    {
-        $CI = & get_instance();
-        $table = $CI->config->item('table_bms_target_hq');
-        $item['amount_target_total'] = 0;
-        $item['revision_count'] = 0;
-
-        $CI->db->set('revision_count_delete', 'revision_count_delete+1', FALSE);
-        Query_helper::update($table, $item, array("id =" . $item_id, "status ='" . $CI->config->item('system_status_active') . "'"), FALSE);
-        Target_helper::check_update_status();
-    }
-
-    public static function delete_target_division($item, $item_id = 0, $parent_id = 0) //----------------- Division Target Delete
-    {
-        $CI = & get_instance();
-        $table = $CI->config->item('table_bms_target_division');
-        $parent_id_field = 'target_hq_id';
-
-        if ($item_id > 0)
-        {
-            $item['revision_count'] = 0;
-            $CI->db->set('revision_count_delete', 'revision_count_delete+1', FALSE);
-            Query_helper::update($table, $item, array("id =" . $item_id, "status ='" . $CI->config->item('system_status_active') . "'"), FALSE);
-            Target_helper::check_update_status();
-        }
-        elseif ($parent_id != 0)
-        {
-            if (is_array($parent_id)) {
-                $parent_id = implode(', ', $parent_id);
-            }
-            $result = Query_helper::get_info($table, 'GROUP_CONCAT(id) as ids', array("{$parent_id_field} IN ( {$parent_id} )", "status ='" . $CI->config->item('system_status_active') . "'"), 1);
-            if($result['ids']){
-                Query_helper::update($table, $item, array("id IN (" . $result['ids'] . ")", "status ='" . $CI->config->item('system_status_active') . "'"), FALSE);
-                Target_helper::check_update_status();
-                return $result['ids'];
-            }
-        }
-        return 0;
-    }
-
-    public static function delete_target_zone($item, $item_id = 0, $parent_id = 0) //----------------- Zone Target Delete
-    {
-        $CI = & get_instance();
-        $table = $CI->config->item('table_bms_target_zone');
-        $parent_id_field = 'target_division_id';
-
-        if ($item_id > 0)
-        {
-            $item['revision_count'] = 0;
-            $CI->db->set('revision_count_delete', 'revision_count_delete+1', FALSE);
-            Query_helper::update($table, $item, array("id =" . $item_id, "status ='" . $CI->config->item('system_status_active') . "'"), FALSE);
-            Target_helper::check_update_status();
-        }
-        elseif ($parent_id != 0)
-        {
-            if (is_array($parent_id)) {
-                $parent_id = implode(', ', $parent_id);
-            }
-            $result = Query_helper::get_info($table, 'GROUP_CONCAT(id) as ids', array("{$parent_id_field} IN ( {$parent_id} )", "status ='" . $CI->config->item('system_status_active') . "'"), 1);
-            if($result['ids']){
-                Query_helper::update($table, $item, array("id IN (" . $result['ids'] . ")", "status ='" . $CI->config->item('system_status_active') . "'"), FALSE);
-                Target_helper::check_update_status();
-                return $result['ids'];
-            }
-        }
-        return 0;
-    }
-
-    public static function delete_target_territory($item, $parent_id = 0) //---------------- Territory Target Delete
-    {
-        $CI = & get_instance();
-        $table = $CI->config->item('table_bms_target_territory');
-        $parent_id_field = 'target_zone_id';
-
-        if ($parent_id != 0)
-        {
-            if (is_array($parent_id)) {
-                $parent_id = implode(', ', $parent_id);
-            }
-            $result = Query_helper::get_info($table, 'GROUP_CONCAT(id) as ids', array("{$parent_id_field} IN ( {$parent_id} )", "status ='" . $CI->config->item('system_status_active') . "'"), 1);
-            if($result['ids']){
-                Query_helper::update($table, $item, array("id IN (" . $result['ids'] . ")", "status ='" . $CI->config->item('system_status_active') . "'"), FALSE);
-                Target_helper::check_update_status();
-            }
-        }
-    }
-*/
     public static function get_delete_info($params)
     {
         $CI = & get_instance();
